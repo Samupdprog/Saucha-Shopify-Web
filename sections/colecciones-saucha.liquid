@@ -200,6 +200,10 @@
     overflow: hidden;
     border-radius: 50%;
     background: var(--s-color-blush);
+    /* Recorte real del círculo: con solo overflow + radius, al escalar la foto en hover
+       el navegador puede enseñar un instante las esquinas cuadradas (destello en cruz) */
+    clip-path: circle(50% at 50% 50%);
+    isolation: isolate;
   }
 
   .colecciones-saucha__imagen img,
@@ -208,6 +212,7 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+    backface-visibility: hidden;
     transition: transform calc(var(--s-dur-image) * 2) var(--s-ease);
   }
 
