@@ -1,0 +1,333 @@
+{% liquid
+  assign excluded = section.settings.excluded_handles | downcase | split: ','
+  assign per_page = section.settings.per_page
+%}
+
+<section
+  id="ColeccionesIndice-{{ section.id }}"
+  class="
+    s-section s-scheme-{{ section.settings.scheme }}
+    s-pt-{{ section.settings.spacing_top }} s-pb-{{ section.settings.spacing_bottom }}
+    saucha-coll-index
+    saucha-coll-index--mobile-{{ section.settings.columns_mobile }}
+  "
+  style="--sci-columns: {{ section.settings.columns_desktop }};"
+>
+  <div class="s-container">
+    {% render 'saucha-heading',
+      eyebrow: section.settings.eyebrow,
+      title: section.settings.title,
+      text: section.settings.text,
+      alignment: section.settings.heading_alignment,
+      size: 'h1',
+      tag: 'h1'
+    %}
+
+    {%- if section.settings.collection_list != blank -%}
+      <ul class="saucha-coll-index__grid" role="list">
+        {%- assign visible_index = 0 -%}
+        {%- for item in section.settings.collection_list -%}
+          {%- if section.settings.hide_empty and item.products_count == 0 -%}{%- continue -%}{%- endif -%}
+          {% render 'saucha-collection-index-card', item: item, index: visible_index, show_count: section.settings.show_count, soon_label: section.settings.soon_label %}
+          {%- assign visible_index = visible_index | plus: 1 -%}
+        {%- endfor -%}
+      </ul>
+    {%- else -%}
+      {%- paginate collections by per_page -%}
+        <ul class="saucha-coll-index__grid" role="list">
+          {%- assign visible_index = 0 -%}
+          {%- for item in collections -%}
+            {%- liquid
+              assign handle = item.handle | downcase
+              assign skip = false
+              for ex in excluded
+                assign ex_clean = ex | strip
+                if ex_clean != blank and ex_clean == handle
+                  assign skip = true
+                endif
+              endfor
+              if section.settings.hide_empty and item.products_count == 0
+                assign skip = true
+              endif
+            -%}
+            {%- if skip -%}{%- continue -%}{%- endif -%}
+            {% render 'saucha-collection-index-card', item: item, index: visible_index, show_count: section.settings.show_count, soon_label: section.settings.soon_label %}
+            {%- assign visible_index = visible_index | plus: 1 -%}
+          {%- endfor -%}
+        </ul>
+
+        {%- if paginate.pages > 1 -%}
+          <nav class="saucha-coll-index__pagination" aria-label="Paginación">
+            {%- if paginate.previous -%}
+              <a class="s-link" href="{{ paginate.previous.url }}">Anterior</a>
+            {%- endif -%}
+            <span class="s-meta">{{ paginate.current_page }} / {{ paginate.pages }}</span>
+            {%- if paginate.next -%}
+              <a class="s-link" href="{{ paginate.next.url }}">Siguiente</a>
+            {%- endif -%}
+          </nav>
+        {%- endif -%}
+      {%- endpaginate -%}
+    {%- endif -%}
+  </div>
+</section>
+
+{% stylesheet %}
+  /* Índice de colecciones: fotografía protagonista, o tarjeta tipográfica si la colección no tiene imagen */
+
+  .saucha-coll-index__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--s-space-8) var(--s-space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .saucha-coll-index--mobile-1 .saucha-coll-index__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .saucha-coll-index__card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-space-3);
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .saucha-coll-index__media {
+    --s-media-ratio: 3 / 4;
+    --s-media-ratio-m: 3 / 4;
+  }
+
+  .saucha-coll-index__media--type {
+    position: relative;
+    display: grid;
+    place-items: center;
+    aspect-ratio: 3 / 4;
+    padding: var(--s-space-4);
+    overflow: hidden;
+    border-radius: var(--s-radius-media);
+    background: var(--s-color-cream);
+    box-shadow: inset 0 0 0 1px var(--s-color-line);
+    transition: background-color var(--s-dur-image) var(--s-ease);
+  }
+
+  .saucha-coll-index__monogram {
+    font-family: var(--s-font-serif);
+    font-size: clamp(4.5rem, 3rem + 6vw, 8.5rem);
+    font-weight: 300;
+    line-height: 1;
+    text-align: center;
+    color: var(--s-color-cacao);
+    opacity: 0.55;
+    transition: transform calc(var(--s-dur-image) * 2) var(--s-ease);
+  }
+
+  .saucha-coll-index__info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .saucha-coll-index__title {
+    font-family: var(--s-font-serif);
+    font-size: var(--s-type-product);
+    line-height: 1.2;
+    background-image: linear-gradient(currentColor, currentColor);
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    background-size: 0% 1px;
+    width: fit-content;
+    transition: background-size var(--s-dur-image) var(--s-ease-inout);
+  }
+
+  @media (hover: hover) {
+    .saucha-coll-index__card:hover .saucha-coll-index__title {
+      background-size: 100% 1px;
+    }
+
+    .saucha-coll-index__card:hover .saucha-coll-index__media--type {
+      background: var(--s-color-blush);
+    }
+
+    .saucha-coll-index__card:hover .saucha-coll-index__monogram {
+      transform: scale(1.03);
+    }
+  }
+
+  .saucha-coll-index__pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--s-space-8);
+    margin-top: var(--s-section-sm);
+  }
+
+  @media screen and (min-width: 750px) {
+    .saucha-coll-index__grid,
+    .saucha-coll-index--mobile-1 .saucha-coll-index__grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--s-space-12) var(--s-space-5);
+    }
+  }
+
+  @media screen and (min-width: 1200px) {
+    .saucha-coll-index__grid,
+    .saucha-coll-index--mobile-1 .saucha-coll-index__grid {
+      grid-template-columns: repeat(var(--sci-columns, 3), minmax(0, 1fr));
+      column-gap: var(--s-space-6);
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Colecciones · índice",
+  "tag": "div",
+  "class": "saucha-coll-index-section",
+  "enabled_on": {
+    "templates": ["list-collections"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Contenido"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Antetítulo",
+      "default": "Tienda"
+    },
+    {
+      "type": "textarea",
+      "id": "title",
+      "label": "Título",
+      "default": "Colecciones"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Texto"
+    },
+    {
+      "type": "select",
+      "id": "heading_alignment",
+      "label": "Alineación del título",
+      "options": [
+        { "value": "center", "label": "Centrado" },
+        { "value": "left", "label": "Izquierda" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "header",
+      "content": "Colecciones"
+    },
+    {
+      "type": "collection_list",
+      "id": "collection_list",
+      "label": "Selección y orden manual",
+      "info": "Opcional. Si lo dejas vacío se muestran todas las colecciones de la tienda (con paginación)."
+    },
+    {
+      "type": "text",
+      "id": "excluded_handles",
+      "label": "Ocultar colecciones (handles separados por comas)",
+      "default": "frontpage"
+    },
+    {
+      "type": "checkbox",
+      "id": "hide_empty",
+      "label": "Ocultar colecciones sin productos",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_count",
+      "label": "Mostrar número de piezas",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "soon_label",
+      "label": "Texto para colecciones vacías",
+      "default": "Muy pronto",
+      "visible_if": "{{ section.settings.show_count }}"
+    },
+    {
+      "type": "range",
+      "id": "per_page",
+      "label": "Colecciones por página",
+      "min": 12,
+      "max": 48,
+      "step": 6,
+      "default": 36
+    },
+    {
+      "type": "header",
+      "content": "Composición"
+    },
+    {
+      "type": "select",
+      "id": "columns_desktop",
+      "label": "Columnas · escritorio",
+      "options": [
+        { "value": "3", "label": "3" },
+        { "value": "4", "label": "4" }
+      ],
+      "default": "4"
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "label": "Columnas · móvil",
+      "options": [
+        { "value": "1", "label": "1" },
+        { "value": "2", "label": "2" }
+      ],
+      "default": "2"
+    },
+    {
+      "type": "select",
+      "id": "scheme",
+      "label": "Fondo",
+      "options": [
+        { "value": "surface", "label": "Marfil (principal)" },
+        { "value": "cream", "label": "Crema (alterno)" }
+      ],
+      "default": "surface"
+    },
+    {
+      "type": "select",
+      "id": "spacing_top",
+      "label": "Espacio superior",
+      "options": [
+        { "value": "sm", "label": "Pequeño" },
+        { "value": "md", "label": "Medio" },
+        { "value": "lg", "label": "Grande" }
+      ],
+      "default": "md"
+    },
+    {
+      "type": "select",
+      "id": "spacing_bottom",
+      "label": "Espacio inferior",
+      "options": [
+        { "value": "sm", "label": "Pequeño" },
+        { "value": "md", "label": "Medio" },
+        { "value": "lg", "label": "Grande" }
+      ],
+      "default": "lg"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Colecciones · índice",
+      "category": "t:categories.collections"
+    }
+  ]
+}
+{% endschema %}

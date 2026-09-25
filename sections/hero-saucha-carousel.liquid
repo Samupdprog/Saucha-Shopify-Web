@@ -29,6 +29,7 @@
   id="Hero-{{ section.id }}"
   class="saucha-hero-carousel{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}"
   data-saucha-carousel
+  data-header-overlay
   data-autoplay="{{ section.settings.autoplay }}"
   data-interval="{{ section.settings.autoplay_interval | times: 1000 }}"
   data-transition="{{ section.settings.transition_duration }}"

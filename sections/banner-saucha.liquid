@@ -32,6 +32,7 @@
     s-pt-{{ section.settings.spacing_top }} s-pb-{{ section.settings.spacing_bottom }}
     saucha-banner saucha-banner--{{ section.settings.width }}
   "
+  {%- if section.settings.width == 'full' and section.settings.spacing_top == 'none' and section.settings.text_tone == 'light' %} data-header-overlay{% endif %}
 >
   <div class="{% if section.settings.width == 'page' %}s-container{% endif %}">
     <div

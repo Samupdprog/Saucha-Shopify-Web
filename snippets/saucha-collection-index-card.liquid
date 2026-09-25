@@ -1,0 +1,46 @@
+{% doc %}
+  Tarjeta del índice de colecciones: fotografía de la colección o, si no tiene,
+  tarjeta tipográfica con el nombre en serif.
+
+  @param {collection} item - Colección
+  @param {number} [index] - Posición en la coreografía de entrada
+  @param {boolean} [show_count] - Mostrar número de piezas
+  @param {string} [soon_label] - Texto para colecciones sin productos
+{% enddoc %}
+
+{%- assign image = item.featured_image -%}
+<li class="saucha-coll-index__item" data-s-reveal="up" style="--s-i: {{ index | default: 0 }};">
+  <a class="saucha-coll-index__card" href="{{ item.url }}">
+    {%- if image != blank -%}
+      <div class="s-media s-media--hover saucha-coll-index__media" data-s-reveal="media">
+        {{
+          image
+          | image_url: width: 1400
+          | image_tag:
+            widths: '360, 540, 720, 900, 1100, 1400',
+            sizes: '(min-width: 1200px) 25vw, (min-width: 750px) 33vw, 50vw',
+            loading: 'lazy',
+            class: 's-media__img',
+            alt: item.title
+        }}
+      </div>
+    {%- else -%}
+      <div class="saucha-coll-index__media saucha-coll-index__media--type" aria-hidden="true">
+        <span class="saucha-coll-index__monogram">{{ item.title | strip | slice: 0 | upcase | escape }}</span>
+      </div>
+    {%- endif -%}
+
+    <span class="saucha-coll-index__info">
+      <span class="saucha-coll-index__title">{{ item.title | escape }}</span>
+      {%- if show_count -%}
+        <span class="s-meta">
+          {%- if item.products_count > 0 -%}
+            {{ item.products_count }} {{ item.products_count | pluralize: 'pieza', 'piezas' }}
+          {%- else -%}
+            {{ soon_label | default: 'Muy pronto' | escape }}
+          {%- endif -%}
+        </span>
+      {%- endif -%}
+    </span>
+  </a>
+</li>

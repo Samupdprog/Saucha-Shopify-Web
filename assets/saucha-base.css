@@ -82,6 +82,10 @@
   --s-radius-lg: 20px;
   --s-radius-pill: 999px;
 
+  /* Drawers (menú móvil, filtros): panel flotante con margen y radio */
+  --s-drawer-inset: 6px;
+  --s-drawer-radius: 18px;
+
   /* Sombras (casi inexistentes) */
   --s-shadow-float: 0 10px 30px rgb(var(--s-color-ink-rgb) / 0.06);
   --s-shadow-drawer: 0 0 40px rgb(var(--s-color-ink-rgb) / 0.08);

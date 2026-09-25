@@ -1008,13 +1008,16 @@
     .email-signup__input-group {
 
     min-height:
-      76px;
+      56px;
 
     border-radius:
-      0;
+      var(--s-radius-pill, 999px);
 
     border-color:
-      var(--sf-border);
+      var(--s-color-control, var(--sf-border));
+
+    padding-inline-start:
+      8px;
 
     background:
       transparent;
@@ -1646,6 +1649,127 @@
 
   }
 
+
+/* =========================================================
+   SAUCHA — Footer móvil: acordeones refinados
+   ========================================================= */
+@media screen and (max-width: 749px) {
+  /* El contenedor es flex con align-items: start: la navegación ocupa todo el ancho */
+  .saucha-footer__navigation,
+  .saucha-footer__menu-slot,
+  .saucha-footer__menu-slot accordion-custom,
+  .saucha-footer__menu-slot .menu__details {
+    display: block;
+    width: 100%;
+    align-self: stretch;
+  }
+
+  .saucha-footer__navigation {
+    border-top: 1px solid var(--sf-border);
+  }
+
+  .saucha-footer__menu-slot .menu--dividers .menu__details,
+  .saucha-footer__menu-slot .menu__details {
+    border-bottom: 1px solid var(--sf-border);
+  }
+
+  .saucha-footer__menu-slot .menu__heading {
+    min-height: 60px;
+    padding-block: 0 !important;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .saucha-footer__menu-slot .menu__heading,
+  .saucha-footer__menu-slot .menu__heading__accordion {
+    font-size: 1.375rem !important;
+    line-height: 1.1 !important;
+  }
+
+  /* Icono: una cruz fina que gira 45° al abrir (en lugar del +/− nativo) */
+  .saucha-footer__menu-slot .menu__heading__toggle {
+    position: relative;
+    width: 12px;
+    height: 12px;
+    flex: 0 0 auto;
+    transition: transform var(--s-dur-filter, 280ms) var(--s-ease, ease);
+  }
+
+  .saucha-footer__menu-slot .menu__heading__toggle svg {
+    display: none;
+  }
+
+  .saucha-footer__menu-slot .menu__heading__toggle::before,
+  .saucha-footer__menu-slot .menu__heading__toggle::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: currentColor;
+  }
+
+  .saucha-footer__menu-slot .menu__heading__toggle::after {
+    transform: rotate(90deg);
+  }
+
+  .saucha-footer__menu-slot .menu__details[open] .menu__heading__toggle {
+    transform: rotate(45deg);
+  }
+
+  /* Apertura suave (navegadores con ::details-content; el resto abre al instante) */
+  .saucha-footer__menu-slot .menu__details {
+    interpolate-size: allow-keywords;
+  }
+
+  .saucha-footer__menu-slot .menu__details::details-content {
+    height: 0;
+    overflow: clip;
+    transition:
+      height var(--s-dur-filter, 280ms) var(--s-ease, ease),
+      content-visibility var(--s-dur-filter, 280ms) allow-discrete;
+  }
+
+  .saucha-footer__menu-slot .menu__details[open]::details-content {
+    height: auto;
+  }
+
+  .saucha-footer__menu-slot .details-content {
+    padding: 0 0 22px;
+  }
+
+  .saucha-footer__menu-slot .menu__item {
+    font-size: var(--s-type-body, 15px);
+    color: var(--sf-muted);
+  }
+
+  .saucha-footer__menu-slot .menu__item + .menu__item {
+    margin-top: 2px;
+  }
+
+  .saucha-footer__menu-slot .menu__item a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    color: inherit;
+  }
+
+  .saucha-footer__menu-slot .menu__item a:active {
+    color: var(--sf-text);
+  }
+
+  .saucha-footer__connect {
+    padding: 24px 0 8px;
+  }
+
+  .saucha-footer__social-list a {
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-grid;
+    place-items: center;
+  }
+}
 {% endstylesheet %}
 
 

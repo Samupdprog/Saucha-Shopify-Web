@@ -1349,6 +1349,50 @@
     --header-logo-inverse-display: block;
   }
 
+  /* =========================================================
+     SAUCHA — Superficie bajo el header (lógica global)
+     El header solo es transparente cuando la primera sección de la
+     plantilla declara [data-header-overlay] (fotografía o fondo oscuro a
+     sangre: hero, banner, cabecera de colección con imagen). En cualquier
+     otra página usa su estado sólido —el mismo que en hover— y el
+     contenido empieza debajo de él. Se resuelve con :has() antes del
+     primer pintado: sin JS, sin parpadeo y sin reglas por plantilla.
+     ========================================================= */
+  html:not(:has(.content-for-layout > .shopify-section:first-child [data-header-overlay])) #header-component[transparent]::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: 1;
+    background: var(--saucha-hover-background, var(--color-background));
+  }
+
+  html:not(:has(.content-for-layout > .shopify-section:first-child [data-header-overlay])) #header-component[transparent] .header__row {
+    --color-foreground: var(--saucha-hover-text);
+    --color-foreground-rgb: var(--saucha-hover-text-rgb);
+    --color-border: var(--saucha-hover-text);
+    --color-border-rgb: var(--saucha-hover-text-rgb);
+    --color-primary-button-background: var(--saucha-hover-text);
+    --cart-bubble-background: var(--saucha-hover-text);
+    --cart-bubble-text: var(--saucha-hover-background);
+  }
+
+  html:not(:has(.content-for-layout > .shopify-section:first-child [data-header-overlay])) #header-component[transparent] {
+    --header-logo-display: block;
+    --header-logo-inverse-display: none;
+  }
+
+  /* El contenido de una página clara empieza bajo el header, no detrás */
+  html:not(:has(.content-for-layout > .shopify-section:first-child [data-header-overlay])) body:has(#header-component[transparent]) .content-for-layout > .shopify-section:first-child {
+    margin-top: var(--header-height);
+  }
+
+  /* Hairline solo cuando el header sólido flota sobre contenido (sticky) */
+  #header-component[transparent][data-sticky-state='active']::before {
+    box-shadow: 0 1px 0 rgb(var(--saucha-hover-text-rgb) / 0.08);
+  }
+
   /* Subrayado editorial para el elemento activo, inspirado en la referencia. */
   #header-component[data-saucha-active-underline='true'] .menu-list__link-title {
     position: relative;

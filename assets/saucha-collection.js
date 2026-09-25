@@ -41,6 +41,11 @@
       this.addEventListener('keydown', this.onKeyDown);
       window.addEventListener('popstate', this.onPopState);
       window.addEventListener('scroll', this.onScroll, { passive: true });
+      /* Horizon desplaza .page-wrapper en escritorio (>= 990px), no window */
+      this.scrollRoot = document.querySelector('.page-wrapper');
+      this.scrollRoot?.addEventListener('scroll', this.onScroll, { passive: true });
+
+      this.applyDensity(this.readStoredDensity() || this.dataset.density || 'default');
 
       if (this.mobileMedia.addEventListener) {
         this.mobileMedia.addEventListener('change', this.onViewportChange);
@@ -66,6 +71,7 @@
       this.removeEventListener('keydown', this.onKeyDown);
       window.removeEventListener('popstate', this.onPopState);
       window.removeEventListener('scroll', this.onScroll);
+      this.scrollRoot?.removeEventListener('scroll', this.onScroll);
 
       if (this.mobileMedia) {
         if (this.mobileMedia.removeEventListener) {
@@ -176,6 +182,19 @@
         }
       }
 
+      const densityButton = event.target.closest('[data-density-value]');
+      if (densityButton && this.contains(densityButton)) {
+        event.preventDefault();
+        const value = densityButton.dataset.densityValue;
+        this.applyDensity(value);
+        try {
+          localStorage.setItem('saucha-grid-density', value);
+        } catch (error) {
+          /* almacenamiento no disponible: la vista vale solo para esta página */
+        }
+        return;
+      }
+
       const swatch = event.target.closest('[data-product-swatch]');
       if (swatch && this.contains(swatch)) {
         event.preventDefault();
@@ -255,6 +274,22 @@
         event.preventDefault();
         first.focus();
       }
+    }
+
+    readStoredDensity() {
+      try {
+        const value = localStorage.getItem('saucha-grid-density');
+        return value === 'large' || value === 'default' ? value : null;
+      } catch (error) {
+        return null;
+      }
+    }
+
+    applyDensity(value) {
+      this.dataset.density = value;
+      this.querySelectorAll('[data-density-value]').forEach((button) => {
+        button.setAttribute('aria-pressed', button.dataset.densityValue === value ? 'true' : 'false');
+      });
     }
 
     onPopState() {

@@ -42,6 +42,18 @@
             assign url = coleccion.url
           endif
 
+          # Respaldo: un título sin colección asignada enlaza a /collections/<título> si existe
+          if url == blank and title != blank
+            assign handle_guess = title | handleize
+            assign coleccion_guess = collections[handle_guess]
+            if coleccion_guess != blank and coleccion_guess.id != blank
+              assign url = coleccion_guess.url
+              if image == blank
+                assign image = coleccion_guess.featured_image
+              endif
+            endif
+          endif
+
           if forloop.first and section.settings.layout == 'bento'
             assign card_sizes = '(min-width: 750px) 50vw, 100vw'
           else

@@ -42,6 +42,18 @@
               assign enlace = block.settings.enlace_personalizado
             endif
 
+            # Respaldo: un nombre sin colección asignada enlaza a /collections/<nombre> si existe
+            if enlace == blank and titulo != blank
+              assign handle_guess = titulo | handleize
+              assign coleccion_guess = collections[handle_guess]
+              if coleccion_guess != blank and coleccion_guess.id != blank
+                assign enlace = coleccion_guess.url
+                if imagen == blank
+                  assign imagen = coleccion_guess.featured_image
+                endif
+              endif
+            endif
+
             assign is_empty = false
             if coleccion == blank and block.settings.imagen_personalizada == blank and block.settings.titulo_personalizado == blank
               assign is_empty = true

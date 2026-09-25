@@ -19,8 +19,10 @@
   data-card-alignment="{{ section.settings.card_alignment }}"
   data-title-font="{{ section.settings.product_title_font }}"
   data-text-density="{{ section.settings.text_density }}"
+  data-density="default"
   style="
     --saucha-columns-desktop: {{ section.settings.columns_desktop }};
+    --saucha-columns-desktop-large: {{ section.settings.columns_desktop | minus: 1 | at_least: 2 }};
     --saucha-columns-tablet: {{ section.settings.columns_tablet }};
     --saucha-columns-mobile: {{ section.settings.columns_mobile }};
     --saucha-sidebar-width: {{ section.settings.sidebar_width }}px;
@@ -75,10 +77,25 @@
 
         {%- if section.settings.show_product_count -%}
           <span class="saucha-collection__count" data-results-count aria-live="polite">
-            {{ collection.products_count }} {{ section.settings.products_label | escape }}
+            {{ collection.products_count }}
+            {{ collection.products_count | pluralize: section.settings.product_label_singular, section.settings.products_label | escape }}
           </span>
         {%- endif -%}
       </div>
+
+      <div class="saucha-collection__toolbar-right">
+      {%- if section.settings.enable_grid_density -%}
+        <div class="saucha-density" role="group" aria-label="{{ section.settings.density_label | escape }}">
+          <button class="saucha-density__button" type="button" data-density-value="large" aria-pressed="false" aria-label="Vista amplia">
+            <svg viewBox="0 0 16 16" aria-hidden="true" class="saucha-density__icon saucha-density__icon--desktop"><rect x="1.5" y="1.5" width="5.5" height="13" rx="0.5"/><rect x="9" y="1.5" width="5.5" height="13" rx="0.5"/></svg>
+            <svg viewBox="0 0 16 16" aria-hidden="true" class="saucha-density__icon saucha-density__icon--mobile"><rect x="3" y="1.5" width="10" height="13" rx="0.5"/></svg>
+          </button>
+          <button class="saucha-density__button" type="button" data-density-value="default" aria-pressed="true" aria-label="Vista compacta">
+            <svg viewBox="0 0 16 16" aria-hidden="true" class="saucha-density__icon saucha-density__icon--desktop"><rect x="1" y="1.5" width="3.4" height="13" rx="0.5"/><rect x="6.3" y="1.5" width="3.4" height="13" rx="0.5"/><rect x="11.6" y="1.5" width="3.4" height="13" rx="0.5"/></svg>
+            <svg viewBox="0 0 16 16" aria-hidden="true" class="saucha-density__icon saucha-density__icon--mobile"><rect x="1.5" y="1.5" width="5.5" height="13" rx="0.5"/><rect x="9" y="1.5" width="5.5" height="13" rx="0.5"/></svg>
+          </button>
+        </div>
+      {%- endif -%}
 
       {%- if section.settings.enable_sorting -%}
         <form class="saucha-collection__sort-form" action="{{ collection.url }}" method="get" data-sort-form>
@@ -110,7 +127,7 @@
             {%- endif -%}
           {%- endfor -%}
 
-          <label class="saucha-visually-hidden" for="SauchaSortBy-{{ section.id }}">
+          <label class="saucha-collection__sort-label" for="SauchaSortBy-{{ section.id }}">
             {{ section.settings.sort_label | escape }}
           </label>
 
@@ -135,7 +152,19 @@
           </button>
         </form>
       {%- endif -%}
+      </div>
     </div>
+
+    <script>
+      /* Aplica la densidad guardada antes del primer pintado */
+      (function () {
+        try {
+          var value = localStorage.getItem('saucha-grid-density');
+          var host = document.currentScript && document.currentScript.closest('saucha-collection');
+          if (host && (value === 'large' || value === 'default')) host.dataset.density = value;
+        } catch (error) {}
+      })();
+    </script>
 
     <div class="saucha-collection__layout{% unless has_filters %} saucha-collection__layout--no-filters{% endunless %}">
       {%- if has_filters -%}
@@ -284,7 +313,9 @@
   "tag": "section",
   "class": "saucha-main-collection-section",
   "enabled_on": {
-    "templates": ["collection"]
+    "templates": [
+      "collection"
+    ]
   },
   "settings": [
     {
@@ -301,9 +332,18 @@
       "label": "Ancho del contenido",
       "default": "theme",
       "options": [
-        { "value": "theme", "label": "Ancho global del tema" },
-        { "value": "wide", "label": "Más ancho" },
-        { "value": "full", "label": "Casi todo el ancho" }
+        {
+          "value": "theme",
+          "label": "Ancho global del tema"
+        },
+        {
+          "value": "wide",
+          "label": "Más ancho"
+        },
+        {
+          "value": "full",
+          "label": "Casi todo el ancho"
+        }
       ]
     },
     {
@@ -312,9 +352,18 @@
       "label": "Escala de texto",
       "default": "normal",
       "options": [
-        { "value": "compact", "label": "Compacta" },
-        { "value": "normal", "label": "Normal" },
-        { "value": "large", "label": "Grande" }
+        {
+          "value": "compact",
+          "label": "Compacta"
+        },
+        {
+          "value": "normal",
+          "label": "Normal"
+        },
+        {
+          "value": "large",
+          "label": "Grande"
+        }
       ]
     },
     {
@@ -323,8 +372,14 @@
       "label": "Tipografía del nombre del producto",
       "default": "heading",
       "options": [
-        { "value": "heading", "label": "Tipografía global de títulos" },
-        { "value": "body", "label": "Tipografía global de texto" }
+        {
+          "value": "heading",
+          "label": "Tipografía global de títulos"
+        },
+        {
+          "value": "body",
+          "label": "Tipografía global de texto"
+        }
       ],
       "info": "Usa exclusivamente las tipografías globales del tema; no carga fuentes nuevas."
     },
@@ -334,8 +389,14 @@
       "label": "Alineación de la información",
       "default": "center",
       "options": [
-        { "value": "left", "label": "Izquierda" },
-        { "value": "center", "label": "Centrada" }
+        {
+          "value": "left",
+          "label": "Izquierda"
+        },
+        {
+          "value": "center",
+          "label": "Centrada"
+        }
       ]
     },
     {
@@ -358,7 +419,6 @@
       "label": "Espacio inferior",
       "default": 80
     },
-
     {
       "type": "header",
       "content": "Cuadrícula"
@@ -396,8 +456,14 @@
       "label": "Columnas en móvil",
       "default": "2",
       "options": [
-        { "value": "1", "label": "1 columna" },
-        { "value": "2", "label": "2 columnas" }
+        {
+          "value": "1",
+          "label": "1 columna"
+        },
+        {
+          "value": "2",
+          "label": "2 columnas"
+        }
       ]
     },
     {
@@ -408,7 +474,7 @@
       "step": 2,
       "unit": "px",
       "label": "Separación horizontal",
-      "default": 12
+      "default": 16
     },
     {
       "type": "range",
@@ -418,9 +484,8 @@
       "step": 4,
       "unit": "px",
       "label": "Separación vertical",
-      "default": 56
+      "default": 48
     },
-
     {
       "type": "header",
       "content": "Imágenes y colores"
@@ -433,23 +498,36 @@
       "type": "select",
       "id": "image_ratio",
       "label": "Proporción de imagen",
-      "default": "portrait",
+      "default": "editorial",
       "options": [
-        { "value": "portrait", "label": "Vertical 2:3" },
-        { "value": "editorial", "label": "Vertical 3:4" },
-        { "value": "square", "label": "Cuadrada 1:1" },
-        { "value": "adapt", "label": "Adaptar a la imagen" }
+        {
+          "value": "portrait",
+          "label": "Vertical 2:3"
+        },
+        {
+          "value": "editorial",
+          "label": "Vertical 3:4"
+        },
+        {
+          "value": "square",
+          "label": "Cuadrada 1:1"
+        },
+        {
+          "value": "adapt",
+          "label": "Adaptar a la imagen"
+        }
       ]
     },
     {
       "type": "range",
       "id": "image_radius",
       "min": 0,
-      "max": 28,
+      "max": 8,
       "step": 2,
       "unit": "px",
       "label": "Redondeo de imagen",
-      "default": 14
+      "default": 2,
+      "info": "El sistema Saucha usa 2 px para fotografía."
     },
     {
       "type": "checkbox",
@@ -481,7 +559,6 @@
       "default": 5,
       "visible_if": "{{ section.settings.show_swatches }}"
     },
-
     {
       "type": "header",
       "content": "Información del producto"
@@ -494,7 +571,7 @@
       "type": "checkbox",
       "id": "show_vendor",
       "label": "Mostrar marca/proveedor",
-      "default": true
+      "default": false
     },
     {
       "type": "checkbox",
@@ -512,7 +589,7 @@
       "type": "text",
       "id": "sale_label",
       "label": "Texto de oferta",
-      "default": "OFERTA",
+      "default": "Rebaja",
       "visible_if": "{{ section.settings.show_sale_badge }}"
     },
     {
@@ -521,7 +598,6 @@
       "label": "Mostrar etiqueta de agotado",
       "default": true
     },
-
     {
       "type": "header",
       "content": "Filtros y ordenación"
@@ -544,6 +620,20 @@
     },
     {
       "type": "checkbox",
+      "id": "enable_grid_density",
+      "label": "Selector de vista (amplia / compacta)",
+      "default": true,
+      "info": "Escritorio: una columna menos. Móvil: una o dos columnas. Se recuerda en el navegador de cada visitante."
+    },
+    {
+      "type": "text",
+      "id": "density_label",
+      "label": "Etiqueta accesible del selector de vista",
+      "default": "Vista de la cuadrícula",
+      "visible_if": "{{ section.settings.enable_grid_density }}"
+    },
+    {
+      "type": "checkbox",
       "id": "show_product_count",
       "label": "Mostrar número de productos",
       "default": true
@@ -562,10 +652,22 @@
       "label": "Filtros abiertos al entrar",
       "default": "active",
       "options": [
-        { "value": "none", "label": "Ninguno" },
-        { "value": "active", "label": "Solo los que tengan selección" },
-        { "value": "swatches", "label": "Colores y seleccionados" },
-        { "value": "all", "label": "Todos" }
+        {
+          "value": "none",
+          "label": "Ninguno"
+        },
+        {
+          "value": "active",
+          "label": "Solo los que tengan selección"
+        },
+        {
+          "value": "swatches",
+          "label": "Colores y seleccionados"
+        },
+        {
+          "value": "all",
+          "label": "Todos"
+        }
       ],
       "visible_if": "{{ section.settings.enable_filtering }}"
     },
@@ -589,9 +691,8 @@
       "unit": "px",
       "label": "Margen para cabecera fija",
       "default": 0,
-      "info": "Si el header del tema es sticky y tapa la barra, indica aquí aproximadamente su altura."
+      "info": "Distancia extra desde arriba. Cuando el header reaparece al subir, la barra se coloca bajo él automáticamente."
     },
-
     {
       "type": "header",
       "content": "Movimiento"
@@ -600,7 +701,7 @@
       "type": "checkbox",
       "id": "enable_shine",
       "label": "Destello sutil",
-      "default": true
+      "default": false
     },
     {
       "type": "range",
@@ -610,31 +711,36 @@
       "step": 1,
       "unit": "%",
       "label": "Zoom al pasar el ratón",
-      "default": 104,
+      "default": 102,
       "visible_if": "{{ section.settings.enable_second_image }}"
     },
-
     {
       "type": "header",
       "content": "Textos"
     },
     {
       "type": "text",
+      "id": "product_label_singular",
+      "label": "Texto del contador en singular",
+      "default": "producto"
+    },
+    {
+      "type": "text",
       "id": "products_label",
-      "label": "Etiqueta del contador",
-      "default": "PRODUCTOS"
+      "label": "Texto del contador en plural",
+      "default": "productos"
     },
     {
       "type": "text",
       "id": "filter_button_label",
       "label": "Filtros",
-      "default": "FILTROS"
+      "default": "Filtros"
     },
     {
       "type": "text",
       "id": "sort_label",
       "label": "Ordenar por",
-      "default": "Ordenar por"
+      "default": "Ordenar"
     },
     {
       "type": "text",
@@ -658,7 +764,7 @@
       "type": "text",
       "id": "sold_out_label",
       "label": "Agotado",
-      "default": "AGOTADO"
+      "default": "Agotado"
     },
     {
       "type": "text",
