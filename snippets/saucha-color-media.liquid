@@ -1,0 +1,93 @@
+{% doc %}
+  Saucha · imágenes de un color.
+
+  Devuelve (como texto) los IDs de media que pertenecen a un color, separados por comas.
+  Es la única fuente de verdad para la galería de producto y las tarjetas.
+
+  Un archivo pertenece al color si:
+    1. su nombre contiene el color como palabra: negro-1.jpg, vestido-negro-2.webp, azul-marino_3.png
+    2. o su texto alternativo es o contiene el color: «Negro», «Vestido negro de espalda»
+    3. o es la imagen asignada a alguna variante de ese color (Productos › Variantes)
+  La imagen de la variante va siempre primero. Si un color no tiene ninguna imagen propia,
+  no devuelve nada y quien llama decide el respaldo (la galería completa).
+  Si el producto no tiene opción de color, no devuelve nada.
+
+  @param {product} product - Producto
+  @param {string} [color] - Valor de color. Por defecto, el de la variante seleccionada
+
+  @example
+  {% capture ids %}{% render 'saucha-color-media', product: product, color: 'Negro' %}{% endcapture %}
+{% enddoc %}
+
+{%- liquid
+  assign color_index = -1
+  for option in product.options_with_values
+    assign option_name = option.name | downcase | strip
+    assign option_has_swatch = false
+    for option_value in option.values
+      if option_value.swatch != blank
+        assign option_has_swatch = true
+        break
+      endif
+    endfor
+    if option_has_swatch or option_name contains 'color' or option_name contains 'colour' or option_name contains 'couleur'
+      assign color_index = option.position | minus: 1
+      break
+    endif
+  endfor
+
+  if color_index >= 0
+    assign color_value = color
+    if color_value == blank
+      assign color_value = product.selected_or_first_available_variant.options[color_index]
+    endif
+    assign color_key = color_value | handleize
+    assign color_token = '-' | append: color_key | append: '-'
+
+    # 1 · imágenes asignadas a variantes de este color
+    assign variant_ids = ''
+    for variant in product.variants
+      if variant.options[color_index] == color_value and variant.featured_media != blank
+        assign vid = variant.featured_media.id | append: ''
+        assign vid_token = ',' | append: vid | append: ','
+        assign variant_ids_padded = ',' | append: variant_ids | append: ','
+        unless variant_ids_padded contains vid_token
+          if variant_ids == ''
+            assign variant_ids = vid
+          else
+            assign variant_ids = variant_ids | append: ',' | append: vid
+          endif
+        endunless
+      endif
+    endfor
+
+    # 2 · imágenes cuyo nombre o texto alternativo nombra el color
+    assign ids = variant_ids
+    for media in product.media
+      if media.preview_image == blank
+        continue
+      endif
+      assign mid = media.id | append: ''
+      assign mid_token = ',' | append: mid | append: ','
+      assign ids_padded = ',' | append: ids | append: ','
+      if ids_padded contains mid_token
+        continue
+      endif
+
+      assign file_key = media.preview_image.src | split: '?' | first | split: '/' | last | split: '.' | first | handleize
+      assign file_token = '-' | append: file_key | append: '-'
+      assign alt_key = media.alt | default: '' | handleize
+      assign alt_token = '-' | append: alt_key | append: '-'
+
+      if file_token contains color_token or alt_token contains color_token
+        if ids == ''
+          assign ids = mid
+        else
+          assign ids = ids | append: ',' | append: mid
+        endif
+      endif
+    endfor
+
+    echo ids
+  endif
+-%}

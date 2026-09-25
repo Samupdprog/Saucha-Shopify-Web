@@ -49,12 +49,37 @@ export class MediaGallery extends Component {
         const newMediaGallery = html.querySelector('media-gallery');
         if (!newMediaGallery) return;
 
-        this.replaceWith(newMediaGallery);
+        // SAUCHA: si el grupo de imágenes no cambia (p. ej. solo cambia la talla) no se toca la galería
+        const signature = newMediaGallery.dataset.mediaSignature;
+        if (signature && signature === this.dataset.mediaSignature) return;
+
+        this.#swapGallery(newMediaGallery);
       })
       .catch((error) => {
         if (error?.name !== 'AbortError') console.warn('[media-gallery] Event promise rejected:', error);
       });
   };
+
+  /**
+   * SAUCHA: sustituye la galería con un fundido suave (salida corta, entrada con asentado).
+   * @param {HTMLElement} newMediaGallery - La galería nueva.
+   */
+  #swapGallery(newMediaGallery) {
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduceMotion || !this.isConnected) {
+      this.replaceWith(newMediaGallery);
+      return;
+    }
+
+    this.classList.add('is-leaving');
+    window.setTimeout(() => {
+      newMediaGallery.classList.add('is-entering');
+      this.replaceWith(newMediaGallery);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => newMediaGallery.classList.remove('is-entering'));
+      });
+    }, 200);
+  }
 
   /**
    * Handles the 'zoom-media:selected' event.

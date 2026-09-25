@@ -124,6 +124,37 @@
   else
     assign sorted_media = selected_product.media
   endif
+
+  # SAUCHA · galería por color: solo las imágenes del color seleccionado
+  # (nombre de archivo, texto alternativo o imagen de variante; ver snippets/saucha-color-media).
+  # Si el color no tiene imágenes propias se mantiene la galería de Horizon.
+  assign saucha_color_ids = ''
+  if block_settings.saucha_color_gallery != false
+    capture saucha_color_ids
+      render 'saucha-color-media', product: selected_product
+    endcapture
+    assign saucha_color_ids = saucha_color_ids | strip
+  endif
+
+  if saucha_color_ids != blank
+    assign saucha_id_list = saucha_color_ids | split: ','
+    assign sorted_media = '' | split: ','
+    for saucha_id in saucha_id_list
+      for media in selected_product.media
+        assign saucha_mid = media.id | append: ''
+        if saucha_mid == saucha_id
+          assign found_media = selected_product.media | where: 'id', media.id
+          assign sorted_media = sorted_media | concat: found_media
+          break
+        endif
+      endfor
+    endfor
+
+    if sorted_media.size <= 1
+      assign slideshow_class = 'product-media-gallery__slideshow--single-media slideshow--single-media'
+      assign render_slideshow_arrows = false
+    endif
+  endif
   assign has_image_drop = sorted_media | has: 'media_type', 'image'
 
   # Determine if we're in single column mode (carousel or grid with one column)
@@ -363,6 +394,7 @@
     "
     style="{% render 'spacing-style', settings: block_settings %} --thumbnail-width: {{ block_settings.thumbnail_width }}px; --media-radius: {{ block_settings.media_radius }}px;{% if block_settings.icons_style contains 'large' %} --slideshow-icon-padding: 0px;{% endif %}--image-gap: {{ block_settings.image_gap }}px;{% unless block_settings.aspect_ratio == 'adapt' %} --gallery-aspect-ratio: {{ block_settings.aspect_ratio }};{% endunless %}"
     data-presentation="{{ media_presentation }}"
+    data-media-signature="{{ sorted_media | map: 'id' | join: '-' }}"
     {{ block_shopify_attributes }}
   >
     {% capture slides %}
