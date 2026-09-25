@@ -1098,6 +1098,128 @@
     ]
   },
   {
+    "name": "Saucha · Sistema",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Base visual compartida por todas las secciones Saucha. Cambia aquí un color o el ritmo y se actualiza toda la tienda. Fondo, texto, bordes suaves y texto secundario se editan en «Colores» (paleta del tema)."
+      },
+      {
+        "type": "header",
+        "content": "Colores de marca"
+      },
+      {
+        "type": "color",
+        "id": "saucha_color_cacao",
+        "label": "Cacao",
+        "default": "#6e4c3d",
+        "info": "Wordmark y acentos tipográficos. Nunca como gran fondo."
+      },
+      {
+        "type": "color",
+        "id": "saucha_color_salmon",
+        "label": "Salmón suave",
+        "default": "#f2b39a",
+        "info": "Barra de anuncios, badges y promociones. Siempre con texto oscuro."
+      },
+      {
+        "type": "color",
+        "id": "saucha_color_blush",
+        "label": "Blush nude",
+        "default": "#f7ddd2",
+        "info": "Fondos suaves de bloques promocionales y placeholders."
+      },
+      {
+        "type": "color",
+        "id": "saucha_color_cream",
+        "label": "Crema cálida",
+        "default": "#faf7f3",
+        "info": "Superficie secundaria para alternar secciones."
+      },
+      {
+        "type": "color",
+        "id": "saucha_color_gold",
+        "label": "Oro suave",
+        "default": "#c4a36d",
+        "info": "Solo detalles: líneas finas, estrellas."
+      },
+      {
+        "type": "color",
+        "id": "saucha_color_sage",
+        "label": "Salvia",
+        "default": "#b7c0b3",
+        "info": "Disponibilidad y mensajes calmados."
+      },
+      {
+        "type": "color",
+        "id": "saucha_color_control",
+        "label": "Borde de controles",
+        "default": "#a08e84",
+        "info": "Borde de inputs y checkboxes (contraste 3:1)."
+      },
+      {
+        "type": "color",
+        "id": "saucha_color_overlay",
+        "label": "Velo sobre fotografía",
+        "default": "#211b18",
+        "info": "Color base del overlay cuando hay texto sobre imagen."
+      },
+      {
+        "type": "header",
+        "content": "Ritmo y espacio"
+      },
+      {
+        "type": "select",
+        "id": "saucha_rhythm",
+        "label": "Aire entre secciones",
+        "options": [
+          {
+            "value": "compact",
+            "label": "Compacto"
+          },
+          {
+            "value": "balanced",
+            "label": "Equilibrado"
+          },
+          {
+            "value": "generous",
+            "label": "Amplio"
+          }
+        ],
+        "default": "balanced",
+        "info": "Escala global de los espaciados Pequeño/Medio/Grande de cada sección. En móvil se reduce automáticamente."
+      },
+      {
+        "type": "range",
+        "id": "saucha_media_radius",
+        "label": "Radio de fotografías",
+        "min": 0,
+        "max": 8,
+        "step": 1,
+        "unit": "px",
+        "default": 2
+      },
+      {
+        "type": "header",
+        "content": "Movimiento"
+      },
+      {
+        "type": "checkbox",
+        "id": "saucha_motion",
+        "label": "Animaciones de entrada",
+        "default": true,
+        "info": "Titulares que suben desde una máscara, fotografía que se asienta y bloques que aparecen al hacer scroll. Se desactivan solas si el visitante pide menos movimiento."
+      },
+      {
+        "type": "checkbox",
+        "id": "saucha_image_settle",
+        "label": "Asentado lento de fotografía",
+        "default": true,
+        "info": "La imagen entra con un zoom suave de 1.06 a 1."
+      }
+    ]
+  },
+  {
     "name": "t:names.page_layout",
     "settings": [
       {

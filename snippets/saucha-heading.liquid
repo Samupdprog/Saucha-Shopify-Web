@@ -1,0 +1,48 @@
+{% doc %}
+  Cabecera estándar de sección Saucha: eyebrow · título · texto · link.
+  Todas las secciones de la tienda deben usarla para que los títulos sean idénticos.
+
+  @param {string} [eyebrow] - Antetítulo (se muestra en MAYÚSCULAS)
+  @param {string} [title] - Título (los saltos de línea crean líneas)
+  @param {string} [text] - Texto enriquecido
+  @param {string} [link_label] - Texto del link
+  @param {string} [link_url] - URL del link
+  @param {string} [alignment] - 'center' (defecto), 'left' o 'split' (título a la izquierda, link a la derecha)
+  @param {string} [size] - Tamaño del título: 'h1', 'h2' (defecto) o 'h3'
+  @param {string} [tag] - Etiqueta del título. Por defecto 'h2'
+
+  @example
+  {% render 'saucha-heading', eyebrow: section.settings.eyebrow, title: section.settings.title, alignment: 'split', link_label: 'Ver todo', link_url: collection.url %}
+{% enddoc %}
+
+{%- if eyebrow != blank or title != blank or text != blank or link_label != blank -%}
+  {%- liquid
+    assign heading_alignment = alignment | default: 'center'
+    assign has_link = false
+    if link_label != blank and link_url != blank
+      assign has_link = true
+    endif
+  -%}
+  <header class="s-heading s-heading--{{ heading_alignment }}">
+    <div class="s-heading__copy">
+      {%- if eyebrow != blank -%}
+        <p class="s-eyebrow" data-s-reveal="fade">{{ eyebrow | escape }}</p>
+      {%- endif -%}
+
+      {%- render 'saucha-title', text: title, size: size, tag: tag, index: 1 -%}
+
+      {%- if text != blank -%}
+        <div class="s-text" data-s-reveal="up" style="--s-i: 2;">{{ text }}</div>
+      {%- endif -%}
+    </div>
+
+    {%- if has_link -%}
+      <div class="s-heading__action" data-s-reveal="fade" style="--s-i: 3;">
+        <a class="s-link" href="{{ link_url }}">
+          {{- link_label | escape -}}
+          <svg class="s-link__arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+    {%- endif -%}
+  </header>
+{%- endif -%}

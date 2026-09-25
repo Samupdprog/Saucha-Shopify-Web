@@ -258,6 +258,8 @@
     }
 
     onPopState() {
+      /* Fuera de la página de colección (p. ej. Productos Saucha en la home) no hay resultados que recargar */
+      if (!this.results) return;
       this.renderUrl(window.location.href, { pushState: false, scrollToTop: false });
     }
 

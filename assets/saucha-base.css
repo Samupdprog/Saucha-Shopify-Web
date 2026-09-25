@@ -1,0 +1,626 @@
+/*
+  SAUCHA · BASE GLOBAL
+  ---------------------------------------------------------------
+  Capa compartida sobre Horizon. Cualquier sección nueva debe
+  construirse con estas piezas en lugar de inventar estilos:
+
+  Tokens ........ --s-*  (colores, tipo, espacio, radios, motion)
+  Estructura .... .s-section  .s-container  .s-pt-* / .s-pb-*
+  Superficies ... .s-scheme-surface | cream | blush | ink
+  Tipografía .... .s-eyebrow  .s-title(--display|h1|h2|h3)  .s-lead  .s-text  .s-meta
+  Cabecera ...... .s-heading (--center | --left | --split)
+  Acciones ...... .button / .button-secondary (Horizon)  .button--inverse  .s-link
+  Media ......... .s-media  .s-media__overlay  (imagen escritorio/móvil + punto focal)
+  Motion ........ [data-s-reveal]  .s-mask  (saucha-motion.js)
+
+  Los colores base llegan desde snippets/saucha-foundation.liquid.
+*/
+
+/* =========================================================
+   1 · TOKENS
+   ========================================================= */
+
+:root {
+  /* Tipografía · familias (gestionadas por Horizon) */
+  --s-font-serif: var(--font-heading--family);
+  --s-font-serif-weight: var(--font-heading--weight, 400);
+  --s-font-sans: var(--font-body--family);
+
+  /* Tipografía · escala editorial (móvil → escritorio) */
+  --s-type-display: clamp(3.25rem, 1.9rem + 5.6vw, 6.5rem);   /* 52 → 104 */
+  --s-type-h1: clamp(2.375rem, 1.85rem + 2.2vw, 3.5rem);      /* 38 → 56 */
+  --s-type-h2: clamp(1.875rem, 1.6rem + 1.15vw, 2.5rem);      /* 30 → 40 */
+  --s-type-h3: clamp(1.5rem, 1.4rem + 0.45vw, 1.75rem);       /* 24 → 28 */
+  --s-type-lead: clamp(1.125rem, 1.02rem + 0.45vw, 1.375rem); /* 18 → 22 */
+  --s-type-product: clamp(1.125rem, 1.08rem + 0.2vw, 1.25rem);/* 18 → 20 */
+
+  /* Tipografía · escala funcional */
+  --s-type-body: 0.9375rem;   /* 15 */
+  --s-type-body-sm: 0.8125rem;/* 13 */
+  --s-type-price: 0.875rem;   /* 14 */
+  --s-type-button: 0.75rem;   /* 12 */
+  --s-type-eyebrow: 0.6875rem;/* 11 */
+
+  --s-leading-display: 0.98;
+  --s-leading-title: 1.08;
+  --s-leading-body: 1.6;
+  --s-tracking-display: -0.01em;
+  --s-tracking-button: 0.08em;
+  --s-tracking-eyebrow: 0.14em;
+
+  /* Espacio */
+  --s-space-1: 4px;
+  --s-space-2: 8px;
+  --s-space-3: 12px;
+  --s-space-4: 16px;
+  --s-space-5: 20px;
+  --s-space-6: 24px;
+  --s-space-8: 32px;
+  --s-space-10: 40px;
+  --s-space-12: 48px;
+  --s-space-16: 64px;
+  --s-space-20: 80px;
+  --s-space-24: 96px;
+  --s-space-32: 128px;
+
+  /* Márgenes laterales: 16 móvil · 24 tablet · 40–64 escritorio */
+  --s-gutter: 16px;
+
+  /* Aire entre secciones (móvil → escritorio) × ritmo global */
+  --s-section-xs: calc(clamp(1.5rem, 1.2rem + 1.2vw, 2.25rem) * var(--s-rhythm, 1));
+  --s-section-sm: calc(clamp(2.5rem, 1.9rem + 2.4vw, 4rem) * var(--s-rhythm, 1));
+  --s-section-md: calc(clamp(4rem, 3rem + 4vw, 6rem) * var(--s-rhythm, 1));
+  --s-section-lg: calc(clamp(5rem, 3.6rem + 5.6vw, 8rem) * var(--s-rhythm, 1));
+
+  /* Titular → contenido */
+  --s-heading-gap: clamp(2rem, 1.6rem + 1.6vw, 3rem);
+
+  /* Radios */
+  --s-radius-xs: 2px;
+  --s-radius-sm: 4px;
+  --s-radius-md: 10px;
+  --s-radius-lg: 20px;
+  --s-radius-pill: 999px;
+
+  /* Sombras (casi inexistentes) */
+  --s-shadow-float: 0 10px 30px rgb(var(--s-color-ink-rgb) / 0.06);
+  --s-shadow-drawer: 0 0 40px rgb(var(--s-color-ink-rgb) / 0.08);
+
+  /* Motion */
+  --s-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --s-ease-inout: cubic-bezier(0.65, 0, 0.35, 1);
+  --s-ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --s-dur-micro: 200ms;
+  --s-dur-filter: 280ms;
+  --s-dur-drawer: 350ms;
+  --s-dur-exit: 260ms;
+  --s-dur-image: 450ms;
+  --s-dur-enter: 620ms;
+  --s-dur-headline: 880ms;
+  --s-dur-settle: 1400ms;
+  --s-stagger: 70ms;
+}
+
+@media screen and (min-width: 750px) {
+  :root {
+    --s-gutter: 24px;
+  }
+}
+
+@media screen and (min-width: 1200px) {
+  :root {
+    --s-gutter: clamp(40px, 3.4vw, 64px);
+  }
+}
+
+/* =========================================================
+   2 · AJUSTES GLOBALES SOBRE HORIZON
+   Botones, links y foco comparten un único lenguaje.
+   ========================================================= */
+
+/* Especificidad 0,1,0: gana a base.css (se carga después) y cede ante cualquier
+   ajuste de un componente concreto, p. ej. el botón del hero. */
+.button:where(:not(.button-unstyled)),
+.button-secondary,
+.button-custom {
+  min-height: 48px;
+  padding-block: 14px;
+  padding-inline: 32px;
+  font-family: var(--s-font-sans);
+  font-size: var(--s-type-button);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: var(--s-tracking-button);
+  transition:
+    color var(--s-dur-micro) var(--s-ease),
+    background-color var(--s-dur-micro) var(--s-ease),
+    box-shadow var(--s-dur-micro) var(--s-ease),
+    transform var(--s-dur-micro) var(--s-ease);
+}
+
+.button:where(:not(.button-unstyled)):active,
+.button-secondary:active {
+  transform: translateY(1px);
+}
+
+/* Inverse: primary sobre fotografía */
+.button--inverse.button,
+.s-on-media .button:not(.button-secondary, .button-unstyled) {
+  --button-color: var(--s-color-ink);
+  --button-background-color: var(--s-color-surface);
+  --button-border-color: var(--s-color-surface);
+}
+
+.button--inverse.button:hover,
+.s-on-media .button:not(.button-secondary, .button-unstyled):hover {
+  --button-color: var(--s-color-surface);
+  --button-background-color: transparent;
+  --button-border-color: var(--s-color-surface);
+  --button-border-width: 1px;
+}
+
+.s-on-media .button-secondary {
+  --button-color: var(--s-color-surface);
+  --button-background-color: transparent;
+  --button-border-color: rgb(var(--s-color-surface-rgb) / 0.8);
+}
+
+.s-on-media .button-secondary:hover {
+  --button-color: var(--s-color-ink);
+  --button-background-color: var(--s-color-surface);
+  --button-border-color: var(--s-color-surface);
+}
+
+:where(a, button, input, select, textarea, summary):focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--s-color-blush);
+  color: var(--s-color-ink);
+}
+
+/* =========================================================
+   3 · ESTRUCTURA
+   ========================================================= */
+
+.s-section {
+  --s-pt: var(--s-section-md);
+  --s-pb: var(--s-section-md);
+
+  position: relative;
+  padding-block: var(--s-pt) var(--s-pb);
+  background: var(--s-bg, transparent);
+  color: var(--s-fg, var(--s-color-ink));
+}
+
+.s-pt-none { --s-pt: 0px; }
+.s-pt-xs { --s-pt: var(--s-section-xs); }
+.s-pt-sm { --s-pt: var(--s-section-sm); }
+.s-pt-md { --s-pt: var(--s-section-md); }
+.s-pt-lg { --s-pt: var(--s-section-lg); }
+.s-pb-none { --s-pb: 0px; }
+.s-pb-xs { --s-pb: var(--s-section-xs); }
+.s-pb-sm { --s-pb: var(--s-section-sm); }
+.s-pb-md { --s-pb: var(--s-section-md); }
+.s-pb-lg { --s-pb: var(--s-section-lg); }
+
+.s-container {
+  width: 100%;
+  max-width: calc(var(--s-page-max, 90rem) + var(--s-gutter) * 2);
+  margin-inline: auto;
+  padding-inline: var(--s-gutter);
+}
+
+.s-container--full {
+  max-width: none;
+}
+
+/* =========================================================
+   4 · SUPERFICIES
+   Cada una redefine tinta, secundario, línea y botones para
+   que los bloques nativos de Horizon hereden el contraste.
+   ========================================================= */
+
+.s-scheme-surface,
+.s-scheme-cream,
+.s-scheme-blush {
+  --s-fg: var(--s-color-ink);
+  --s-muted: var(--s-color-muted);
+  --s-line: var(--s-color-line);
+  --s-accent: var(--s-color-cacao);
+}
+
+.s-scheme-surface { --s-bg: var(--s-color-surface); }
+.s-scheme-cream { --s-bg: var(--s-color-cream); }
+.s-scheme-blush { --s-bg: var(--s-color-blush); }
+
+.s-scheme-ink {
+  --s-bg: var(--s-color-ink);
+  --s-fg: var(--s-color-surface);
+  --s-muted: rgb(var(--s-color-surface-rgb) / 0.72);
+  --s-line: rgb(var(--s-color-surface-rgb) / 0.18);
+  --s-accent: var(--s-color-salmon);
+  --color-foreground: var(--s-color-surface);
+  --color-foreground-rgb: var(--s-color-surface-rgb);
+  --color-primary-button-background: var(--s-color-surface);
+  --color-primary-button-text: var(--s-color-ink);
+  --color-primary-button-border: var(--s-color-surface);
+  --color-primary-button-hover-background: transparent;
+  --color-primary-button-hover-text: var(--s-color-surface);
+  --color-primary-button-hover-border: var(--s-color-surface);
+  --color-secondary-button-text: var(--s-color-surface);
+  --color-secondary-button-border: var(--s-color-surface);
+  --color-secondary-button-hover-background: var(--s-color-surface);
+  --color-secondary-button-hover-text: var(--s-color-ink);
+}
+
+/* =========================================================
+   5 · TIPOGRAFÍA
+   ========================================================= */
+
+.s-eyebrow {
+  display: block;
+  margin: 0;
+  font-family: var(--s-font-sans);
+  font-size: var(--s-type-eyebrow);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: var(--s-tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--s-eyebrow-color, var(--s-accent, var(--s-color-cacao)));
+}
+
+.s-title {
+  margin: 0;
+  font-family: var(--s-font-serif);
+  font-weight: var(--s-font-serif-weight);
+  font-style: normal;
+  font-size: var(--s-type-h2);
+  line-height: var(--s-leading-title);
+  letter-spacing: 0;
+  color: inherit;
+  text-wrap: balance;
+}
+
+.s-title--display {
+  font-size: var(--s-type-display);
+  line-height: var(--s-leading-display);
+  letter-spacing: var(--s-tracking-display);
+}
+
+.s-title--h1 { font-size: var(--s-type-h1); line-height: 1.05; }
+.s-title--h2 { font-size: var(--s-type-h2); }
+.s-title--h3 { font-size: var(--s-type-h3); line-height: 1.2; }
+
+.s-lead {
+  margin: 0;
+  font-family: var(--s-font-serif);
+  font-size: var(--s-type-lead);
+  line-height: 1.45;
+  color: inherit;
+  text-wrap: pretty;
+}
+
+.s-text {
+  max-width: 36em;
+  font-family: var(--s-font-sans);
+  font-size: var(--s-type-body);
+  line-height: var(--s-leading-body);
+  color: var(--s-muted, var(--s-color-muted));
+  text-wrap: pretty;
+}
+
+.s-text > * { margin: 0; }
+.s-text > * + * { margin-top: 0.75em; }
+
+.s-text a {
+  color: var(--s-fg, var(--s-color-ink));
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+
+.s-meta {
+  font-family: var(--s-font-sans);
+  font-size: var(--s-type-body-sm);
+  line-height: 1.5;
+  color: var(--s-muted, var(--s-color-muted));
+}
+
+/* =========================================================
+   6 · CABECERA DE SECCIÓN
+   eyebrow · título · texto · link
+   ========================================================= */
+
+.s-heading {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-space-4);
+  margin-bottom: var(--s-heading-gap);
+}
+
+.s-heading__copy {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-space-3);
+  min-width: 0;
+}
+
+.s-heading .s-text { margin-top: var(--s-space-1); }
+
+.s-heading--center {
+  align-items: center;
+  text-align: center;
+}
+
+.s-heading--center .s-heading__copy { align-items: center; }
+.s-heading--center .s-text { margin-inline: auto; }
+
+.s-heading--left {
+  align-items: flex-start;
+  text-align: left;
+}
+
+@media screen and (min-width: 750px) {
+  .s-heading--split {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--s-space-8);
+    text-align: left;
+  }
+
+  .s-heading--split .s-heading__action { flex: 0 0 auto; padding-bottom: 0.4em; }
+}
+
+/* =========================================================
+   7 · TEXT LINK
+   Subrayado que se recoge y se vuelve a dibujar.
+   ========================================================= */
+
+.s-link {
+  --s-link-line: 1px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-space-2);
+  padding-block: 4px;
+  font-family: var(--s-font-sans);
+  font-size: var(--s-type-button);
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: var(--s-tracking-button);
+  color: inherit;
+  text-decoration: none;
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-position: 100% 100%;
+  background-size: 100% var(--s-link-line);
+  transition: background-size var(--s-dur-image) var(--s-ease-inout);
+}
+
+.s-link:hover {
+  background-position: 0 100%;
+  animation: s-link-redraw calc(var(--s-dur-image) * 1.6) var(--s-ease-inout) both;
+}
+
+@keyframes s-link-redraw {
+  0% { background-size: 100% var(--s-link-line); background-position: 100% 100%; }
+  45% { background-size: 0% var(--s-link-line); background-position: 100% 100%; }
+  46% { background-size: 0% var(--s-link-line); background-position: 0 100%; }
+  100% { background-size: 100% var(--s-link-line); background-position: 0 100%; }
+}
+
+.s-link__arrow {
+  width: 14px;
+  height: 14px;
+  transition: transform var(--s-dur-micro) var(--s-ease);
+}
+
+.s-link:hover .s-link__arrow { transform: translateX(3px); }
+
+/* =========================================================
+   8 · MEDIA
+   Imagen de escritorio + imagen de móvil, cada una con su
+   punto focal. Alto por ratio o por altura explícita.
+   Variables: --s-fx --s-fy (escritorio) · --s-fx-m --s-fy-m (móvil)
+              --s-media-h / --s-media-h-m · --s-media-ratio / --s-media-ratio-m
+              --s-overlay (0–1)
+   ========================================================= */
+
+.s-media {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  isolation: isolate;
+  width: 100%;
+  height: var(--s-media-h-m, auto);
+  aspect-ratio: var(--s-media-ratio-m, auto);
+  border-radius: var(--s-media-radius, var(--s-radius-media));
+  background-color: var(--s-color-blush);
+}
+
+.s-media picture,
+.s-media__img,
+.s-media > svg {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.s-media__img {
+  object-fit: cover;
+  object-position: var(--s-fx-m, var(--s-fx, 50%)) var(--s-fy-m, var(--s-fy, 50%));
+}
+
+.s-media > svg {
+  fill: rgb(var(--s-color-ink-rgb) / 0.12);
+  background: var(--s-color-cream);
+}
+
+@media screen and (min-width: 750px) {
+  .s-media {
+    height: var(--s-media-h, auto);
+    aspect-ratio: var(--s-media-ratio, auto);
+  }
+
+  .s-media__img {
+    object-position: var(--s-fx, 50%) var(--s-fy, 50%);
+  }
+}
+
+.s-media__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: rgb(var(--s-color-overlay-rgb) / var(--s-overlay, 0));
+}
+
+/* Degradado: más denso donde está el texto, limpio en el resto */
+.s-media__overlay--gradient {
+  background: linear-gradient(
+    var(--s-overlay-direction, to top),
+    rgb(var(--s-color-overlay-rgb) / min(calc(var(--s-overlay, 0) * 1.8), 0.85)) 0%,
+    rgb(var(--s-color-overlay-rgb) / calc(var(--s-overlay, 0) * 0.6)) 45%,
+    rgb(var(--s-color-overlay-rgb) / 0) 80%
+  );
+}
+
+/* Hover de imagen en piezas enlazadas */
+.s-media--hover .s-media__img {
+  transition: transform calc(var(--s-dur-image) * 2) var(--s-ease);
+}
+
+@media (hover: hover) {
+  a:hover > .s-media--hover .s-media__img,
+  .s-media--hover:hover .s-media__img {
+    transform: scale(1.03);
+  }
+}
+
+/* Texto claro sobre fotografía */
+.s-on-media {
+  --s-fg: var(--s-color-surface);
+  --s-muted: rgb(var(--s-color-surface-rgb) / 0.86);
+  --s-accent: var(--s-color-surface);
+
+  color: var(--s-color-surface);
+}
+
+/* =========================================================
+   9 · MOTION
+   Sin JS o con prefers-reduced-motion todo es visible.
+   ========================================================= */
+
+.s-mask {
+  display: block;
+  overflow: hidden;
+  /* respiro para descendentes de la serif */
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+}
+
+.s-mask__line {
+  display: block;
+}
+
+html.s-motion [data-s-reveal] {
+  --s-delay: calc(min(var(--s-i, 0), 6) * var(--s-stagger));
+}
+
+/* fade-up */
+html.s-motion [data-s-reveal='up'] {
+  opacity: 0;
+  transform: translate3d(0, 18px, 0);
+  transition:
+    opacity var(--s-dur-enter) var(--s-ease) var(--s-delay),
+    transform var(--s-dur-enter) var(--s-ease) var(--s-delay);
+}
+
+html.s-motion [data-s-reveal='up'].is-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* fade */
+html.s-motion [data-s-reveal='fade'] {
+  opacity: 0;
+  transition: opacity var(--s-dur-enter) var(--s-ease) var(--s-delay);
+}
+
+html.s-motion [data-s-reveal='fade'].is-in { opacity: 1; }
+
+/* titular: cada línea sube desde su máscara */
+html.s-motion [data-s-reveal='headline'] .s-mask__line {
+  transform: translate3d(0, 105%, 0);
+  transition: transform var(--s-dur-headline) var(--s-ease)
+    calc(var(--s-delay) + var(--s-line, 0) * 110ms);
+}
+
+html.s-motion [data-s-reveal='headline'].is-in .s-mask__line {
+  transform: none;
+}
+
+/* fotografía: se muestra y se asienta de 1.06 a 1 (nunca oculta la imagen) */
+html.s-motion.s-settle [data-s-reveal='media'] .s-media__img {
+  transform: scale(1.06);
+  transition: transform var(--s-dur-settle) var(--s-ease) var(--s-delay);
+}
+
+html.s-motion.s-settle [data-s-reveal='media'].is-in .s-media__img {
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+  }
+
+  .s-link:hover { animation: none; }
+
+  .s-media--hover .s-media__img { transition: none; }
+}
+
+/* =========================================================
+   10 · CARRIL HORIZONTAL (móvil)
+   Scroll nativo con snap y un asomo de la siguiente pieza.
+   ========================================================= */
+
+.s-rail {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: var(--s-rail-item, 72%);
+  gap: var(--s-rail-gap, var(--s-space-3));
+  margin-inline: calc(var(--s-gutter) * -1);
+  padding-inline: var(--s-gutter);
+  scroll-padding-inline: var(--s-gutter);
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.s-rail::-webkit-scrollbar { display: none; }
+
+.s-rail > * { scroll-snap-align: start; min-width: 0; }
+
+/* Utilidad accesible */
+.s-visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: -1px !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  clip: rect(0 0 0 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}

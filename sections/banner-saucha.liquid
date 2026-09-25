@@ -1,0 +1,519 @@
+{% liquid
+  assign position = section.settings.content_position | split: '-'
+  assign position_mobile = section.settings.content_position_mobile | split: '-'
+
+  assign has_button = false
+  if section.settings.button_label != blank and section.settings.button_link != blank
+    assign has_button = true
+  endif
+
+  assign has_link = false
+  if section.settings.link_label != blank and section.settings.link_url != blank
+    assign has_link = true
+  endif
+
+  assign on_media_class = ''
+  if section.settings.text_tone == 'light'
+    assign on_media_class = 's-on-media'
+  endif
+
+  assign loading = 'lazy'
+  assign priority = 'auto'
+  if section.index == 1
+    assign loading = 'eager'
+    assign priority = 'high'
+  endif
+%}
+
+<section
+  id="BannerSaucha-{{ section.id }}"
+  class="
+    s-section s-scheme-{{ section.settings.scheme }}
+    s-pt-{{ section.settings.spacing_top }} s-pb-{{ section.settings.spacing_bottom }}
+    saucha-banner saucha-banner--{{ section.settings.width }}
+  "
+>
+  <div class="{% if section.settings.width == 'page' %}s-container{% endif %}">
+    <div
+      class="saucha-banner__frame {{ on_media_class }} saucha-banner__frame--tone-{{ section.settings.text_tone }} saucha-banner__frame--x-{{ position[1] }} saucha-banner__frame--xm-{{ position_mobile[1] }}"
+      style="
+        --sb-h: {{ section.settings.height }};
+        --sb-h-m: {{ section.settings.height_mobile }};
+        --sb-x: {{ position[1] }};
+        --sb-y: {{ position[0] }};
+        --sb-x-m: {{ position_mobile[1] }};
+        --sb-y-m: {{ position_mobile[0] }};
+      "
+    >
+      <div
+        class="s-media saucha-banner__media"
+        data-s-reveal="media"
+        style="
+          --s-fx: {{ section.settings.focus_x }}%;
+          --s-fy: {{ section.settings.focus_y }}%;
+          --s-fx-m: {{ section.settings.focus_x_mobile }}%;
+          --s-fy-m: {{ section.settings.focus_y_mobile }}%;
+          --s-overlay: {{ section.settings.overlay_opacity | divided_by: 100.0 }};
+          --s-overlay-direction: {% if position[0] == 'start' %}to bottom{% else %}to top{% endif %};
+        "
+      >
+        {% render 'saucha-media',
+          image: section.settings.image_desktop,
+          image_mobile: section.settings.image_mobile,
+          loading: loading,
+          fetchpriority: priority,
+          alt: section.settings.title,
+          placeholder: 'hero-apparel-2'
+        %}
+
+        {%- if section.settings.overlay_opacity > 0 -%}
+          <span
+            class="s-media__overlay{% if section.settings.overlay_style == 'gradient' %} s-media__overlay--gradient{% endif %}"
+            aria-hidden="true"
+          ></span>
+        {%- endif -%}
+      </div>
+
+      {%- if section.settings.image_link != blank -%}
+        <a
+          class="saucha-banner__cover-link"
+          href="{{ section.settings.image_link }}"
+          aria-label="{{ section.settings.title | default: section.settings.button_label | strip_newlines | escape }}"
+        ></a>
+      {%- endif -%}
+
+      <div class="saucha-banner__content">
+        <div class="saucha-banner__copy">
+          {%- if section.settings.eyebrow != blank -%}
+            <p class="s-eyebrow" data-s-reveal="fade">{{ section.settings.eyebrow | escape }}</p>
+          {%- endif -%}
+
+          {% render 'saucha-title', text: section.settings.title, size: section.settings.title_size, index: 1 %}
+
+          {%- if section.settings.text != blank -%}
+            <div class="s-text saucha-banner__text" data-s-reveal="up" style="--s-i: 2;">
+              {{ section.settings.text }}
+            </div>
+          {%- endif -%}
+
+          {%- if has_button or has_link -%}
+            <div class="saucha-banner__actions" data-s-reveal="up" style="--s-i: 3;">
+              {%- if has_button -%}
+                <a class="{{ section.settings.button_style }}" href="{{ section.settings.button_link }}">
+                  {{- section.settings.button_label | escape -}}
+                </a>
+              {%- endif -%}
+              {%- if has_link -%}
+                <a class="s-link" href="{{ section.settings.link_url }}">{{ section.settings.link_label | escape }}</a>
+              {%- endif -%}
+            </div>
+          {%- endif -%}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% stylesheet %}
+  /* Banner Saucha: fotografía con texto superpuesto. Posición y alto independientes por dispositivo. */
+
+  .saucha-banner__frame {
+    position: relative;
+    display: grid;
+    min-height: var(--sb-h-m);
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  .saucha-banner--page .saucha-banner__frame {
+    border-radius: var(--s-radius-media);
+  }
+
+  .saucha-banner__frame > .saucha-banner__media {
+    --s-media-h: 100%;
+    --s-media-h-m: 100%;
+    --s-media-radius: 0;
+
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+
+  .saucha-banner__cover-link {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+  }
+
+  .saucha-banner__content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: var(--sb-y-m);
+    align-items: var(--sb-x-m);
+    padding: var(--s-space-10) var(--s-gutter);
+    pointer-events: none;
+  }
+
+  .saucha-banner--page .saucha-banner__content {
+    padding-inline: var(--s-space-6);
+  }
+
+  .saucha-banner__copy {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-space-4);
+    align-items: var(--sb-x-m);
+    max-width: 36rem;
+    text-align: var(--sb-text-m, left);
+  }
+
+  .saucha-banner__frame--xm-center { --sb-text-m: center; }
+  .saucha-banner__frame--xm-end { --sb-text-m: right; }
+  .saucha-banner__frame--x-center { --sb-text: center; }
+  .saucha-banner__frame--x-end { --sb-text: right; }
+
+  .saucha-banner__copy a,
+  .saucha-banner__copy button {
+    pointer-events: auto;
+  }
+
+  .saucha-banner__frame--tone-dark {
+    --s-fg: var(--s-color-ink);
+    --s-muted: var(--s-color-ink);
+    --s-accent: var(--s-color-cacao);
+    color: var(--s-color-ink);
+  }
+
+  .saucha-banner__text {
+    margin-top: var(--s-space-1);
+  }
+
+  .saucha-banner__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: var(--sb-x-m);
+    gap: var(--s-space-4) var(--s-space-6);
+    margin-top: var(--s-space-4);
+  }
+
+  @media screen and (min-width: 750px) {
+    .saucha-banner__frame {
+      min-height: var(--sb-h);
+    }
+
+    .saucha-banner__content {
+      justify-content: var(--sb-y);
+      align-items: var(--sb-x);
+      padding: var(--s-space-16) var(--s-gutter);
+    }
+
+    .saucha-banner--page .saucha-banner__content {
+      padding: var(--s-space-12);
+    }
+
+    .saucha-banner__copy {
+      align-items: var(--sb-x);
+      text-align: var(--sb-text, left);
+    }
+
+    .saucha-banner__actions {
+      justify-content: var(--sb-x);
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Banner Saucha",
+  "tag": "div",
+  "class": "saucha-banner-section",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Contenido"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Antetítulo",
+      "default": "Nueva temporada"
+    },
+    {
+      "type": "textarea",
+      "id": "title",
+      "label": "Título",
+      "default": "Piezas hechas\npara acompañarte",
+      "info": "Cada salto de línea crea una línea animada."
+    },
+    {
+      "type": "select",
+      "id": "title_size",
+      "label": "Tamaño del título",
+      "options": [
+        { "value": "display", "label": "Muy grande" },
+        { "value": "h1", "label": "Grande" },
+        { "value": "h2", "label": "Medio" }
+      ],
+      "default": "h1"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Texto"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Texto del botón",
+      "default": "Descubrir la colección"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Enlace del botón"
+    },
+    {
+      "type": "select",
+      "id": "button_style",
+      "label": "Estilo del botón",
+      "options": [
+        { "value": "button", "label": "Principal" },
+        { "value": "button-secondary", "label": "Secundario" }
+      ],
+      "default": "button",
+      "info": "Sobre fotografía con texto claro, el principal se muestra en marfil."
+    },
+    {
+      "type": "text",
+      "id": "link_label",
+      "label": "Enlace secundario"
+    },
+    {
+      "type": "url",
+      "id": "link_url",
+      "label": "URL del enlace secundario"
+    },
+    {
+      "type": "url",
+      "id": "image_link",
+      "label": "Enlace de toda la imagen",
+      "info": "Opcional. Hace clicable todo el banner."
+    },
+    {
+      "type": "header",
+      "content": "Imagen"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_desktop",
+      "label": "Imagen · escritorio",
+      "info": "Recomendado 2400 × 1350 px o más."
+    },
+    {
+      "type": "image_picker",
+      "id": "image_mobile",
+      "label": "Imagen · móvil",
+      "info": "Opcional. Recomendado vertical, 1080 × 1440 px."
+    },
+    {
+      "type": "range",
+      "id": "focus_x",
+      "label": "Encuadre horizontal · escritorio",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "focus_y",
+      "label": "Encuadre vertical · escritorio",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "focus_x_mobile",
+      "label": "Encuadre horizontal · móvil",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "focus_y_mobile",
+      "label": "Encuadre vertical · móvil",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "header",
+      "content": "Legibilidad"
+    },
+    {
+      "type": "select",
+      "id": "text_tone",
+      "label": "Color del texto",
+      "options": [
+        { "value": "light", "label": "Claro (sobre imagen oscura)" },
+        { "value": "dark", "label": "Oscuro (sobre imagen clara)" }
+      ],
+      "default": "light"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "Opacidad del velo oscuro",
+      "min": 0,
+      "max": 70,
+      "step": 2,
+      "unit": "%",
+      "default": 24,
+      "info": "Úsalo solo lo necesario para leer el texto. Color en Saucha · Sistema."
+    },
+    {
+      "type": "select",
+      "id": "overlay_style",
+      "label": "Tipo de velo",
+      "options": [
+        { "value": "gradient", "label": "Degradado desde el texto" },
+        { "value": "solid", "label": "Uniforme" }
+      ],
+      "default": "gradient"
+    },
+    {
+      "type": "header",
+      "content": "Composición · escritorio"
+    },
+    {
+      "type": "select",
+      "id": "height",
+      "label": "Altura",
+      "options": [
+        { "value": "60svh", "label": "Media" },
+        { "value": "75svh", "label": "Alta" },
+        { "value": "90svh", "label": "Muy alta" },
+        { "value": "100svh", "label": "Pantalla completa" }
+      ],
+      "default": "75svh"
+    },
+    {
+      "type": "select",
+      "id": "content_position",
+      "label": "Posición del texto",
+      "options": [
+        { "value": "start-start", "label": "Arriba izquierda" },
+        { "value": "start-center", "label": "Arriba centro" },
+        { "value": "center-start", "label": "Centro izquierda" },
+        { "value": "center-center", "label": "Centro" },
+        { "value": "center-end", "label": "Centro derecha" },
+        { "value": "end-start", "label": "Abajo izquierda" },
+        { "value": "end-center", "label": "Abajo centro" },
+        { "value": "end-end", "label": "Abajo derecha" }
+      ],
+      "default": "end-start"
+    },
+    {
+      "type": "select",
+      "id": "width",
+      "label": "Ancho",
+      "options": [
+        { "value": "full", "label": "A sangre" },
+        { "value": "page", "label": "Ancho de página" }
+      ],
+      "default": "full"
+    },
+    {
+      "type": "header",
+      "content": "Composición · móvil"
+    },
+    {
+      "type": "select",
+      "id": "height_mobile",
+      "label": "Altura",
+      "options": [
+        { "value": "70svh", "label": "Media" },
+        { "value": "85svh", "label": "Alta" },
+        { "value": "100svh", "label": "Pantalla completa" }
+      ],
+      "default": "85svh"
+    },
+    {
+      "type": "select",
+      "id": "content_position_mobile",
+      "label": "Posición del texto",
+      "options": [
+        { "value": "start-start", "label": "Arriba izquierda" },
+        { "value": "start-center", "label": "Arriba centro" },
+        { "value": "center-center", "label": "Centro" },
+        { "value": "end-start", "label": "Abajo izquierda" },
+        { "value": "end-center", "label": "Abajo centro" }
+      ],
+      "default": "end-start"
+    },
+    {
+      "type": "header",
+      "content": "Estilo"
+    },
+    {
+      "type": "select",
+      "id": "scheme",
+      "label": "Fondo alrededor",
+      "options": [
+        { "value": "surface", "label": "Marfil (principal)" },
+        { "value": "cream", "label": "Crema (alterno)" },
+        { "value": "blush", "label": "Blush nude" }
+      ],
+      "default": "surface",
+      "info": "Visible cuando el ancho es de página o hay espacio superior/inferior."
+    },
+    {
+      "type": "select",
+      "id": "spacing_top",
+      "label": "Espacio superior",
+      "options": [
+        { "value": "none", "label": "Ninguno" },
+        { "value": "xs", "label": "Mínimo" },
+        { "value": "sm", "label": "Pequeño" },
+        { "value": "md", "label": "Medio" },
+        { "value": "lg", "label": "Grande" }
+      ],
+      "default": "none"
+    },
+    {
+      "type": "select",
+      "id": "spacing_bottom",
+      "label": "Espacio inferior",
+      "options": [
+        { "value": "none", "label": "Ninguno" },
+        { "value": "xs", "label": "Mínimo" },
+        { "value": "sm", "label": "Pequeño" },
+        { "value": "md", "label": "Medio" },
+        { "value": "lg", "label": "Grande" }
+      ],
+      "default": "none"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Banner Saucha",
+      "category": "t:categories.banners"
+    }
+  ]
+}
+{% endschema %}

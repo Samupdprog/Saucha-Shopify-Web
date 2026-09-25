@@ -1,0 +1,30 @@
+{% doc %}
+  Titular editorial de Saucha. Cada salto de línea del texto es una línea que sube desde
+  su propia máscara (firma de motion de la marca).
+
+  @param {string} text - Texto del titular (los saltos de línea crean líneas)
+  @param {string} [tag] - Etiqueta HTML. Por defecto 'h2'
+  @param {string} [size] - 'display', 'h1', 'h2' (defecto) o 'h3'
+  @param {string} [class] - Clases extra
+  @param {number} [index] - Posición en la coreografía de entrada (--s-i)
+
+  @example
+  {% render 'saucha-title', text: section.settings.title, size: 'h2' %}
+{% enddoc %}
+
+{%- if text != blank -%}
+  {%- liquid
+    assign title_tag = tag | default: 'h2'
+    assign title_size = size | default: 'h2'
+    assign title_lines = text | strip | newline_to_br | split: '<br />'
+  -%}
+  <{{ title_tag }}
+    class="s-title s-title--{{ title_size }} {{ class }}"
+    data-s-reveal="headline"
+    style="--s-i: {{ index | default: 0 }};"
+  >
+    {%- for line in title_lines -%}
+      <span class="s-mask"><span class="s-mask__line" style="--s-line: {{ forloop.index0 }};">{{ line | strip | escape }}</span></span>
+    {%- endfor -%}
+  </{{ title_tag }}>
+{%- endif -%}

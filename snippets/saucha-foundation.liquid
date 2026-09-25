@@ -1,0 +1,80 @@
+{% doc %}
+  Saucha · base global del sistema de diseño.
+
+  Emite los tokens de Saucha como custom properties (colores desde la paleta del tema y
+  el grupo «Saucha · Sistema», tipografía, espacio, radios y motion) y carga la hoja de
+  estilos y el script compartidos. Todas las secciones Saucha consumen estas variables;
+  ninguna debe definir su propio color, tamaño de título o easing.
+
+  Se renderiza en layout/theme.liquid después de 'color-palette'.
+{% enddoc %}
+
+{%- liquid
+  case settings.saucha_rhythm
+    when 'compact'
+      assign rhythm = 0.8
+    when 'generous'
+      assign rhythm = 1.2
+    else
+      assign rhythm = 1
+  endcase
+
+  case settings.page_width
+    when 'wide'
+      assign page_max = 'var(--wide-page-width)'
+    when 'normal'
+      assign page_max = 'var(--normal-page-width)'
+    else
+      assign page_max = 'var(--narrow-page-width)'
+  endcase
+
+  assign overlay_color = settings.saucha_color_overlay | default: '#211b18'
+-%}
+
+{% style %}
+  :root {
+    /* Color · UI (paleta del tema) */
+    --s-color-surface: {{ settings.color_palette.background }};
+    --s-color-ink: {{ settings.color_palette.foreground }};
+    --s-color-ink-rgb: {{ settings.color_palette.foreground.red }} {{ settings.color_palette.foreground.green }} {{ settings.color_palette.foreground.blue }};
+    --s-color-surface-rgb: {{ settings.color_palette.background.red }} {{ settings.color_palette.background.green }} {{ settings.color_palette.background.blue }};
+    --s-color-muted: {{ settings.color_palette.color1 | default: '#756a64' }};
+    --s-color-line: {{ settings.color_palette.color2 | default: '#e9e1da' }};
+
+    /* Color · marca */
+    --s-color-cacao: {{ settings.saucha_color_cacao | default: '#6e4c3d' }};
+    --s-color-salmon: {{ settings.saucha_color_salmon | default: '#f2b39a' }};
+    --s-color-blush: {{ settings.saucha_color_blush | default: '#f7ddd2' }};
+    --s-color-cream: {{ settings.saucha_color_cream | default: '#faf7f3' }};
+    --s-color-gold: {{ settings.saucha_color_gold | default: '#c4a36d' }};
+    --s-color-sage: {{ settings.saucha_color_sage | default: '#b7c0b3' }};
+    --s-color-control: {{ settings.saucha_color_control | default: '#a08e84' }};
+    --s-color-overlay-rgb: {{ overlay_color.red }} {{ overlay_color.green }} {{ overlay_color.blue }};
+
+    /* Layout */
+    --s-page-max: {{ page_max }};
+    --s-rhythm: {{ rhythm }};
+    --s-radius-media: {{ settings.saucha_media_radius | default: 2 }}px;
+  }
+{% endstyle %}
+
+{{ 'saucha-base.css' | asset_url | stylesheet_tag }}
+
+{%- if settings.saucha_motion -%}
+  <script>
+    /* Oculta los elementos animables antes del primer pintado solo si hay JS y el visitante
+       no pide menos movimiento. Si saucha-motion.js no llega a cargar, todo se muestra. */
+    (function () {
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      var root = document.documentElement;
+      root.classList.add('s-motion');
+      {%- if settings.saucha_image_settle -%}
+        root.classList.add('s-settle');
+      {%- endif -%}
+      setTimeout(function () {
+        if (!window.SauchaMotion) root.classList.remove('s-motion', 's-settle');
+      }, 3000);
+    })();
+  </script>
+  <script src="{{ 'saucha-motion.js' | asset_url }}" defer></script>
+{%- endif -%}

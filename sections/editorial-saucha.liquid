@@ -1,1295 +1,451 @@
 {% liquid
-  assign desktop_image = section.settings.image_desktop
-  assign mobile_image = section.settings.image_mobile
+  assign image_desktop = section.settings.image_desktop
+  assign image_mobile = section.settings.image_mobile
 
-  if desktop_image == blank and mobile_image != blank
-    assign desktop_image = mobile_image
-  endif
-
-  if mobile_image == blank
-    assign mobile_image = desktop_image
-  endif
-
-  assign image_share = section.settings.image_width_desktop
+  assign image_share = section.settings.image_width
   assign text_share = 100 | minus: image_share
 
-  case section.settings.text_alignment
-    when 'left'
-      assign desktop_align_items = 'flex-start'
-      assign desktop_button_justify = 'flex-start'
-
-    when 'right'
-      assign desktop_align_items = 'flex-end'
-      assign desktop_button_justify = 'flex-end'
-
-    else
-      assign desktop_align_items = 'center'
-      assign desktop_button_justify = 'center'
-  endcase
-
-  case section.settings.text_alignment_mobile
-    when 'left'
-      assign mobile_align_items = 'flex-start'
-      assign mobile_button_justify = 'flex-start'
-
-    when 'right'
-      assign mobile_align_items = 'flex-end'
-      assign mobile_button_justify = 'flex-end'
-
-    else
-      assign mobile_align_items = 'center'
-      assign mobile_button_justify = 'center'
-  endcase
+  assign button_style = section.settings.button_style
+  assign has_button = false
+  if section.settings.button_label != blank and section.settings.button_link != blank
+    assign has_button = true
+  endif
 %}
 
 <section
   id="EditorialSaucha-{{ section.id }}"
   class="
+    s-section s-scheme-{{ section.settings.scheme }}
+    s-pt-{{ section.settings.spacing_top }} s-pb-{{ section.settings.spacing_bottom }}
     saucha-editorial
     saucha-editorial--image-{{ section.settings.image_side }}
     saucha-editorial--mobile-{{ section.settings.mobile_order }}
+    saucha-editorial--align-{{ section.settings.text_alignment }}
+    saucha-editorial--align-mobile-{{ section.settings.text_alignment_mobile }}
   "
   style="
-    --se-bg: {{ section.settings.background_color }};
-    --se-title-color: {{ section.settings.title_color }};
-    --se-text-color: {{ section.settings.text_color }};
-
-    --se-max-width: {{ section.settings.max_width }}px;
-
-    --se-side-padding-desktop:
-      {{ section.settings.side_padding_desktop }}px;
-
-    --se-side-padding-mobile:
-      {{ section.settings.side_padding_mobile }}px;
-
-    --se-column-gap:
-      {{ section.settings.column_gap }}px;
-
-    --se-padding-top:
-      {{ section.settings.padding_top }}px;
-
-    --se-padding-bottom:
-      {{ section.settings.padding_bottom }}px;
-
-    --se-padding-top-mobile:
-      {{ section.settings.padding_top_mobile }}px;
-
-    --se-padding-bottom-mobile:
-      {{ section.settings.padding_bottom_mobile }}px;
-
     --se-image-share: {{ image_share }}fr;
     --se-text-share: {{ text_share }}fr;
-
-    --se-image-height-desktop:
-      {{ section.settings.image_height_desktop }}px;
-
-    --se-image-height-mobile:
-      {{ section.settings.image_height_mobile }}px;
-
-    --se-image-x-desktop:
-      {{ section.settings.image_x_desktop }}%;
-
-    --se-image-y-desktop:
-      {{ section.settings.image_y_desktop }}%;
-
-    --se-image-x-mobile:
-      {{ section.settings.image_x_mobile }}%;
-
-    --se-image-y-mobile:
-      {{ section.settings.image_y_mobile }}%;
-
-    --se-image-radius:
-      {{ section.settings.image_radius }}px;
-
-    --se-title-font:
-      var(--font-{{ section.settings.title_font }}--family);
-
-    --se-title-weight:
-      var(
-        --font-{{ section.settings.title_font }}--weight,
-        400
-      );
-
-    --se-text-font:
-      var(--font-{{ section.settings.text_font }}--family);
-
-    --se-text-weight:
-      var(
-        --font-{{ section.settings.text_font }}--weight,
-        400
-      );
-
-    --se-title-size-desktop:
-      {{ section.settings.title_size_desktop }}px;
-
-    --se-title-size-mobile:
-      {{ section.settings.title_size_mobile }}px;
-
-    --se-text-size-desktop:
-      {{ section.settings.text_size_desktop }}px;
-
-    --se-text-size-mobile:
-      {{ section.settings.text_size_mobile }}px;
-
-    --se-title-line-height:
-      {{ section.settings.title_line_height | divided_by: 100.0 }};
-
-    --se-text-line-height:
-      {{ section.settings.text_line_height | divided_by: 100.0 }};
-
-    --se-title-max-width:
-      {{ section.settings.title_max_width }}px;
-
-    --se-text-max-width:
-      {{ section.settings.text_max_width }}px;
-
-    --se-title-text-gap:
-      {{ section.settings.title_text_gap }}px;
-
-    --se-divider-height:
-      {{ section.settings.divider_height }}px;
-
-    --se-divider-gap-top:
-      {{ section.settings.divider_gap_top }}px;
-
-    --se-divider-gap-bottom:
-      {{ section.settings.divider_gap_bottom }}px;
-
-    --se-divider-color:
-      {{ section.settings.divider_color }};
-
-    --se-vertical-alignment:
-      {{ section.settings.vertical_alignment }};
-
-    --se-text-align-desktop:
-      {{ section.settings.text_alignment }};
-
-    --se-text-align-mobile:
-      {{ section.settings.text_alignment_mobile }};
-
-    --se-align-items-desktop:
-      {{ desktop_align_items }};
-
-    --se-align-items-mobile:
-      {{ mobile_align_items }};
-
-    --se-button-justify-desktop:
-      {{ desktop_button_justify }};
-
-    --se-button-justify-mobile:
-      {{ mobile_button_justify }};
+    --se-valign: {{ section.settings.vertical_alignment }};
   "
 >
-  <div class="saucha-editorial__inner">
+  <div class="s-container saucha-editorial__grid">
+    <div
+      class="s-media saucha-editorial__media"
+      data-s-reveal="media"
+      style="
+        --s-media-ratio: {{ section.settings.image_ratio }};
+        --s-media-ratio-m: {{ section.settings.image_ratio_mobile }};
+        --s-fx: {{ section.settings.focus_x }}%;
+        --s-fy: {{ section.settings.focus_y }}%;
+        --s-fx-m: {{ section.settings.focus_x_mobile }}%;
+        --s-fy-m: {{ section.settings.focus_y_mobile }}%;
+      "
+    >
+      {% render 'saucha-media',
+        image: image_desktop,
+        image_mobile: image_mobile,
+        sizes: '(min-width: 1200px) 50vw, (min-width: 750px) 55vw, 100vw',
+        alt: section.settings.title
+      %}
+    </div>
 
     <div class="saucha-editorial__copy">
       <div class="saucha-editorial__copy-inner">
+        {%- if section.settings.eyebrow != blank -%}
+          <p class="s-eyebrow" data-s-reveal="fade">{{ section.settings.eyebrow | escape }}</p>
+        {%- endif -%}
 
-        {% if section.settings.title != blank %}
-          <h2 class="saucha-editorial__title">
-            {{
-              section.settings.title
-              | escape
-              | newline_to_br
-            }}
-          </h2>
-        {% endif %}
+        {% render 'saucha-title', text: section.settings.title, size: section.settings.title_size, index: 1 %}
 
-        {% if section.settings.text != blank %}
-          <div class="saucha-editorial__text rte">
+        {%- if section.settings.text != blank -%}
+          <div class="s-text saucha-editorial__text" data-s-reveal="up" style="--s-i: 2;">
             {{ section.settings.text }}
           </div>
-        {% endif %}
+        {%- endif -%}
 
-        {% if section.settings.show_divider %}
-          <span
-            class="saucha-editorial__divider"
-            aria-hidden="true"
-          ></span>
-        {% endif %}
+        {%- if section.settings.show_divider -%}
+          <span class="saucha-editorial__divider" aria-hidden="true" data-s-reveal="fade" style="--s-i: 3;"></span>
+        {%- endif -%}
 
-        {% if section.settings.show_button %}
-          <div class="saucha-editorial__button">
-            {% content_for 'block',
-              type: 'button',
-              id: 'button'
-            %}
+        {%- if has_button -%}
+          <div class="saucha-editorial__action" data-s-reveal="up" style="--s-i: 4;">
+            {%- if button_style == 'link' -%}
+              <a class="s-link" href="{{ section.settings.button_link }}">
+                {{- section.settings.button_label | escape -}}
+                <svg class="s-link__arrow" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M2 8h11M9 4l4 4-4 4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </a>
+            {%- else -%}
+              <a class="{{ button_style }}" href="{{ section.settings.button_link }}">
+                {{- section.settings.button_label | escape -}}
+              </a>
+            {%- endif -%}
           </div>
-        {% endif %}
-
+        {%- endif -%}
       </div>
     </div>
-
-    <div class="saucha-editorial__media">
-
-      {% if desktop_image != blank %}
-
-        <picture class="saucha-editorial__picture">
-
-          {% if mobile_image != blank %}
-            <source
-              media="(max-width: 749px)"
-              srcset="
-                {{ mobile_image | image_url: width: 480 }} 480w,
-                {{ mobile_image | image_url: width: 720 }} 720w,
-                {{ mobile_image | image_url: width: 960 }} 960w,
-                {{ mobile_image | image_url: width: 1200 }} 1200w
-              "
-              sizes="100vw"
-            >
-          {% endif %}
-
-          {{
-            desktop_image
-            | image_url: width: 2400
-            | image_tag:
-              widths: '640, 900, 1200, 1600, 2000, 2400',
-              sizes: '(min-width: 900px) 55vw, 100vw',
-              loading: 'lazy',
-              class: 'saucha-editorial__image'
-          }}
-
-        </picture>
-
-      {% else %}
-
-        <div class="saucha-editorial__placeholder">
-          {{
-            'lifestyle-1'
-            | placeholder_svg_tag: 'placeholder-svg'
-          }}
-        </div>
-
-      {% endif %}
-
-    </div>
-
   </div>
 </section>
 
 {% stylesheet %}
+  /* Editorial Saucha: imagen + texto. Tipografía, color, espacio y motion vienen de saucha-base.css */
 
-  /* =========================================================
-     SAUCHA · EDITORIAL IMAGE + TEXT
-     ========================================================= */
-
-  .saucha-editorial,
-  .saucha-editorial * {
-    box-sizing: border-box;
-  }
-
-  .saucha-editorial {
-    width: 100%;
-    background: var(--se-bg);
-    color: var(--se-title-color);
-  }
-
-
-  /* =========================================================
-     ESTRUCTURA
-     ========================================================= */
-
-  .saucha-editorial__inner {
-    width: 100%;
-    max-width: var(--se-max-width);
-    margin-inline: auto;
-
-    padding:
-      var(--se-padding-top)
-      var(--se-side-padding-desktop)
-      var(--se-padding-bottom);
-
+  .saucha-editorial__grid {
     display: grid;
-    gap: var(--se-column-gap);
-
-    align-items: stretch;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--s-space-8);
   }
-
-
-  /* =========================================================
-     IMAGEN A LA DERECHA
-     ========================================================= */
-
-  .saucha-editorial--image-right
-    .saucha-editorial__inner {
-
-    grid-template-columns:
-      minmax(0, var(--se-text-share))
-      minmax(0, var(--se-image-share));
-  }
-
-  .saucha-editorial--image-right
-    .saucha-editorial__copy {
-
-    grid-column: 1;
-    grid-row: 1;
-  }
-
-  .saucha-editorial--image-right
-    .saucha-editorial__media {
-
-    grid-column: 2;
-    grid-row: 1;
-  }
-
-
-  /* =========================================================
-     IMAGEN A LA IZQUIERDA
-     ========================================================= */
-
-  .saucha-editorial--image-left
-    .saucha-editorial__inner {
-
-    grid-template-columns:
-      minmax(0, var(--se-image-share))
-      minmax(0, var(--se-text-share));
-  }
-
-  .saucha-editorial--image-left
-    .saucha-editorial__media {
-
-    grid-column: 1;
-    grid-row: 1;
-  }
-
-  .saucha-editorial--image-left
-    .saucha-editorial__copy {
-
-    grid-column: 2;
-    grid-row: 1;
-  }
-
-
-  /* =========================================================
-     CONTENIDO
-     ========================================================= */
-
-.saucha-editorial__copy {
-  min-width: 0;
-  min-height: var(--se-image-height-desktop);
-
-  display: flex;
-  flex-direction: column;
-
-  justify-content:
-    var(--se-vertical-alignment);
-}
 
   .saucha-editorial__copy-inner {
-    width: 100%;
-
     display: flex;
     flex-direction: column;
-
-    align-items:
-      var(--se-align-items-desktop);
-
-    text-align:
-      var(--se-text-align-desktop);
+    gap: var(--s-space-4);
+    align-items: center;
+    text-align: center;
   }
 
-
-  /* =========================================================
-     TÍTULO
-     ========================================================= */
-
-  .saucha-editorial__title {
-    width:
-      min(
-        100%,
-        var(--se-title-max-width)
-      );
-
-    margin: 0;
-
-    color:
-      var(--se-title-color);
-
-    font-family:
-      var(--se-title-font);
-
-    font-size:
-      var(--se-title-size-desktop);
-
-    font-weight:
-      var(--se-title-weight);
-
-    line-height:
-      var(--se-title-line-height);
-
-    letter-spacing: -0.015em;
-
-    text-wrap: balance;
+  .saucha-editorial--align-mobile-left .saucha-editorial__copy-inner {
+    align-items: flex-start;
+    text-align: left;
   }
-
-
-  /* =========================================================
-     TEXTO
-     ========================================================= */
 
   .saucha-editorial__text {
-    width:
-      min(
-        100%,
-        var(--se-text-max-width)
-      );
-
-    margin-top:
-      var(--se-title-text-gap);
-
-    color:
-      var(--se-text-color);
-
-    font-family:
-      var(--se-text-font);
-
-    font-size:
-      var(--se-text-size-desktop);
-
-    font-weight:
-      var(--se-text-weight);
-
-    line-height:
-      var(--se-text-line-height);
-
-    text-wrap: pretty;
+    margin-top: var(--s-space-1);
   }
 
-  .saucha-editorial__text > * {
-    margin: 0;
+  .saucha-editorial--align-mobile-center .saucha-editorial__text {
+    margin-inline: auto;
   }
-
-  .saucha-editorial__text > * + * {
-    margin-top: 0.65em;
-  }
-
-
-  /* =========================================================
-     LÍNEA VERTICAL
-     ========================================================= */
 
   .saucha-editorial__divider {
     display: block;
-
-    flex: 0 0 auto;
-
     width: 1px;
-
-    height:
-      var(--se-divider-height);
-
-    margin-top:
-      var(--se-divider-gap-top);
-
-    margin-bottom:
-      var(--se-divider-gap-bottom);
-
-    background:
-      var(--se-divider-color);
+    height: 40px;
+    margin-block: var(--s-space-1);
+    background: currentColor;
+    opacity: 0.28;
   }
 
-
-  /* =========================================================
-     BOTÓN NATIVO DEL TEMA
-     ========================================================= */
-
-  .saucha-editorial__button {
-    display: flex;
-
-    width: 100%;
-    max-width: 100%;
-
-    justify-content:
-      var(--se-button-justify-desktop);
+  .saucha-editorial__action {
+    margin-top: var(--s-space-4);
   }
 
-
-  /* =========================================================
-     IMAGEN
-     ========================================================= */
-
-  .saucha-editorial__media {
-    min-width: 0;
-
-    height:
-      var(--se-image-height-desktop);
-
-    overflow: hidden;
-
-    border-radius:
-      var(--se-image-radius);
+  .saucha-editorial--mobile-text_first .saucha-editorial__copy {
+    order: -1;
   }
 
-  .saucha-editorial__picture,
-  .saucha-editorial__placeholder {
-    display: block;
-
-    width: 100%;
-    height: 100%;
-  }
-
-  .saucha-editorial__image,
-  .saucha-editorial__placeholder svg {
-    display: block;
-
-    width: 100%;
-    height: 100%;
-  }
-
-  .saucha-editorial__image {
-    object-fit: cover;
-
-    object-position:
-      var(--se-image-x-desktop)
-      var(--se-image-y-desktop);
-  }
-
-  .saucha-editorial__placeholder {
-    background:
-      rgba(0, 0, 0, 0.04);
-  }
-
-
-  /* =========================================================
-     MÓVIL
-     ========================================================= */
-
-  @media screen and (max-width: 899px) {
-
-    .saucha-editorial__inner,
-    .saucha-editorial--image-right
-      .saucha-editorial__inner,
-    .saucha-editorial--image-left
-      .saucha-editorial__inner {
-
-      grid-template-columns:
-        minmax(0, 1fr);
-
-      gap: 0;
-
-      padding:
-        var(--se-padding-top-mobile)
-        var(--se-side-padding-mobile)
-        var(--se-padding-bottom-mobile);
+  @media screen and (min-width: 750px) {
+    .saucha-editorial__grid {
+      grid-template-columns: minmax(0, var(--se-image-share)) minmax(0, var(--se-text-share));
+      gap: clamp(var(--s-space-10), 6vw, var(--s-space-24));
+      align-items: var(--se-valign);
     }
 
-
-    /* Reset del grid desktop */
-
-    .saucha-editorial__copy,
-    .saucha-editorial__media,
-    .saucha-editorial--image-right
-      .saucha-editorial__copy,
-    .saucha-editorial--image-right
-      .saucha-editorial__media,
-    .saucha-editorial--image-left
-      .saucha-editorial__copy,
-    .saucha-editorial--image-left
-      .saucha-editorial__media {
-
-      grid-column: 1;
-      grid-row: auto;
+    .saucha-editorial--image-right .saucha-editorial__grid {
+      grid-template-columns: minmax(0, var(--se-text-share)) minmax(0, var(--se-image-share));
     }
 
-
-    /* Imagen primero */
-
-    .saucha-editorial--mobile-image_first
-      .saucha-editorial__media {
-
-      order: 1;
-    }
-
-    .saucha-editorial--mobile-image_first
-      .saucha-editorial__copy {
-
+    .saucha-editorial--image-right .saucha-editorial__media {
       order: 2;
     }
 
-
-    /* Texto primero */
-
-    .saucha-editorial--mobile-text_first
-      .saucha-editorial__copy {
-
-      order: 1;
+    .saucha-editorial--mobile-text_first .saucha-editorial__copy {
+      order: 0;
     }
 
-    .saucha-editorial--mobile-text_first
-      .saucha-editorial__media {
-
-      order: 2;
+    .saucha-editorial__copy-inner,
+    .saucha-editorial--align-mobile-left .saucha-editorial__copy-inner {
+      align-items: center;
+      text-align: center;
+      max-width: 34rem;
+      margin-inline: auto;
     }
 
-
-    /* Imagen */
-
-    .saucha-editorial__media {
-      height:
-        var(--se-image-height-mobile);
+    .saucha-editorial--align-left .saucha-editorial__copy-inner {
+      align-items: flex-start;
+      text-align: left;
+      margin-inline: 0;
     }
 
-    .saucha-editorial__image {
-      object-position:
-        var(--se-image-x-mobile)
-        var(--se-image-y-mobile);
+    .saucha-editorial--align-center .saucha-editorial__text {
+      margin-inline: auto;
     }
 
-
-    /* Texto */
-
-    .saucha-editorial__copy {
-      min-height: 0;
-
-      padding-block:
-        38px 10px;
-
-      justify-content:
-        flex-start;
+    .saucha-editorial--align-left .saucha-editorial__text {
+      margin-inline: 0;
     }
-
-    .saucha-editorial--mobile-text_first
-      .saucha-editorial__copy {
-
-      padding-block:
-        10px 38px;
-    }
-
-    .saucha-editorial__copy-inner {
-      align-items:
-        var(--se-align-items-mobile);
-
-      text-align:
-        var(--se-text-align-mobile);
-    }
-
-
-    /* Tipografía */
-
-    .saucha-editorial__title {
-      font-size:
-        var(--se-title-size-mobile);
-    }
-
-    .saucha-editorial__text {
-      font-size:
-        var(--se-text-size-mobile);
-    }
-
-
-    /* Línea */
 
     .saucha-editorial__divider {
-      height:
-        min(
-          var(--se-divider-height),
-          56px
-        );
-
-      margin-top:
-        min(
-          var(--se-divider-gap-top),
-          28px
-        );
-
-      margin-bottom:
-        min(
-          var(--se-divider-gap-bottom),
-          28px
-        );
-    }
-
-
-    /* Botón */
-
-    .saucha-editorial__button {
-      justify-content:
-        var(--se-button-justify-mobile);
+      height: 56px;
+      margin-block: var(--s-space-2);
     }
   }
-
 {% endstylesheet %}
 
 {% schema %}
 {
   "name": "Editorial Saucha",
-
+  "tag": "div",
+  "class": "saucha-editorial-section",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
   "settings": [
-
     {
       "type": "header",
       "content": "Contenido"
     },
-
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Antetítulo",
+      "info": "Se muestra en mayúsculas pequeñas."
+    },
     {
       "type": "textarea",
       "id": "title",
       "label": "Título",
-      "default": "Calidad que se siente"
+      "default": "Calidad que se siente",
+      "info": "Cada salto de línea crea una línea animada."
     },
-
+    {
+      "type": "select",
+      "id": "title_size",
+      "label": "Tamaño del título",
+      "options": [
+        { "value": "h1", "label": "Grande" },
+        { "value": "h2", "label": "Medio" },
+        { "value": "h3", "label": "Pequeño" }
+      ],
+      "default": "h1"
+    },
     {
       "type": "richtext",
       "id": "text",
       "label": "Texto",
       "default": "<p>Una selección cuidada de prendas pensadas para acompañarte temporada tras temporada.</p>"
     },
-
     {
       "type": "checkbox",
-      "id": "show_button",
-      "label": "Mostrar botón",
+      "id": "show_divider",
+      "label": "Línea vertical fina",
       "default": true
     },
-
-
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Texto del botón",
+      "default": "Descubrir"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Enlace del botón"
+    },
+    {
+      "type": "select",
+      "id": "button_style",
+      "label": "Estilo del botón",
+      "options": [
+        { "value": "button", "label": "Principal" },
+        { "value": "button-secondary", "label": "Secundario" },
+        { "value": "link", "label": "Enlace subrayado" }
+      ],
+      "default": "button-secondary"
+    },
     {
       "type": "header",
       "content": "Imagen"
     },
-
     {
       "type": "image_picker",
       "id": "image_desktop",
       "label": "Imagen · escritorio"
     },
-
     {
       "type": "image_picker",
       "id": "image_mobile",
-      "label": "Imagen · móvil"
+      "label": "Imagen · móvil",
+      "info": "Opcional. Si no la eliges, se usa la de escritorio."
     },
-
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "Proporción · escritorio",
+      "options": [
+        { "value": "4 / 5", "label": "Retrato 4:5" },
+        { "value": "3 / 4", "label": "Retrato 3:4" },
+        { "value": "2 / 3", "label": "Retrato alto 2:3" },
+        { "value": "1 / 1", "label": "Cuadrada" },
+        { "value": "4 / 3", "label": "Horizontal 4:3" }
+      ],
+      "default": "4 / 5"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio_mobile",
+      "label": "Proporción · móvil",
+      "options": [
+        { "value": "4 / 5", "label": "Retrato 4:5" },
+        { "value": "3 / 4", "label": "Retrato 3:4" },
+        { "value": "1 / 1", "label": "Cuadrada" },
+        { "value": "4 / 3", "label": "Horizontal 4:3" }
+      ],
+      "default": "4 / 5"
+    },
+    {
+      "type": "range",
+      "id": "focus_x",
+      "label": "Encuadre horizontal · escritorio",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "focus_y",
+      "label": "Encuadre vertical · escritorio",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "focus_x_mobile",
+      "label": "Encuadre horizontal · móvil",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "focus_y_mobile",
+      "label": "Encuadre vertical · móvil",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "header",
+      "content": "Composición"
+    },
     {
       "type": "select",
       "id": "image_side",
-      "label": "Posición de la imagen · escritorio",
+      "label": "Imagen · escritorio",
       "options": [
-        {
-          "value": "right",
-          "label": "Derecha"
-        },
-        {
-          "value": "left",
-          "label": "Izquierda"
-        }
+        { "value": "left", "label": "A la izquierda" },
+        { "value": "right", "label": "A la derecha" }
       ],
-      "default": "right"
+      "default": "left"
     },
-
+    {
+      "type": "range",
+      "id": "image_width",
+      "label": "Ancho de la imagen · escritorio",
+      "min": 40,
+      "max": 60,
+      "step": 5,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "select",
+      "id": "vertical_alignment",
+      "label": "Alineación vertical del texto",
+      "options": [
+        { "value": "start", "label": "Arriba" },
+        { "value": "center", "label": "Centro" },
+        { "value": "end", "label": "Abajo" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Alineación del texto · escritorio",
+      "options": [
+        { "value": "left", "label": "Izquierda" },
+        { "value": "center", "label": "Centro" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "select",
+      "id": "text_alignment_mobile",
+      "label": "Alineación del texto · móvil",
+      "options": [
+        { "value": "left", "label": "Izquierda" },
+        { "value": "center", "label": "Centro" }
+      ],
+      "default": "center"
+    },
     {
       "type": "select",
       "id": "mobile_order",
       "label": "Orden · móvil",
       "options": [
-        {
-          "value": "image_first",
-          "label": "Imagen primero"
-        },
-        {
-          "value": "text_first",
-          "label": "Texto primero"
-        }
+        { "value": "image_first", "label": "Imagen primero" },
+        { "value": "text_first", "label": "Texto primero" }
       ],
       "default": "image_first"
     },
-
-    {
-      "type": "range",
-      "id": "image_width_desktop",
-      "label": "Ancho de imagen · escritorio",
-      "min": 40,
-      "max": 65,
-      "step": 1,
-      "unit": "%",
-      "default": 52
-    },
-
-    {
-      "type": "range",
-      "id": "image_height_desktop",
-      "label": "Altura de imagen · escritorio",
-      "min": 360,
-      "max": 900,
-      "step": 10,
-      "unit": "px",
-      "default": 640
-    },
-
-    {
-      "type": "range",
-      "id": "image_height_mobile",
-      "label": "Altura de imagen · móvil",
-      "min": 260,
-      "max": 700,
-      "step": 10,
-      "unit": "px",
-      "default": 430
-    },
-
-    {
-      "type": "range",
-      "id": "image_x_desktop",
-      "label": "Imagen X · escritorio",
-      "min": 0,
-      "max": 100,
-      "step": 1,
-      "unit": "%",
-      "default": 50
-    },
-
-    {
-      "type": "range",
-      "id": "image_y_desktop",
-      "label": "Imagen Y · escritorio",
-      "min": 0,
-      "max": 100,
-      "step": 1,
-      "unit": "%",
-      "default": 50
-    },
-
-    {
-      "type": "range",
-      "id": "image_x_mobile",
-      "label": "Imagen X · móvil",
-      "min": 0,
-      "max": 100,
-      "step": 1,
-      "unit": "%",
-      "default": 50
-    },
-
-    {
-      "type": "range",
-      "id": "image_y_mobile",
-      "label": "Imagen Y · móvil",
-      "min": 0,
-      "max": 100,
-      "step": 1,
-      "unit": "%",
-      "default": 50
-    },
-
-    {
-      "type": "range",
-      "id": "image_radius",
-      "label": "Redondeado de imagen",
-      "min": 0,
-      "max": 40,
-      "step": 1,
-      "unit": "px",
-      "default": 0
-    },
-
-
     {
       "type": "header",
-      "content": "Composición"
+      "content": "Estilo"
     },
-
-    {
-      "type": "range",
-      "id": "max_width",
-      "label": "Ancho máximo del componente",
-      "min": 1100,
-      "max": 1800,
-      "step": 10,
-      "unit": "px",
-      "default": 1540
-    },
-
-    {
-      "type": "range",
-      "id": "side_padding_desktop",
-      "label": "Margen lateral · escritorio",
-      "min": 0,
-      "max": 180,
-      "step": 2,
-      "unit": "px",
-      "default": 40
-    },
-
-    {
-      "type": "range",
-      "id": "side_padding_mobile",
-      "label": "Margen lateral · móvil",
-      "min": 12,
-      "max": 40,
-      "step": 1,
-      "unit": "px",
-      "default": 20
-    },
-
-    {
-      "type": "range",
-      "id": "column_gap",
-      "label": "Separación texto / imagen",
-      "min": 20,
-      "max": 160,
-      "step": 2,
-      "unit": "px",
-      "default": 80
-    },
-
-    {
-      "type": "range",
-      "id": "padding_top",
-      "label": "Espacio superior · escritorio",
-      "min": 0,
-      "max": 180,
-      "step": 2,
-      "unit": "px",
-      "default": 52
-    },
-
-    {
-      "type": "range",
-      "id": "padding_bottom",
-      "label": "Espacio inferior · escritorio",
-      "min": 0,
-      "max": 180,
-      "step": 2,
-      "unit": "px",
-      "default": 52
-    },
-
-    {
-      "type": "range",
-      "id": "padding_top_mobile",
-      "label": "Espacio superior · móvil",
-      "min": 0,
-      "max": 100,
-      "step": 2,
-      "unit": "px",
-      "default": 28
-    },
-
-    {
-      "type": "range",
-      "id": "padding_bottom_mobile",
-      "label": "Espacio inferior · móvil",
-      "min": 0,
-      "max": 100,
-      "step": 2,
-      "unit": "px",
-      "default": 28
-    },
-
     {
       "type": "select",
-      "id": "vertical_alignment",
-      "label": "Posición vertical del texto",
-      "options": [
-        {
-          "value": "flex-start",
-          "label": "Arriba"
-        },
-        {
-          "value": "center",
-          "label": "Centro"
-        },
-        {
-          "value": "flex-end",
-          "label": "Abajo"
-        }
-      ],
-      "default": "center"
-    },
-
-    {
-      "type": "select",
-      "id": "text_alignment",
-      "label": "Alineación de texto · escritorio",
-      "options": [
-        {
-          "value": "left",
-          "label": "Izquierda"
-        },
-        {
-          "value": "center",
-          "label": "Centro"
-        },
-        {
-          "value": "right",
-          "label": "Derecha"
-        }
-      ],
-      "default": "center"
-    },
-
-    {
-      "type": "select",
-      "id": "text_alignment_mobile",
-      "label": "Alineación de texto · móvil",
-      "options": [
-        {
-          "value": "left",
-          "label": "Izquierda"
-        },
-        {
-          "value": "center",
-          "label": "Centro"
-        },
-        {
-          "value": "right",
-          "label": "Derecha"
-        }
-      ],
-      "default": "center"
-    },
-
-
-    {
-      "type": "header",
-      "content": "Tipografía"
-    },
-
-    {
-      "type": "select",
-      "id": "title_font",
-      "label": "Fuente del título",
-      "options": [
-        {
-          "value": "heading",
-          "label": "Títulos del tema"
-        },
-        {
-          "value": "body",
-          "label": "Texto del tema"
-        }
-      ],
-      "default": "heading"
-    },
-
-    {
-      "type": "select",
-      "id": "text_font",
-      "label": "Fuente del texto",
-      "options": [
-        {
-          "value": "body",
-          "label": "Texto del tema"
-        },
-        {
-          "value": "heading",
-          "label": "Títulos del tema"
-        }
-      ],
-      "default": "body"
-    },
-
-    {
-      "type": "range",
-      "id": "title_size_desktop",
-      "label": "Título · escritorio",
-      "min": 30,
-      "max": 84,
-      "step": 1,
-      "unit": "px",
-      "default": 48
-    },
-
-    {
-      "type": "range",
-      "id": "title_size_mobile",
-      "label": "Título · móvil",
-      "min": 26,
-      "max": 56,
-      "step": 1,
-      "unit": "px",
-      "default": 36
-    },
-
-    {
-      "type": "range",
-      "id": "text_size_desktop",
-      "label": "Texto · escritorio",
-      "min": 14,
-      "max": 26,
-      "step": 1,
-      "unit": "px",
-      "default": 18
-    },
-
-    {
-      "type": "range",
-      "id": "text_size_mobile",
-      "label": "Texto · móvil",
-      "min": 13,
-      "max": 22,
-      "step": 1,
-      "unit": "px",
-      "default": 16
-    },
-
-    {
-      "type": "range",
-      "id": "title_line_height",
-      "label": "Interlineado del título",
-      "min": 85,
-      "max": 125,
-      "step": 1,
-      "unit": "%",
-      "default": 100
-    },
-
-    {
-      "type": "range",
-      "id": "text_line_height",
-      "label": "Interlineado del texto",
-      "min": 110,
-      "max": 180,
-      "step": 1,
-      "unit": "%",
-      "default": 145
-    },
-
-    {
-      "type": "range",
-      "id": "title_max_width",
-      "label": "Ancho máximo del título",
-      "min": 280,
-      "max": 760,
-      "step": 10,
-      "unit": "px",
-      "default": 560
-    },
-
-    {
-      "type": "range",
-      "id": "text_max_width",
-      "label": "Ancho máximo del texto",
-      "min": 240,
-      "max": 680,
-      "step": 10,
-      "unit": "px",
-      "default": 500
-    },
-
-    {
-      "type": "range",
-      "id": "title_text_gap",
-      "label": "Espacio título / texto",
-      "min": 8,
-      "max": 50,
-      "step": 1,
-      "unit": "px",
-      "default": 24
-    },
-
-
-    {
-      "type": "header",
-      "content": "Separador"
-    },
-
-    {
-      "type": "checkbox",
-      "id": "show_divider",
-      "label": "Mostrar línea vertical",
-      "default": true
-    },
-
-    {
-      "type": "range",
-      "id": "divider_height",
-      "label": "Altura de la línea",
-      "min": 20,
-      "max": 120,
-      "step": 2,
-      "unit": "px",
-      "default": 72
-    },
-
-    {
-      "type": "range",
-      "id": "divider_gap_top",
-      "label": "Espacio antes de la línea",
-      "min": 10,
-      "max": 80,
-      "step": 2,
-      "unit": "px",
-      "default": 36
-    },
-
-    {
-      "type": "range",
-      "id": "divider_gap_bottom",
-      "label": "Espacio después de la línea",
-      "min": 10,
-      "max": 80,
-      "step": 2,
-      "unit": "px",
-      "default": 36
-    },
-
-    {
-      "type": "color",
-      "id": "divider_color",
-      "label": "Color de la línea",
-      "default": "#C9C3BE"
-    },
-
-
-    {
-      "type": "header",
-      "content": "Colores"
-    },
-
-    {
-      "type": "color",
-      "id": "background_color",
+      "id": "scheme",
       "label": "Fondo",
-      "default": "#FFFDFA"
+      "options": [
+        { "value": "surface", "label": "Marfil (principal)" },
+        { "value": "cream", "label": "Crema (alterno)" },
+        { "value": "blush", "label": "Blush nude" },
+        { "value": "ink", "label": "Tinta" }
+      ],
+      "default": "surface"
     },
-
     {
-      "type": "color",
-      "id": "title_color",
-      "label": "Título",
-      "default": "#211B18"
+      "type": "select",
+      "id": "spacing_top",
+      "label": "Espacio superior",
+      "options": [
+        { "value": "none", "label": "Ninguno" },
+        { "value": "xs", "label": "Mínimo" },
+        { "value": "sm", "label": "Pequeño" },
+        { "value": "md", "label": "Medio" },
+        { "value": "lg", "label": "Grande" }
+      ],
+      "default": "md",
+      "info": "Escala global en Configuración del tema › Saucha · Sistema. En móvil se reduce solo."
     },
-
     {
-      "type": "color",
-      "id": "text_color",
-      "label": "Texto",
-      "default": "#756A64"
+      "type": "select",
+      "id": "spacing_bottom",
+      "label": "Espacio inferior",
+      "options": [
+        { "value": "none", "label": "Ninguno" },
+        { "value": "xs", "label": "Mínimo" },
+        { "value": "sm", "label": "Pequeño" },
+        { "value": "md", "label": "Medio" },
+        { "value": "lg", "label": "Grande" }
+      ],
+      "default": "md"
     }
-
   ],
-
   "presets": [
     {
       "name": "Editorial Saucha",
-      "category": "t:categories.storytelling",
-
-      "settings": {
-        "title": "Calidad que se siente",
-        "text": "<p>Una selección cuidada de prendas pensadas para acompañarte temporada tras temporada.</p>",
-        "image_side": "right",
-        "mobile_order": "image_first",
-        "text_alignment": "center",
-        "text_alignment_mobile": "center",
-        "show_button": true
-      },
-
-      "blocks": {
-        "button": {
-          "type": "button",
-          "name": "t:names.button",
-          "static": true,
-
-          "settings": {
-            "label": "Descubrir",
-            "link": "shopify://collections/all",
-            "style_class": "button-secondary",
-            "width": "fit-content",
-            "width_mobile": "fit-content"
-          }
-        }
-      }
+      "category": "t:categories.storytelling"
     }
   ]
 }

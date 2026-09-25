@@ -1,0 +1,406 @@
+{{ 'saucha-collection.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'saucha-collection.js' | asset_url }}" defer></script>
+
+{% liquid
+  assign collection = section.settings.collection
+  assign limit = section.settings.products_to_show
+
+  assign link_url = section.settings.link_url
+  if link_url == blank and collection != blank
+    assign link_url = collection.url
+  endif
+
+  assign heading_link_label = blank
+  if section.settings.link_position == 'heading'
+    assign heading_link_label = section.settings.link_label
+  endif
+
+  assign hover_scale = section.settings.hover_zoom | divided_by: 100.0
+%}
+
+<section
+  id="ProductosSaucha-{{ section.id }}"
+  class="
+    s-section s-scheme-{{ section.settings.scheme }}
+    s-pt-{{ section.settings.spacing_top }} s-pb-{{ section.settings.spacing_bottom }}
+    saucha-products saucha-products--mobile-{{ section.settings.mobile_layout }}
+  "
+>
+  <div class="s-container">
+    {% render 'saucha-heading',
+      eyebrow: section.settings.eyebrow,
+      title: section.settings.title,
+      text: section.settings.text,
+      alignment: section.settings.heading_alignment,
+      link_label: heading_link_label,
+      link_url: link_url
+    %}
+
+    <saucha-collection
+      class="saucha-products__collection"
+      data-section-id="{{ section.id }}"
+      data-card-alignment="{{ section.settings.card_alignment }}"
+      data-title-font="heading"
+      style="
+        --saucha-image-radius: var(--s-radius-media);
+        --saucha-hover-scale: {{ hover_scale }};
+        --sp-columns: {{ section.settings.columns_desktop }};
+      "
+    >
+      <ul class="saucha-products__list" role="list">
+        {%- if collection != blank and collection.products_count > 0 -%}
+          {%- for product in collection.products limit: limit -%}
+            {%- liquid
+              assign card_loading = 'lazy'
+              if section.index <= 2 and forloop.index <= 2
+                assign card_loading = 'eager'
+              endif
+            -%}
+            <li class="saucha-products__item" data-s-reveal="up" style="--s-i: {{ forloop.index0 }};">
+              {% render 'saucha-product-card', product: product, section: section, loading: card_loading, fetchpriority: 'auto' %}
+            </li>
+          {%- endfor -%}
+        {%- else -%}
+          {%- for i in (1..4) -%}
+            <li class="saucha-products__item">
+              <article class="saucha-product-card">
+                <div class="saucha-product-card__media" style="--saucha-card-ratio: 3 / 4;">
+                  <div class="saucha-product-card__placeholder">{{ 'product-apparel-' | append: i | placeholder_svg_tag }}</div>
+                </div>
+                <div class="saucha-product-card__info">
+                  <h3 class="saucha-product-card__title">Nombre del producto</h3>
+                  <div class="saucha-product-card__price"><span class="saucha-product-card__price-current">39,00 €</span></div>
+                </div>
+              </article>
+            </li>
+          {%- endfor -%}
+        {%- endif -%}
+      </ul>
+    </saucha-collection>
+
+    {%- if section.settings.link_position == 'bottom' and section.settings.link_label != blank and link_url != blank -%}
+      <div class="saucha-products__footer" data-s-reveal="up">
+        <a class="button-secondary" href="{{ link_url }}">{{ section.settings.link_label | escape }}</a>
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% stylesheet %}
+  /* Productos Saucha: la misma tarjeta que la página de colección, en rejilla o carril */
+
+  .saucha-products saucha-collection {
+    background: transparent;
+  }
+
+  .saucha-products__list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--s-space-8) var(--s-space-3);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* Móvil · carril con asomo de la siguiente tarjeta */
+  @media screen and (max-width: 749px) {
+    .saucha-products--mobile-rail .saucha-products__list {
+      grid-template-columns: none;
+      grid-auto-flow: column;
+      grid-auto-columns: 68%;
+      gap: var(--s-space-3);
+      margin-inline: calc(var(--s-gutter) * -1);
+      padding-inline: var(--s-gutter);
+      scroll-padding-inline: var(--s-gutter);
+      overflow-x: auto;
+      overscroll-behavior-inline: contain;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+    }
+
+    .saucha-products--mobile-rail .saucha-products__list::-webkit-scrollbar {
+      display: none;
+    }
+
+    .saucha-products--mobile-rail .saucha-products__item {
+      scroll-snap-align: start;
+    }
+  }
+
+  @media screen and (min-width: 750px) {
+    .saucha-products__list {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--s-space-12) var(--s-space-5);
+    }
+  }
+
+  @media screen and (min-width: 1200px) {
+    .saucha-products__list {
+      grid-template-columns: repeat(var(--sp-columns, 4), minmax(0, 1fr));
+      column-gap: var(--s-space-6);
+    }
+  }
+
+  .saucha-products__item {
+    min-width: 0;
+  }
+
+  .saucha-products__footer {
+    display: flex;
+    justify-content: center;
+    margin-top: var(--s-heading-gap);
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Productos Saucha",
+  "tag": "div",
+  "class": "saucha-products-section",
+  "disabled_on": {
+    "groups": ["header", "footer"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Contenido"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Antetítulo",
+      "default": "Recién llegados"
+    },
+    {
+      "type": "textarea",
+      "id": "title",
+      "label": "Título",
+      "default": "Novedades"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Texto"
+    },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Colección"
+    },
+    {
+      "type": "range",
+      "id": "products_to_show",
+      "label": "Número de productos",
+      "min": 2,
+      "max": 12,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "text",
+      "id": "link_label",
+      "label": "Texto del enlace",
+      "default": "Ver toda la colección"
+    },
+    {
+      "type": "url",
+      "id": "link_url",
+      "label": "Enlace",
+      "info": "Si lo dejas vacío, lleva a la colección elegida."
+    },
+    {
+      "type": "select",
+      "id": "link_position",
+      "label": "Posición del enlace",
+      "options": [
+        { "value": "bottom", "label": "Botón bajo los productos" },
+        { "value": "heading", "label": "Junto al título" },
+        { "value": "none", "label": "Ocultar" }
+      ],
+      "default": "bottom"
+    },
+    {
+      "type": "header",
+      "content": "Composición"
+    },
+    {
+      "type": "select",
+      "id": "heading_alignment",
+      "label": "Alineación del título",
+      "options": [
+        { "value": "center", "label": "Centrado" },
+        { "value": "split", "label": "Izquierda con enlace a la derecha" },
+        { "value": "left", "label": "Izquierda" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "select",
+      "id": "columns_desktop",
+      "label": "Columnas · escritorio",
+      "options": [
+        { "value": "3", "label": "3" },
+        { "value": "4", "label": "4" }
+      ],
+      "default": "4"
+    },
+    {
+      "type": "select",
+      "id": "mobile_layout",
+      "label": "Disposición · móvil",
+      "options": [
+        { "value": "rail", "label": "Carril deslizable" },
+        { "value": "grid", "label": "Rejilla de 2 columnas" }
+      ],
+      "default": "rail"
+    },
+    {
+      "type": "header",
+      "content": "Tarjeta de producto",
+      "info": "Mismas opciones que la página de colección."
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "Proporción de imagen",
+      "options": [
+        { "value": "editorial", "label": "Editorial 3:4" },
+        { "value": "portrait", "label": "Retrato 2:3" },
+        { "value": "square", "label": "Cuadrada" },
+        { "value": "adapt", "label": "Original" }
+      ],
+      "default": "editorial"
+    },
+    {
+      "type": "select",
+      "id": "card_alignment",
+      "label": "Alineación del texto",
+      "options": [
+        { "value": "center", "label": "Centrado" },
+        { "value": "left", "label": "Izquierda" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_second_image",
+      "label": "Segunda imagen al pasar el ratón",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "hover_zoom",
+      "label": "Zoom al pasar el ratón",
+      "min": 100,
+      "max": 106,
+      "step": 1,
+      "unit": "%",
+      "default": 102
+    },
+    {
+      "type": "checkbox",
+      "id": "smart_color_media",
+      "label": "Imagen según color seleccionado",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_swatches",
+      "label": "Mostrar colores",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "max_swatches",
+      "label": "Máximo de colores visibles",
+      "min": 2,
+      "max": 8,
+      "step": 1,
+      "default": 5
+    },
+    {
+      "type": "checkbox",
+      "id": "show_vendor",
+      "label": "Mostrar marca",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "show_compare_at",
+      "label": "Mostrar precio anterior",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_sale_badge",
+      "label": "Etiqueta de rebaja",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "sale_label",
+      "label": "Texto de rebaja",
+      "default": "Rebaja"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_sold_out_badge",
+      "label": "Etiqueta de agotado",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "sold_out_label",
+      "label": "Texto de agotado",
+      "default": "Agotado"
+    },
+    {
+      "type": "header",
+      "content": "Estilo"
+    },
+    {
+      "type": "select",
+      "id": "scheme",
+      "label": "Fondo",
+      "options": [
+        { "value": "surface", "label": "Marfil (principal)" },
+        { "value": "cream", "label": "Crema (alterno)" },
+        { "value": "blush", "label": "Blush nude" }
+      ],
+      "default": "surface"
+    },
+    {
+      "type": "select",
+      "id": "spacing_top",
+      "label": "Espacio superior",
+      "options": [
+        { "value": "none", "label": "Ninguno" },
+        { "value": "xs", "label": "Mínimo" },
+        { "value": "sm", "label": "Pequeño" },
+        { "value": "md", "label": "Medio" },
+        { "value": "lg", "label": "Grande" }
+      ],
+      "default": "md"
+    },
+    {
+      "type": "select",
+      "id": "spacing_bottom",
+      "label": "Espacio inferior",
+      "options": [
+        { "value": "none", "label": "Ninguno" },
+        { "value": "xs", "label": "Mínimo" },
+        { "value": "sm", "label": "Pequeño" },
+        { "value": "md", "label": "Medio" },
+        { "value": "lg", "label": "Grande" }
+      ],
+      "default": "md"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Productos Saucha",
+      "category": "t:categories.products"
+    }
+  ]
+}
+{% endschema %}
