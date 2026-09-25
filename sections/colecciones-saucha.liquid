@@ -1,0 +1,1134 @@
+{% liquid
+  assign hover_scale = section.settings.hover_zoom | divided_by: 100.0
+
+  case section.settings.animation_easing
+    when 'suave'
+      assign animation_ease = 'cubic-bezier(0.22, 1, 0.36, 1)'
+    when 'editorial'
+      assign animation_ease = 'cubic-bezier(0.16, 1, 0.3, 1)'
+    when 'natural'
+      assign animation_ease = 'cubic-bezier(0.4, 0, 0.2, 1)'
+    else
+      assign animation_ease = 'ease'
+  endcase
+%}
+
+<section
+  id="ColeccionesSaucha-{{ section.id }}"
+  class="colecciones-saucha"
+  data-animation-enabled="{{ section.settings.animacion_entrada }}"
+  data-animation-type="{{ section.settings.tipo_animacion }}"
+  data-drag-desktop="{{ section.settings.arrastre_desktop }}"
+  data-alignment-desktop="{{ section.settings.alineacion_circulos }}"
+  style="
+    --cs-fondo: {{ section.settings.color_fondo }};
+    --cs-texto: {{ section.settings.color_texto }};
+    --cs-borde: {{ section.settings.color_borde }};
+
+    --cs-tamano-movil: {{ section.settings.tamano_movil }}px;
+    --cs-tamano-escritorio: {{ section.settings.tamano_escritorio }}px;
+
+    --cs-gap-movil: {{ section.settings.gap_movil }}px;
+    --cs-gap-escritorio: {{ section.settings.gap_escritorio }}px;
+
+    --cs-separacion-titulo-movil: {{ section.settings.separacion_titulo_movil }}px;
+    --cs-separacion-titulo-escritorio: {{ section.settings.separacion_titulo_escritorio }}px;
+
+    --cs-padding-y-movil: {{ section.settings.padding_vertical_movil }}px;
+    --cs-padding-y-escritorio: {{ section.settings.padding_vertical_escritorio }}px;
+    --cs-padding-x-movil: {{ section.settings.padding_lateral_movil }}px;
+    --cs-padding-x-escritorio: {{ section.settings.padding_lateral_escritorio }}px;
+    --cs-ancho-maximo: {{ section.settings.ancho_maximo }}px;
+
+    --cs-titulo-align: {{ section.settings.alineacion_titulo }};
+    --cs-lista-align: {{ section.settings.alineacion_circulos }};
+
+    --cs-titulo-font-family: var(--font-{{ section.settings.fuente_titulo }}--family);
+    --cs-titulo-font-style: var(--font-{{ section.settings.fuente_titulo }}--style, normal);
+    --cs-titulo-font-weight: var(--font-{{ section.settings.fuente_titulo }}--weight, 400);
+    --cs-titulo-movil: {{ section.settings.titulo_tamano_movil }}px;
+    --cs-titulo-escritorio: {{ section.settings.titulo_tamano_escritorio }}px;
+
+    --cs-nombre-font-family: var(--font-{{ section.settings.fuente_nombres }}--family);
+    --cs-nombre-font-style: var(--font-{{ section.settings.fuente_nombres }}--style, normal);
+    --cs-nombre-font-weight: var(--font-{{ section.settings.fuente_nombres }}--weight, 500);
+    --cs-nombre-movil: {{ section.settings.nombre_tamano_movil }}px;
+    --cs-nombre-escritorio: {{ section.settings.nombre_tamano_escritorio }}px;
+
+    --cs-animation-duration: {{ section.settings.animation_duration }}ms;
+    --cs-animation-stagger: {{ section.settings.animation_stagger }}ms;
+    --cs-animation-distance: {{ section.settings.animation_distance }}px;
+    --cs-animation-ease: {{ animation_ease }};
+
+    --cs-hover-duration: {{ section.settings.hover_duration }}ms;
+    --cs-hover-lift: {{ section.settings.hover_lift }}px;
+    --cs-hover-scale: {{ hover_scale }};
+  "
+>
+  <div class="colecciones-saucha__contenedor">
+
+    {% if section.settings.mostrar_titulo and section.settings.titulo != blank %}
+      <div class="colecciones-saucha__cabecera">
+        <h2 class="colecciones-saucha__titulo">
+          {{ section.settings.titulo }}
+        </h2>
+      </div>
+    {% endif %}
+
+    <div
+      class="colecciones-saucha__scroll"
+      data-colecciones-scroll
+      {% if section.settings.arrastre_desktop %}
+        aria-label="Colecciones desplazables"
+      {% endif %}
+    >
+      <div class="colecciones-saucha__lista">
+
+        {% for block in section.blocks %}
+          {% liquid
+            assign coleccion = block.settings.coleccion
+
+            assign imagen = blank
+            assign titulo = blank
+            assign enlace = blank
+
+            if coleccion != blank
+              assign imagen = coleccion.featured_image
+              assign titulo = coleccion.title
+              assign enlace = coleccion.url
+            endif
+
+            if block.settings.imagen_personalizada != blank
+              assign imagen = block.settings.imagen_personalizada
+            endif
+
+            if block.settings.titulo_personalizado != blank
+              assign titulo = block.settings.titulo_personalizado
+            endif
+
+            if block.settings.enlace_personalizado != blank
+              assign enlace = block.settings.enlace_personalizado
+            endif
+          %}
+
+          <a
+            class="
+              colecciones-saucha__item
+              {% if block.settings.destacada %}
+                colecciones-saucha__item--destacada
+              {% endif %}
+            "
+            style="--cs-index: {{ forloop.index0 }};"
+            {% if enlace != blank %}
+              href="{{ enlace }}"
+            {% else %}
+              role="link"
+              aria-disabled="true"
+            {% endif %}
+            {{ block.shopify_attributes }}
+          >
+            <div class="colecciones-saucha__imagen-contenedor">
+
+              {% if imagen != blank %}
+                {{
+                  imagen
+                  | image_url: width: 600
+                  | image_tag:
+                    loading: 'lazy',
+                    widths: '120, 160, 220, 320, 500, 600',
+                    sizes: '(max-width: 749px) 30vw, (max-width: 1099px) 100px, 160px',
+                    class: 'colecciones-saucha__imagen',
+                    alt: titulo
+                }}
+              {% else %}
+                {{ 'collection-1' | placeholder_svg_tag: 'colecciones-saucha__placeholder' }}
+              {% endif %}
+
+              {% if block.settings.destacada %}
+                <span class="colecciones-saucha__badge">
+                  {{ block.settings.texto_destacado }}
+                </span>
+              {% endif %}
+
+            </div>
+
+            {% if titulo != blank %}
+              <span class="colecciones-saucha__nombre">
+                {{ titulo }}
+              </span>
+            {% endif %}
+          </a>
+        {% endfor %}
+
+      </div>
+    </div>
+
+  </div>
+</section>
+
+{% stylesheet %}
+/* ============================================================
+   SAUCHA — COLECCIONES
+   Configurable / responsive / drag desktop
+   ============================================================ */
+
+.colecciones-saucha {
+  width: 100%;
+  background: var(--cs-fondo);
+  color: var(--cs-texto);
+}
+
+.colecciones-saucha *,
+.colecciones-saucha *::before,
+.colecciones-saucha *::after {
+  box-sizing: border-box;
+}
+
+.colecciones-saucha__contenedor {
+  width: min(
+    calc(100% - (var(--cs-padding-x-movil) * 2)),
+    var(--cs-ancho-maximo)
+  );
+  margin-inline: auto;
+  padding-block: var(--cs-padding-y-movil);
+}
+
+/* Título */
+
+.colecciones-saucha__cabecera {
+  width: 100%;
+  margin-bottom: var(--cs-separacion-titulo-movil);
+  text-align: var(--cs-titulo-align);
+}
+
+.colecciones-saucha__titulo {
+  margin: 0;
+  color: var(--cs-texto);
+
+  font-family: var(--cs-titulo-font-family);
+  font-style: var(--cs-titulo-font-style);
+  font-weight: var(--cs-titulo-font-weight);
+  font-size: var(--cs-titulo-movil);
+
+  line-height: 1.05;
+  letter-spacing: -0.025em;
+}
+
+/* Scroll */
+
+.colecciones-saucha__scroll {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-inline: contain;
+
+  touch-action: pan-x;
+}
+
+.colecciones-saucha__scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.colecciones-saucha__lista {
+  display: flex;
+  align-items: flex-start;
+  justify-content: var(--cs-lista-align);
+
+  width: max-content;
+  min-width: 100%;
+
+  gap: var(--cs-gap-movil);
+  padding: 2px 0 4px;
+
+  scroll-snap-type: x proximity;
+}
+
+/* Elemento */
+
+.colecciones-saucha__item {
+  flex: 0 0 auto;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  width: var(--cs-tamano-movil);
+  min-width: var(--cs-tamano-movil);
+
+  color: var(--cs-texto);
+  text-decoration: none;
+
+  scroll-snap-align: start;
+  -webkit-tap-highlight-color: transparent;
+
+  outline-offset: 4px;
+}
+
+/* Círculo */
+
+.colecciones-saucha__imagen-contenedor {
+  position: relative;
+
+  width: var(--cs-tamano-movil);
+  height: var(--cs-tamano-movil);
+
+  overflow: hidden;
+
+  border: 1px solid var(--cs-borde);
+  border-radius: 50%;
+
+  background: #f4eee8;
+
+  transform: translateY(0);
+  transition:
+    transform var(--cs-hover-duration) var(--cs-animation-ease),
+    border-color var(--cs-hover-duration) var(--cs-animation-ease),
+    box-shadow var(--cs-hover-duration) var(--cs-animation-ease);
+}
+
+.colecciones-saucha__imagen,
+.colecciones-saucha__placeholder {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.colecciones-saucha__imagen {
+  transform: scale(1);
+  transition:
+    transform var(--cs-hover-duration) var(--cs-animation-ease),
+    filter var(--cs-hover-duration) var(--cs-animation-ease);
+}
+
+/* Nombre */
+
+.colecciones-saucha__nombre {
+  display: -webkit-box;
+
+  width: 100%;
+  min-height: 1.3em;
+  margin-top: 8px;
+
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+
+  font-family: var(--cs-nombre-font-family);
+  font-style: var(--cs-nombre-font-style);
+  font-weight: var(--cs-nombre-font-weight);
+  font-size: var(--cs-nombre-movil);
+
+  line-height: 1.2;
+  letter-spacing: 0.03em;
+
+  text-align: center;
+  color: var(--cs-texto);
+}
+
+/* Destacada */
+
+.colecciones-saucha__item--destacada .colecciones-saucha__imagen-contenedor {
+  background: #3a312d;
+  border-color: #3a312d;
+}
+
+.colecciones-saucha__badge {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 8px;
+
+  background: rgb(58 49 45 / 0.72);
+  color: #fffdf9;
+
+  font-family: var(--cs-nombre-font-family);
+  font-style: var(--cs-nombre-font-style);
+  font-weight: 600;
+  font-size: max(8px, calc(var(--cs-nombre-movil) * 0.85));
+
+  line-height: 1.1;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+/* ============================================================
+   ANIMACIÓN DE ENTRADA
+   El JS activa data-animation-ready cuando puede observar la sección.
+   Así, sin JS, el contenido nunca queda oculto.
+   ============================================================ */
+
+.colecciones-saucha[data-animation-ready='true'][data-animation-enabled='true']
+  .colecciones-saucha__titulo,
+.colecciones-saucha[data-animation-ready='true'][data-animation-enabled='true']
+  .colecciones-saucha__item {
+  opacity: 0;
+  transition:
+    opacity var(--cs-animation-duration) var(--cs-animation-ease),
+    transform var(--cs-animation-duration) var(--cs-animation-ease);
+}
+
+.colecciones-saucha[data-animation-ready='true'][data-animation-enabled='true']
+  .colecciones-saucha__item {
+  transition-delay: calc(var(--cs-index) * var(--cs-animation-stagger));
+}
+
+/* Fade + subida */
+.colecciones-saucha[data-animation-ready='true'][data-animation-enabled='true'][data-animation-type='fade_up']
+  .colecciones-saucha__titulo,
+.colecciones-saucha[data-animation-ready='true'][data-animation-enabled='true'][data-animation-type='fade_up']
+  .colecciones-saucha__item {
+  transform: translateY(var(--cs-animation-distance));
+}
+
+/* Escala sutil */
+.colecciones-saucha[data-animation-ready='true'][data-animation-enabled='true'][data-animation-type='scale']
+  .colecciones-saucha__titulo,
+.colecciones-saucha[data-animation-ready='true'][data-animation-enabled='true'][data-animation-type='scale']
+  .colecciones-saucha__item {
+  transform: scale(0.965);
+}
+
+/* Fade simple */
+.colecciones-saucha[data-animation-ready='true'][data-animation-enabled='true'][data-animation-type='fade']
+  .colecciones-saucha__titulo,
+.colecciones-saucha[data-animation-ready='true'][data-animation-enabled='true'][data-animation-type='fade']
+  .colecciones-saucha__item {
+  transform: none;
+}
+
+.colecciones-saucha[data-animation-ready='true'][data-animation-enabled='true'].is-visible
+  .colecciones-saucha__titulo,
+.colecciones-saucha[data-animation-ready='true'][data-animation-enabled='true'].is-visible
+  .colecciones-saucha__item {
+  opacity: 1;
+  transform: none;
+}
+
+/* Hover sutil */
+
+@media (hover: hover) and (pointer: fine) {
+  .colecciones-saucha__item:hover .colecciones-saucha__imagen-contenedor {
+    transform: translateY(calc(var(--cs-hover-lift) * -1));
+    border-color: color-mix(in srgb, var(--cs-texto) 45%, var(--cs-borde));
+    box-shadow: 0 8px 24px rgb(58 49 45 / 0.08);
+  }
+
+  .colecciones-saucha__item:hover .colecciones-saucha__imagen {
+    transform: scale(var(--cs-hover-scale));
+  }
+}
+
+/* Móvil pequeño */
+
+@media screen and (max-width: 360px) {
+  .colecciones-saucha__lista {
+    gap: max(8px, calc(var(--cs-gap-movil) - 4px));
+  }
+}
+
+/* Tablet */
+
+@media screen and (min-width: 750px) and (max-width: 1099px) {
+  .colecciones-saucha__contenedor {
+    width: min(
+      calc(100% - (var(--cs-padding-x-escritorio) * 2)),
+      var(--cs-ancho-maximo)
+    );
+  }
+
+  .colecciones-saucha__lista {
+    gap: max(18px, var(--cs-gap-movil));
+  }
+}
+
+/* Escritorio */
+
+@media screen and (min-width: 1100px) {
+  .colecciones-saucha__contenedor {
+    width: min(
+      calc(100% - (var(--cs-padding-x-escritorio) * 2)),
+      var(--cs-ancho-maximo)
+    );
+    padding-block: var(--cs-padding-y-escritorio);
+  }
+
+  .colecciones-saucha__cabecera {
+    margin-bottom: var(--cs-separacion-titulo-escritorio);
+  }
+
+  .colecciones-saucha__titulo {
+    font-size: var(--cs-titulo-escritorio);
+  }
+
+  .colecciones-saucha__lista {
+    gap: var(--cs-gap-escritorio);
+  }
+
+  .colecciones-saucha__item {
+    width: var(--cs-tamano-escritorio);
+    min-width: var(--cs-tamano-escritorio);
+  }
+
+  .colecciones-saucha__imagen-contenedor {
+    width: var(--cs-tamano-escritorio);
+    height: var(--cs-tamano-escritorio);
+  }
+
+  .colecciones-saucha__nombre {
+    margin-top: 10px;
+    min-height: auto;
+    font-size: var(--cs-nombre-escritorio);
+  }
+
+  .colecciones-saucha[data-drag-desktop='true'] .colecciones-saucha__scroll {
+    overflow-x: auto;
+    cursor: grab;
+  }
+
+  .colecciones-saucha[data-drag-desktop='true'] .colecciones-saucha__scroll.is-dragging {
+    cursor: grabbing;
+    user-select: none;
+  }
+
+  .colecciones-saucha[data-drag-desktop='true'] .colecciones-saucha__scroll.is-dragging a {
+    pointer-events: none;
+  }
+}
+
+/* Accesibilidad */
+
+@media (prefers-reduced-motion: reduce) {
+  .colecciones-saucha,
+  .colecciones-saucha *,
+  .colecciones-saucha *::before,
+  .colecciones-saucha *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+  }
+}
+{% endstylesheet %}
+
+{% if section.settings.css_personalizado != blank %}
+  {% style %}
+    /* CSS personalizado desde el editor del tema.
+       Se recomienda comenzar los selectores por #ColeccionesSaucha-{{ section.id }} */
+    {{ section.settings.css_personalizado }}
+  {% endstyle %}
+{% endif %}
+
+<script>
+  (() => {
+    const sectionId = 'ColeccionesSaucha-{{ section.id }}';
+
+    function initSauchaCollections() {
+      const section = document.getElementById(sectionId);
+      if (!section || section.dataset.sauchaInitialized === 'true') return;
+
+      section.dataset.sauchaInitialized = 'true';
+
+      /* ------------------------------
+         Animación de entrada
+         ------------------------------ */
+      if (section.dataset.animationEnabled === 'true') {
+        section.dataset.animationReady = 'true';
+
+        if ('IntersectionObserver' in window) {
+          const observer = new IntersectionObserver(
+            (entries, obs) => {
+              entries.forEach((entry) => {
+                if (!entry.isIntersecting) return;
+                section.classList.add('is-visible');
+                obs.unobserve(entry.target);
+              });
+            },
+            {
+              threshold: 0.14,
+              rootMargin: '0px 0px -5% 0px'
+            }
+          );
+
+          observer.observe(section);
+        } else {
+          section.classList.add('is-visible');
+        }
+      }
+
+      /* ------------------------------
+         Arrastre con ratón en desktop
+         ------------------------------ */
+      const scroller = section.querySelector('[data-colecciones-scroll]');
+      if (!scroller || section.dataset.dragDesktop !== 'true') return;
+
+      let isPointerDown = false;
+      let startX = 0;
+      let startScrollLeft = 0;
+      let hasDragged = false;
+      let pointerId = null;
+
+      const isDesktopMouse = (event) => {
+        return window.matchMedia('(min-width: 1100px)').matches && event.pointerType === 'mouse';
+      };
+
+      scroller.addEventListener('pointerdown', (event) => {
+        if (!isDesktopMouse(event) || event.button !== 0) return;
+
+        isPointerDown = true;
+        hasDragged = false;
+        pointerId = event.pointerId;
+        startX = event.clientX;
+        startScrollLeft = scroller.scrollLeft;
+
+        scroller.setPointerCapture?.(event.pointerId);
+        scroller.classList.add('is-dragging');
+      });
+
+      scroller.addEventListener('pointermove', (event) => {
+        if (!isPointerDown || event.pointerId !== pointerId) return;
+
+        const delta = event.clientX - startX;
+
+        if (Math.abs(delta) > 4) {
+          hasDragged = true;
+        }
+
+        if (hasDragged) {
+          event.preventDefault();
+          scroller.scrollLeft = startScrollLeft - delta;
+        }
+      });
+
+      const stopDragging = (event) => {
+        if (!isPointerDown) return;
+
+        if (pointerId !== null && scroller.hasPointerCapture?.(pointerId)) {
+          scroller.releasePointerCapture(pointerId);
+        }
+
+        isPointerDown = false;
+        pointerId = null;
+        scroller.classList.remove('is-dragging');
+
+        if (hasDragged) {
+          window.setTimeout(() => {
+            hasDragged = false;
+          }, 0);
+        }
+      };
+
+      scroller.addEventListener('pointerup', stopDragging);
+      scroller.addEventListener('pointercancel', stopDragging);
+      scroller.addEventListener('lostpointercapture', stopDragging);
+
+      /* Evita abrir una colección al soltar después de arrastrar. */
+      scroller.addEventListener(
+        'click',
+        (event) => {
+          if (!hasDragged) return;
+          event.preventDefault();
+          event.stopPropagation();
+          hasDragged = false;
+        },
+        true
+      );
+    }
+
+    initSauchaCollections();
+
+    document.addEventListener('shopify:section:load', (event) => {
+      if (event.detail?.sectionId === '{{ section.id }}') {
+        const freshSection = document.getElementById(sectionId);
+        if (freshSection) {
+          freshSection.dataset.sauchaInitialized = 'false';
+        }
+        initSauchaCollections();
+      }
+    });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Colecciones Saucha",
+  "tag": "section",
+  "class": "seccion-colecciones-saucha",
+
+  "settings": [
+    {
+      "type": "header",
+      "content": "Contenido"
+    },
+    {
+      "type": "checkbox",
+      "id": "mostrar_titulo",
+      "label": "Mostrar título",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "titulo",
+      "label": "Título",
+      "default": "Descubre nuestras colecciones"
+    },
+
+    {
+      "type": "header",
+      "content": "Alineación"
+    },
+    {
+      "type": "select",
+      "id": "alineacion_titulo",
+      "label": "Alineación del título",
+      "options": [
+        { "value": "left", "label": "Izquierda" },
+        { "value": "center", "label": "Centro" },
+        { "value": "right", "label": "Derecha" }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "select",
+      "id": "alineacion_circulos",
+      "label": "Alineación de las categorías",
+      "options": [
+        { "value": "flex-start", "label": "Izquierda" },
+        { "value": "center", "label": "Centro" },
+        { "value": "flex-end", "label": "Derecha" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "range",
+      "id": "separacion_titulo_movil",
+      "label": "Separación título / categorías · móvil",
+      "min": 0,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "separacion_titulo_escritorio",
+      "label": "Separación título / categorías · escritorio",
+      "min": 0,
+      "max": 120,
+      "step": 2,
+      "unit": "px",
+      "default": 22
+    },
+
+    {
+      "type": "header",
+      "content": "Tipografía · título"
+    },
+    {
+      "type": "select",
+      "id": "fuente_titulo",
+      "label": "Tipografía global del título",
+      "info": "Utiliza únicamente las tipografías definidas en los estilos globales del tema.",
+      "options": [
+        { "value": "heading", "label": "Títulos" },
+        { "value": "body", "label": "Texto" },
+        { "value": "subheading", "label": "Subtítulos" },
+        { "value": "accent", "label": "Acento" }
+      ],
+      "default": "heading"
+    },
+    {
+      "type": "range",
+      "id": "titulo_tamano_movil",
+      "label": "Tamaño del título · móvil",
+      "min": 14,
+      "max": 48,
+      "step": 1,
+      "unit": "px",
+      "default": 26
+    },
+    {
+      "type": "range",
+      "id": "titulo_tamano_escritorio",
+      "label": "Tamaño del título · escritorio",
+      "min": 18,
+      "max": 72,
+      "step": 1,
+      "unit": "px",
+      "default": 32
+    },
+
+    {
+      "type": "header",
+      "content": "Tipografía · nombres"
+    },
+    {
+      "type": "select",
+      "id": "fuente_nombres",
+      "label": "Tipografía global de las categorías",
+      "info": "Utiliza únicamente las tipografías definidas en los estilos globales del tema.",
+      "options": [
+        { "value": "body", "label": "Texto" },
+        { "value": "heading", "label": "Títulos" },
+        { "value": "subheading", "label": "Subtítulos" },
+        { "value": "accent", "label": "Acento" }
+      ],
+      "default": "body"
+    },
+    {
+      "type": "range",
+      "id": "nombre_tamano_movil",
+      "label": "Tamaño de nombres · móvil",
+      "min": 8,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 10
+    },
+    {
+      "type": "range",
+      "id": "nombre_tamano_escritorio",
+      "label": "Tamaño de nombres · escritorio",
+      "min": 8,
+      "max": 28,
+      "step": 1,
+      "unit": "px",
+      "default": 11
+    },
+
+    {
+      "type": "header",
+      "content": "Tamaño de categorías"
+    },
+    {
+      "type": "range",
+      "id": "tamano_movil",
+      "label": "Diámetro · móvil",
+      "min": 70,
+      "max": 200,
+      "step": 2,
+      "unit": "px",
+      "default": 104
+    },
+    {
+      "type": "range",
+      "id": "tamano_escritorio",
+      "label": "Diámetro · escritorio",
+      "min": 90,
+      "max": 240,
+      "step": 2,
+      "unit": "px",
+      "default": 126
+    },
+    {
+      "type": "range",
+      "id": "gap_movil",
+      "label": "Separación entre categorías · móvil",
+      "min": 6,
+      "max": 50,
+      "step": 1,
+      "unit": "px",
+      "default": 14
+    },
+    {
+      "type": "range",
+      "id": "gap_escritorio",
+      "label": "Separación entre categorías · escritorio",
+      "min": 8,
+      "max": 80,
+      "step": 1,
+      "unit": "px",
+      "default": 34
+    },
+
+    {
+      "type": "header",
+      "content": "Espaciado del componente"
+    },
+    {
+      "type": "range",
+      "id": "padding_vertical_movil",
+      "label": "Espaciado vertical · móvil",
+      "min": 0,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "padding_vertical_escritorio",
+      "label": "Espaciado vertical · escritorio",
+      "min": 0,
+      "max": 120,
+      "step": 2,
+      "unit": "px",
+      "default": 28
+    },
+    {
+      "type": "range",
+      "id": "padding_lateral_movil",
+      "label": "Margen lateral · móvil",
+      "min": 8,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "padding_lateral_escritorio",
+      "label": "Margen lateral · escritorio",
+      "min": 16,
+      "max": 100,
+      "step": 2,
+      "unit": "px",
+      "default": 32
+    },
+    {
+      "type": "range",
+      "id": "ancho_maximo",
+      "label": "Ancho máximo del contenido",
+      "min": 900,
+      "max": 1800,
+      "step": 20,
+      "unit": "px",
+      "default": 1280
+    },
+
+    {
+      "type": "header",
+      "content": "Interacción"
+    },
+    {
+      "type": "checkbox",
+      "id": "arrastre_desktop",
+      "label": "Permitir arrastrar con el ratón en escritorio",
+      "info": "Permite desplazar horizontalmente las categorías manteniendo pulsado el botón del ratón.",
+      "default": true
+    },
+
+    {
+      "type": "header",
+      "content": "Animación de entrada"
+    },
+    {
+      "type": "checkbox",
+      "id": "animacion_entrada",
+      "label": "Activar animación",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "tipo_animacion",
+      "label": "Tipo de animación",
+      "options": [
+        { "value": "fade_up", "label": "Aparecer y subir" },
+        { "value": "fade", "label": "Fundido" },
+        { "value": "scale", "label": "Escala suave" }
+      ],
+      "default": "fade_up",
+      "visible_if": "{{ section.settings.animacion_entrada }}"
+    },
+    {
+      "type": "select",
+      "id": "animation_easing",
+      "label": "Sensación de la animación",
+      "options": [
+        { "value": "suave", "label": "Suave" },
+        { "value": "editorial", "label": "Editorial" },
+        { "value": "natural", "label": "Natural" },
+        { "value": "standard", "label": "Estándar" }
+      ],
+      "default": "editorial",
+      "visible_if": "{{ section.settings.animacion_entrada }}"
+    },
+    {
+      "type": "range",
+      "id": "animation_duration",
+      "label": "Duración",
+      "min": 200,
+      "max": 1200,
+      "step": 50,
+      "unit": "ms",
+      "default": 650,
+      "visible_if": "{{ section.settings.animacion_entrada }}"
+    },
+    {
+      "type": "range",
+      "id": "animation_stagger",
+      "label": "Retraso entre círculos",
+      "min": 0,
+      "max": 160,
+      "step": 10,
+      "unit": "ms",
+      "default": 50,
+      "visible_if": "{{ section.settings.animacion_entrada }}"
+    },
+    {
+      "type": "range",
+      "id": "animation_distance",
+      "label": "Distancia de entrada",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 12,
+      "visible_if": "{{ section.settings.animacion_entrada and section.settings.tipo_animacion == 'fade_up' }}"
+    },
+
+    {
+      "type": "header",
+      "content": "Animación de los círculos"
+    },
+    {
+      "type": "range",
+      "id": "hover_duration",
+      "label": "Duración del hover",
+      "min": 120,
+      "max": 700,
+      "step": 20,
+      "unit": "ms",
+      "default": 320
+    },
+    {
+      "type": "range",
+      "id": "hover_lift",
+      "label": "Elevación al pasar el ratón",
+      "min": 0,
+      "max": 10,
+      "step": 1,
+      "unit": "px",
+      "default": 3
+    },
+    {
+      "type": "range",
+      "id": "hover_zoom",
+      "label": "Zoom de imagen al pasar el ratón",
+      "min": 100,
+      "max": 112,
+      "step": 1,
+      "unit": "%",
+      "default": 104
+    },
+
+    {
+      "type": "header",
+      "content": "Colores"
+    },
+    {
+      "type": "color",
+      "id": "color_fondo",
+      "label": "Color de fondo",
+      "default": "#FFFDF9"
+    },
+    {
+      "type": "color",
+      "id": "color_texto",
+      "label": "Color del texto",
+      "default": "#3A312D"
+    },
+    {
+      "type": "color",
+      "id": "color_borde",
+      "label": "Color del borde de las imágenes",
+      "default": "#E7DDD6"
+    },
+
+    {
+      "type": "header",
+      "content": "CSS personalizado"
+    },
+    {
+      "type": "paragraph",
+      "content": "Para ajustes avanzados de animación o estilo. Utiliza las clases del componente, por ejemplo .colecciones-saucha__imagen-contenedor."
+    },
+    {
+      "type": "textarea",
+      "id": "css_personalizado",
+      "label": "CSS adicional",
+      "info": "Opcional. Escribe CSS completo. Para limitarlo a esta sección, comienza el selector por el ID de la sección."
+    }
+  ],
+
+  "blocks": [
+    {
+      "type": "coleccion",
+      "name": "Colección",
+      "settings": [
+        {
+          "type": "collection",
+          "id": "coleccion",
+          "label": "Colección",
+          "info": "Selecciona una colección. El nombre, la imagen y el enlace se cargarán automáticamente."
+        },
+        {
+          "type": "header",
+          "content": "Opciones avanzadas"
+        },
+        {
+          "type": "image_picker",
+          "id": "imagen_personalizada",
+          "label": "Imagen personalizada",
+          "info": "Opcional. Si no seleccionas ninguna, se utilizará automáticamente la imagen destacada de la colección."
+        },
+        {
+          "type": "text",
+          "id": "titulo_personalizado",
+          "label": "Nombre personalizado",
+          "info": "Opcional. Si lo dejas vacío, se utilizará automáticamente el nombre de la colección."
+        },
+        {
+          "type": "url",
+          "id": "enlace_personalizado",
+          "label": "Enlace personalizado",
+          "info": "Opcional. Si lo dejas vacío, se utilizará automáticamente el enlace de la colección."
+        },
+        {
+          "type": "header",
+          "content": "Destacado"
+        },
+        {
+          "type": "checkbox",
+          "id": "destacada",
+          "label": "Mostrar como destacada",
+          "default": false
+        },
+        {
+          "type": "text",
+          "id": "texto_destacado",
+          "label": "Texto destacado",
+          "default": "REBAJAS",
+          "visible_if": "{{ block.settings.destacada }}"
+        }
+      ]
+    }
+  ],
+
+  "presets": [
+    {
+      "name": "Colecciones Saucha",
+      "blocks": [
+        { "type": "coleccion" },
+        { "type": "coleccion" },
+        { "type": "coleccion" },
+        { "type": "coleccion" },
+        { "type": "coleccion" },
+        { "type": "coleccion" },
+        { "type": "coleccion" },
+        { "type": "coleccion" }
+      ]
+    }
+  ]
+}
+{% endschema %}

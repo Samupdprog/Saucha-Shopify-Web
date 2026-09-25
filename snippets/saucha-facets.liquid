@@ -1,0 +1,239 @@
+{%- for filter in collection.filters -%}
+  {%- liquid
+    assign group_open = false
+    assign has_active_value = false
+
+    if filter.type == 'price_range'
+      if filter.min_value.value != nil or filter.max_value.value != nil
+        assign has_active_value = true
+      endif
+    elsif filter.active_values.size > 0
+      assign has_active_value = true
+    endif
+
+    case section.settings.filters_default_open
+      when 'all'
+        assign group_open = true
+      when 'active'
+        if has_active_value
+          assign group_open = true
+        endif
+      when 'swatches'
+        if filter.presentation == 'swatch' or has_active_value
+          assign group_open = true
+        endif
+    endcase
+  -%}
+
+  <details
+    class="saucha-filter-group"
+    data-filter-group="{{ filter.param_name | escape }}"
+    {% if group_open %}open{% endif %}
+  >
+    <summary class="saucha-filter-group__summary">
+      <span>{{ filter.label | escape }}</span>
+
+      <span class="saucha-filter-group__meta">
+        {%- if filter.type != 'price_range' and filter.active_values.size > 0 -%}
+          <span class="saucha-filter-group__selected-count" aria-label="{{ filter.active_values.size }} seleccionados">
+            {{ filter.active_values.size }}
+          </span>
+        {%- elsif filter.type == 'price_range' and has_active_value -%}
+          <span class="saucha-filter-group__selected-count" aria-label="Filtro de precio activo">1</span>
+        {%- endif -%}
+
+        <span class="saucha-filter-group__chevron" aria-hidden="true"></span>
+      </span>
+    </summary>
+
+    <div class="saucha-filter-group__body">
+      {%- case filter.type -%}
+        {%- when 'boolean' -%}
+          <div class="saucha-filter-list">
+            {%- if filter.true_value != nil -%}
+              {%- assign value = filter.true_value -%}
+              <label class="saucha-filter-option{% if value.count == 0 and value.active == false %} is-disabled{% endif %}">
+                <input
+                  class="saucha-filter-option__input"
+                  type="checkbox"
+                  name="{{ value.param_name }}"
+                  value="{{ value.value | escape }}"
+                  {% if value.active %}checked{% endif %}
+                  {% if value.count == 0 and value.active == false %}disabled{% endif %}
+                >
+                <span class="saucha-filter-option__box" aria-hidden="true">
+                  <svg viewBox="0 0 12 10" fill="none">
+                    <path d="M1.5 5.2 4.5 8 10.5 1.7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </span>
+                <span class="saucha-filter-option__label">{{ value.label | escape }}</span>
+                <span class="saucha-filter-option__count" aria-label="{{ value.count }} productos">{{ value.count }}</span>
+              </label>
+            {%- endif -%}
+
+            {%- if filter.false_value != nil -%}
+              {%- assign value = filter.false_value -%}
+              <label class="saucha-filter-option{% if value.count == 0 and value.active == false %} is-disabled{% endif %}">
+                <input
+                  class="saucha-filter-option__input"
+                  type="checkbox"
+                  name="{{ value.param_name }}"
+                  value="{{ value.value | escape }}"
+                  {% if value.active %}checked{% endif %}
+                  {% if value.count == 0 and value.active == false %}disabled{% endif %}
+                >
+                <span class="saucha-filter-option__box" aria-hidden="true">
+                  <svg viewBox="0 0 12 10" fill="none">
+                    <path d="M1.5 5.2 4.5 8 10.5 1.7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </span>
+                <span class="saucha-filter-option__label">{{ value.label | escape }}</span>
+                <span class="saucha-filter-option__count" aria-label="{{ value.count }} productos">{{ value.count }}</span>
+              </label>
+            {%- endif -%}
+          </div>
+
+        {%- when 'list' -%}
+          {%- if filter.presentation == 'swatch' -%}
+            <div class="saucha-filter-swatches" role="group" aria-label="{{ filter.label | escape }}">
+              {%- for filter_value in filter.values -%}
+                <label
+                  class="saucha-filter-swatch{% if filter_value.active %} is-active{% endif %}{% if filter_value.count == 0 and filter_value.active == false %} is-disabled{% endif %}"
+                  title="{{ filter_value.label | escape }} — {{ filter_value.count }} productos"
+                >
+                  <input
+                    class="saucha-filter-swatch__input saucha-visually-hidden"
+                    type="checkbox"
+                    name="{{ filter_value.param_name }}"
+                    value="{{ filter_value.value | escape }}"
+                    {% if filter_value.active %}checked{% endif %}
+                    {% if filter_value.count == 0 and filter_value.active == false %}disabled{% endif %}
+                    aria-label="{{ filter_value.label | escape }} — {{ filter_value.count }} productos"
+                  >
+
+                  <span
+                    class="saucha-filter-swatch__visual"
+                    aria-hidden="true"
+                    style="
+                      {%- if filter_value.swatch.image != blank -%}
+                        background-image: url('{{ filter_value.swatch.image | image_url: width: 80 }}');
+                      {%- elsif filter_value.swatch.color != blank -%}
+                        background-color: {{ filter_value.swatch.color }};
+                      {%- endif -%}
+                    "
+                  ></span>
+                </label>
+              {%- endfor -%}
+            </div>
+
+          {%- elsif filter.presentation == 'image' -%}
+            <div class="saucha-filter-list saucha-filter-list--images">
+              {%- for filter_value in filter.values -%}
+                <label class="saucha-filter-option saucha-filter-option--image{% if filter_value.count == 0 and filter_value.active == false %} is-disabled{% endif %}">
+                  <input
+                    class="saucha-filter-option__input"
+                    type="checkbox"
+                    name="{{ filter_value.param_name }}"
+                    value="{{ filter_value.value | escape }}"
+                    {% if filter_value.active %}checked{% endif %}
+                    {% if filter_value.count == 0 and filter_value.active == false %}disabled{% endif %}
+                  >
+
+                  <span class="saucha-filter-option__box" aria-hidden="true">
+                    <svg viewBox="0 0 12 10" fill="none">
+                      <path d="M1.5 5.2 4.5 8 10.5 1.7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </span>
+
+                  {%- if filter_value.image != blank -%}
+                    {{ filter_value.image
+                      | image_url: width: 96
+                      | image_tag:
+                        loading: 'lazy',
+                        widths: '48, 72, 96',
+                        sizes: '40px',
+                        class: 'saucha-filter-option__image',
+                        alt: filter_value.label
+                    }}
+                  {%- endif -%}
+
+                  <span class="saucha-filter-option__label">{{ filter_value.label | escape }}</span>
+                  <span class="saucha-filter-option__count" aria-label="{{ filter_value.count }} productos">{{ filter_value.count }}</span>
+                </label>
+              {%- endfor -%}
+            </div>
+
+          {%- else -%}
+            <div class="saucha-filter-list">
+              {%- for filter_value in filter.values -%}
+                <label class="saucha-filter-option{% if filter_value.count == 0 and filter_value.active == false %} is-disabled{% endif %}">
+                  <input
+                    class="saucha-filter-option__input"
+                    type="checkbox"
+                    name="{{ filter_value.param_name }}"
+                    value="{{ filter_value.value | escape }}"
+                    {% if filter_value.active %}checked{% endif %}
+                    {% if filter_value.count == 0 and filter_value.active == false %}disabled{% endif %}
+                  >
+
+                  <span class="saucha-filter-option__box" aria-hidden="true">
+                    <svg viewBox="0 0 12 10" fill="none">
+                      <path d="M1.5 5.2 4.5 8 10.5 1.7" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </span>
+
+                  <span class="saucha-filter-option__label">{{ filter_value.label | escape }}</span>
+                  <span class="saucha-filter-option__count" aria-label="{{ filter_value.count }} productos">{{ filter_value.count }}</span>
+                </label>
+              {%- endfor -%}
+            </div>
+          {%- endif -%}
+
+        {%- when 'price_range' -%}
+          {%- assign range_max = filter.range_max | money_without_currency | replace: ',', '' -%}
+
+          <div class="saucha-price-filter">
+            <div class="saucha-price-filter__field">
+              <label for="SauchaFilterMin-{{ section.id }}-{{ forloop.index }}">Desde</label>
+
+              <div class="saucha-price-filter__input-wrap">
+                <span aria-hidden="true">{{ cart.currency.symbol }}</span>
+                <input
+                  id="SauchaFilterMin-{{ section.id }}-{{ forloop.index }}"
+                  name="{{ filter.min_value.param_name }}"
+                  type="number"
+                  inputmode="decimal"
+                  min="0"
+                  max="{{ range_max }}"
+                  step="0.01"
+                  placeholder="0"
+                  {% if filter.min_value.value != nil %}value="{{ filter.min_value.value | money_without_currency | replace: ',', '' }}"{% endif %}
+                >
+              </div>
+            </div>
+
+            <span class="saucha-price-filter__separator" aria-hidden="true">—</span>
+
+            <div class="saucha-price-filter__field">
+              <label for="SauchaFilterMax-{{ section.id }}-{{ forloop.index }}">Hasta</label>
+
+              <div class="saucha-price-filter__input-wrap">
+                <span aria-hidden="true">{{ cart.currency.symbol }}</span>
+                <input
+                  id="SauchaFilterMax-{{ section.id }}-{{ forloop.index }}"
+                  name="{{ filter.max_value.param_name }}"
+                  type="number"
+                  inputmode="decimal"
+                  min="0"
+                  max="{{ range_max }}"
+                  step="0.01"
+                  placeholder="{{ range_max }}"
+                  {% if filter.max_value.value != nil %}value="{{ filter.max_value.value | money_without_currency | replace: ',', '' }}"{% endif %}
+                >
+              </div>
+            </div>
+          </div>
+      {%- endcase -%}
+    </div>
+  </details>
+{%- endfor -%}

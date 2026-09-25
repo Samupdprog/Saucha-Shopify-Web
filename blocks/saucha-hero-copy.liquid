@@ -1,0 +1,1008 @@
+{% liquid
+  assign has_any_content = false
+
+  for i in (1..4)
+    assign eyebrow_key = 'slide_' | append: i | append: '_eyebrow'
+    assign title_key = 'slide_' | append: i | append: '_title'
+
+    if block.settings[eyebrow_key] != blank or block.settings[title_key] != blank
+      assign has_any_content = true
+    endif
+  endfor
+%}
+
+<div
+  class="saucha-hero-copy saucha-hero-copy--{{ block.id }}{% if block.settings.height_mode == 'custom' %} saucha-hero-copy--custom-height{% endif %}{% if block.settings.enable_text_shadow %} saucha-hero-copy--text-shadow{% endif %}{% if block.settings.enable_button_shadow %} saucha-hero-copy--button-shadow{% endif %}"
+  data-saucha-hero-copy
+  {{ block.shopify_attributes }}
+  style="
+    --saucha-copy-color: {{ block.settings.text_color }};
+    --saucha-copy-align: {{ block.settings.alignment }};
+
+    --saucha-text-shadow-opacity: {{ block.settings.text_shadow_opacity }}%;
+    --saucha-text-shadow-y: {{ block.settings.text_shadow_y }}px;
+    --saucha-text-shadow-blur: {{ block.settings.text_shadow_blur }}px;
+
+    --saucha-button-shadow-opacity: {{ block.settings.button_shadow_opacity }}%;
+    --saucha-button-shadow-y: {{ block.settings.button_shadow_y }}px;
+    --saucha-button-shadow-blur: {{ block.settings.button_shadow_blur }}px;
+
+    --saucha-copy-height-mobile: {{ block.settings.height_mobile }}px;
+    --saucha-copy-height-desktop: {{ block.settings.height_desktop }}px;
+    --saucha-copy-vertical: {{ block.settings.vertical_position }};
+
+    --saucha-copy-eyebrow-font: {{ block.settings.eyebrow_font }};
+    --saucha-copy-title-font: {{ block.settings.title_font }};
+
+    --saucha-copy-eyebrow-size-mobile: {{ block.settings.eyebrow_size_mobile }}px;
+    --saucha-copy-eyebrow-size-desktop: {{ block.settings.eyebrow_size_desktop }}px;
+
+    --saucha-copy-title-size-mobile: {{ block.settings.title_size_mobile }}px;
+    --saucha-copy-title-size-desktop: {{ block.settings.title_size_desktop }}px;
+    --saucha-copy-title-max-width: {{ block.settings.title_max_width }}px;
+    --saucha-copy-title-line-height: {{ block.settings.title_line_height | divided_by: 100.0 }};
+    --saucha-copy-title-letter-spacing: {{ block.settings.title_letter_spacing | divided_by: 100.0 }}em;
+
+    --saucha-copy-gap: {{ block.settings.text_gap }}px;
+    --saucha-copy-button-gap: {{ block.settings.button_gap }}px;
+
+    --saucha-button-bg: {{ block.settings.custom_button_background }};
+    --saucha-button-text: {{ block.settings.custom_button_text }};
+    --saucha-button-border: {{ block.settings.custom_button_border }};
+    --saucha-button-border-width: {{ block.settings.button_border_width }}px;
+    --saucha-button-radius: {{ block.settings.button_radius }}px;
+
+    --saucha-button-font-size-mobile: {{ block.settings.button_font_size_mobile }}px;
+    --saucha-button-font-size-desktop: {{ block.settings.button_font_size_desktop }}px;
+
+    --saucha-button-padding-x-mobile: {{ block.settings.button_padding_x_mobile }}px;
+    --saucha-button-padding-y-mobile: {{ block.settings.button_padding_y_mobile }}px;
+    --saucha-button-padding-x-desktop: {{ block.settings.button_padding_x_desktop }}px;
+    --saucha-button-padding-y-desktop: {{ block.settings.button_padding_y_desktop }}px;
+
+    --saucha-button-min-width-mobile: {{ block.settings.button_min_width_mobile }}px;
+    --saucha-button-min-width-desktop: {{ block.settings.button_min_width_desktop }}px;
+
+    --saucha-copy-duration: {{ block.settings.animation_duration }}ms;
+    --saucha-copy-stagger: {{ block.settings.animation_stagger }}ms;
+    --saucha-copy-distance: {{ block.settings.animation_distance }}px;
+    --saucha-copy-ease: {{ block.settings.animation_easing }};
+  "
+>
+  {% if has_any_content %}
+    {% for i in (1..4) %}
+      {% liquid
+        assign eyebrow_key = 'slide_' | append: i | append: '_eyebrow'
+        assign title_key = 'slide_' | append: i | append: '_title'
+        assign eyebrow = block.settings[eyebrow_key]
+        assign title = block.settings[title_key]
+      %}
+
+      <div
+        class="saucha-hero-copy__item{% if forloop.first %} is-active{% endif %}"
+        data-copy-slide="{{ forloop.index0 }}"
+        aria-hidden="{% if forloop.first %}false{% else %}true{% endif %}"
+      >
+        <div class="saucha-hero-copy__stack">
+          {% if eyebrow != blank %}
+            <div class="saucha-hero-copy__eyebrow">
+              {{ eyebrow | escape }}
+            </div>
+          {% endif %}
+
+          {% if title != blank %}
+            <div class="saucha-hero-copy__title">
+              {{ title | escape | newline_to_br }}
+            </div>
+          {% endif %}
+
+          {% if block.settings.label != blank %}
+            <div class="saucha-hero-copy__button">
+              {% render 'button', link: block.settings.link %}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    {% endfor %}
+  {% endif %}
+</div>
+
+
+{% if block.settings.button_hover_css != blank %}
+  <style>
+    .saucha-hero-copy--{{ block.id }} .saucha-hero-copy__button :is(.button, .button-secondary, .button-custom):hover,
+    .saucha-hero-copy--{{ block.id }} .saucha-hero-copy__button :is(.button, .button-secondary, .button-custom):focus-visible {
+      {{ block.settings.button_hover_css }}
+    }
+  </style>
+{% endif %}
+
+{% stylesheet %}
+  /* =========================================================
+     SAUCHA · HERO COPY
+     Texto + título + botón sincronizados con el carrusel
+     ========================================================= */
+
+  .saucha-hero-copy {
+    position: relative;
+    width: 100%;
+    color: var(--saucha-copy-color);
+    text-align: var(--saucha-copy-align);
+  }
+
+  .saucha-hero-copy__item {
+    display: none;
+    width: 100%;
+    pointer-events: none;
+  }
+
+  .saucha-hero-copy__item.is-active {
+    display: block;
+    pointer-events: auto;
+  }
+
+  .saucha-hero-copy--custom-height .saucha-hero-copy__item {
+    min-height: var(--saucha-copy-height-mobile);
+  }
+
+  .saucha-hero-copy__stack {
+    display: flex;
+    flex-direction: column;
+    justify-content: var(--saucha-copy-vertical);
+    align-items: center;
+    width: 100%;
+    min-height: inherit;
+    gap: var(--saucha-copy-gap);
+  }
+
+  .saucha-hero-copy[style*="--saucha-copy-align: left"] .saucha-hero-copy__stack {
+    align-items: flex-start;
+  }
+
+  .saucha-hero-copy[style*="--saucha-copy-align: right"] .saucha-hero-copy__stack {
+    align-items: flex-end;
+  }
+
+  /* -------------------------
+     Texto pequeño
+     ------------------------- */
+
+  .saucha-hero-copy__eyebrow {
+    font-family: var(--saucha-copy-eyebrow-font);
+    font-size: var(--saucha-copy-eyebrow-size-mobile);
+    font-weight: 400;
+    line-height: 1.15;
+    letter-spacing: 0;
+  }
+
+  /* -------------------------
+     Título
+     ------------------------- */
+
+  .saucha-hero-copy__title {
+    width: min(100%, var(--saucha-copy-title-max-width));
+    font-family: var(--saucha-copy-title-font);
+    font-size: var(--saucha-copy-title-size-mobile);
+    font-weight: 400;
+    line-height: var(--saucha-copy-title-line-height);
+    letter-spacing: var(--saucha-copy-title-letter-spacing);
+    text-wrap: balance;
+  }
+
+  /* -------------------------
+     Botón
+     ------------------------- */
+
+  .saucha-hero-copy__button {
+    margin-top: var(--saucha-copy-button-gap);
+  }
+
+  .saucha-hero-copy__button :is(.button, .button-secondary, .button-custom) {
+    min-width: var(--saucha-button-min-width-mobile);
+    min-height: 0;
+    padding:
+      var(--saucha-button-padding-y-mobile)
+      var(--saucha-button-padding-x-mobile);
+
+    border-width: var(--saucha-button-border-width);
+    border-style: solid;
+    border-radius: var(--saucha-button-radius);
+
+    font-size: var(--saucha-button-font-size-mobile);
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+.saucha-hero-copy__button .button-custom {
+  --btn-fill-bg-color: #ffffff;
+  --btn-fill-hover-bg-color: #000000;
+
+  background:
+    linear-gradient(
+      to bottom,
+      var(--btn-fill-hover-bg-color) 50%,
+      var(--btn-fill-bg-color) 50%
+    )
+    no-repeat
+    right bottom / 100% 210%;
+
+  color: #111111;
+  border-color: #ffffff;
+
+  transition:
+    background-position 500ms cubic-bezier(0.22, 1, 0.36, 1),
+    color 350ms ease,
+    border-color 350ms ease;
+}
+
+  .saucha-hero-copy__button .button-custom:hover,
+  .saucha-hero-copy__button .button-custom:focus-visible {
+    opacity: 0.86;
+  }
+
+  /* -------------------------
+     Sombras sutiles configurables
+     ------------------------- */
+
+  .saucha-hero-copy--text-shadow .saucha-hero-copy__eyebrow,
+  .saucha-hero-copy--text-shadow .saucha-hero-copy__title {
+    text-shadow:
+      0
+      var(--saucha-text-shadow-y)
+      var(--saucha-text-shadow-blur)
+      color-mix(
+        in srgb,
+        #000 var(--saucha-text-shadow-opacity),
+        transparent
+      );
+  }
+
+  .saucha-hero-copy--button-shadow
+    .saucha-hero-copy__button
+    :is(.button, .button-secondary, .button-custom) {
+    box-shadow:
+      0
+      var(--saucha-button-shadow-y)
+      var(--saucha-button-shadow-blur)
+      color-mix(
+        in srgb,
+        #000 var(--saucha-button-shadow-opacity),
+        transparent
+      );
+  }
+
+  /* -------------------------
+     Animación escalonada
+     ------------------------- */
+
+  .saucha-hero-copy__eyebrow,
+  .saucha-hero-copy__title,
+  .saucha-hero-copy__button {
+    opacity: 0;
+    transform: translateY(var(--saucha-copy-distance));
+    will-change: opacity, transform;
+  }
+
+  .saucha-hero-copy__item.is-active .saucha-hero-copy__eyebrow {
+    animation:
+      saucha-copy-rise
+      var(--saucha-copy-duration)
+      var(--saucha-copy-ease)
+      0ms
+      both;
+  }
+
+  .saucha-hero-copy__item.is-active .saucha-hero-copy__title {
+    animation:
+      saucha-copy-rise
+      var(--saucha-copy-duration)
+      var(--saucha-copy-ease)
+      var(--saucha-copy-stagger)
+      both;
+  }
+
+  .saucha-hero-copy__item.is-active .saucha-hero-copy__button {
+    animation:
+      saucha-copy-rise
+      var(--saucha-copy-duration)
+      var(--saucha-copy-ease)
+      calc(var(--saucha-copy-stagger) * 2)
+      both;
+  }
+
+  @keyframes saucha-copy-rise {
+    from {
+      opacity: 0;
+      transform: translateY(var(--saucha-copy-distance));
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* -------------------------
+     Escritorio
+     ------------------------- */
+
+  @media screen and (min-width: 750px) {
+    .saucha-hero-copy--custom-height .saucha-hero-copy__item {
+      min-height: var(--saucha-copy-height-desktop);
+    }
+
+    .saucha-hero-copy__eyebrow {
+      font-size: var(--saucha-copy-eyebrow-size-desktop);
+      word-spacing: 0.25em;
+    }
+
+    .saucha-hero-copy__title {
+      font-size: var(--saucha-copy-title-size-desktop);
+    }
+
+    .saucha-hero-copy__button :is(.button, .button-secondary, .button-custom) {
+      min-width: var(--saucha-button-min-width-desktop);
+      padding:
+        var(--saucha-button-padding-y-desktop)
+        var(--saucha-button-padding-x-desktop);
+      font-size: var(--saucha-button-font-size-desktop);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .saucha-hero-copy__eyebrow,
+    .saucha-hero-copy__title,
+    .saucha-hero-copy__button {
+      opacity: 1;
+      transform: none;
+      animation: none !important;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Hero · texto y botón",
+  "tag": null,
+  "settings": [
+    {
+      "type": "header",
+      "content": "1 · Contenido de cada imagen"
+    },
+    {
+      "type": "paragraph",
+      "content": "Cada grupo corresponde al mismo número de imagen o vídeo del carrusel."
+    },
+    {
+      "type": "text",
+      "id": "slide_1_eyebrow",
+      "label": "Imagen 1 · texto pequeño",
+      "default": "PARTY TIME"
+    },
+    {
+      "type": "textarea",
+      "id": "slide_1_title",
+      "label": "Imagen 1 · título",
+      "default": "Skylar\nSequin"
+    },
+    {
+      "type": "text",
+      "id": "slide_2_eyebrow",
+      "label": "Imagen 2 · texto pequeño",
+      "default": "FORMAL FOCUS"
+    },
+    {
+      "type": "textarea",
+      "id": "slide_2_title",
+      "label": "Imagen 2 · título",
+      "default": "Career Styling"
+    },
+    {
+      "type": "text",
+      "id": "slide_3_eyebrow",
+      "label": "Imagen 3 · texto pequeño"
+    },
+    {
+      "type": "textarea",
+      "id": "slide_3_title",
+      "label": "Imagen 3 · título"
+    },
+    {
+      "type": "text",
+      "id": "slide_4_eyebrow",
+      "label": "Imagen 4 · texto pequeño"
+    },
+    {
+      "type": "textarea",
+      "id": "slide_4_title",
+      "label": "Imagen 4 · título"
+    },
+    {
+      "type": "header",
+      "content": "2 · Posición y altura"
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "Alineación del contenido",
+      "options": [
+        {
+          "value": "left",
+          "label": "Izquierda"
+        },
+        {
+          "value": "center",
+          "label": "Centro"
+        },
+        {
+          "value": "right",
+          "label": "Derecha"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "select",
+      "id": "height_mode",
+      "label": "Altura del bloque",
+      "options": [
+        {
+          "value": "auto",
+          "label": "Automática"
+        },
+        {
+          "value": "custom",
+          "label": "Personalizada"
+        }
+      ],
+      "default": "auto"
+    },
+    {
+      "type": "range",
+      "id": "height_mobile",
+      "label": "Altura · móvil",
+      "min": 120,
+      "max": 650,
+      "step": 10,
+      "unit": "px",
+      "default": 300,
+      "visible_if": "{{ block.settings.height_mode == 'custom' }}"
+    },
+    {
+      "type": "range",
+      "id": "height_desktop",
+      "label": "Altura · escritorio",
+      "min": 160,
+      "max": 800,
+      "step": 10,
+      "unit": "px",
+      "default": 360,
+      "visible_if": "{{ block.settings.height_mode == 'custom' }}"
+    },
+    {
+      "type": "select",
+      "id": "vertical_position",
+      "label": "Posición dentro de esa altura",
+      "options": [
+        {
+          "value": "flex-start",
+          "label": "Arriba"
+        },
+        {
+          "value": "center",
+          "label": "Centro"
+        },
+        {
+          "value": "flex-end",
+          "label": "Abajo"
+        }
+      ],
+      "default": "center",
+      "visible_if": "{{ block.settings.height_mode == 'custom' }}"
+    },
+    {
+      "type": "header",
+      "content": "3 · Texto"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Color",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "header",
+      "content": "Sombra del texto"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_text_shadow",
+      "label": "Añadir sombra suave al texto",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "text_shadow_opacity",
+      "label": "Intensidad de la sombra",
+      "min": 0,
+      "max": 30,
+      "step": 1,
+      "unit": "%",
+      "default": 12,
+      "visible_if": "{{ block.settings.enable_text_shadow }}"
+    },
+    {
+      "type": "range",
+      "id": "text_shadow_y",
+      "label": "Desplazamiento vertical",
+      "min": 0,
+      "max": 8,
+      "step": 1,
+      "unit": "px",
+      "default": 2,
+      "visible_if": "{{ block.settings.enable_text_shadow }}"
+    },
+    {
+      "type": "range",
+      "id": "text_shadow_blur",
+      "label": "Suavidad",
+      "min": 0,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 8,
+      "visible_if": "{{ block.settings.enable_text_shadow }}"
+    },
+    {
+      "type": "select",
+      "id": "eyebrow_font",
+      "label": "Fuente del texto pequeño",
+      "options": [
+        {
+          "value": "var(--font-body--family)",
+          "label": "Texto del tema"
+        },
+        {
+          "value": "var(--font-subheading--family)",
+          "label": "Subtítulo del tema"
+        },
+        {
+          "value": "var(--font-heading--family)",
+          "label": "Título del tema"
+        },
+        {
+          "value": "var(--font-accent--family)",
+          "label": "Acento del tema"
+        }
+      ],
+      "default": "var(--font-body--family)"
+    },
+    {
+      "type": "range",
+      "id": "eyebrow_size_mobile",
+      "label": "Texto pequeño · móvil",
+      "min": 10,
+      "max": 26,
+      "step": 1,
+      "unit": "px",
+      "default": 15
+    },
+    {
+      "type": "range",
+      "id": "eyebrow_size_desktop",
+      "label": "Texto pequeño · escritorio",
+      "min": 10,
+      "max": 30,
+      "step": 1,
+      "unit": "px",
+      "default": 17
+    },
+    {
+      "type": "header",
+      "content": "4 · Título principal"
+    },
+    {
+      "type": "select",
+      "id": "title_font",
+      "label": "Fuente",
+      "options": [
+        {
+          "value": "var(--font-heading--family)",
+          "label": "Título del tema"
+        },
+        {
+          "value": "var(--font-body--family)",
+          "label": "Texto del tema"
+        },
+        {
+          "value": "var(--font-subheading--family)",
+          "label": "Subtítulo del tema"
+        },
+        {
+          "value": "var(--font-accent--family)",
+          "label": "Acento del tema"
+        }
+      ],
+      "default": "var(--font-heading--family)"
+    },
+    {
+      "type": "range",
+      "id": "title_size_mobile",
+      "label": "Tamaño · móvil",
+      "min": 28,
+      "max": 90,
+      "step": 1,
+      "unit": "px",
+      "default": 54
+    },
+    {
+      "type": "range",
+      "id": "title_size_desktop",
+      "label": "Tamaño · escritorio",
+      "min": 36,
+      "max": 140,
+      "step": 2,
+      "unit": "px",
+      "default": 78
+    },
+    {
+      "type": "range",
+      "id": "title_max_width",
+      "label": "Ancho máximo del título",
+      "min": 200,
+      "max": 1000,
+      "step": 20,
+      "unit": "px",
+      "default": 760
+    },
+    {
+      "type": "range",
+      "id": "title_line_height",
+      "label": "Interlineado",
+      "min": 80,
+      "max": 125,
+      "step": 1,
+      "unit": "%",
+      "default": 92
+    },
+    {
+      "type": "range",
+      "id": "title_letter_spacing",
+      "label": "Espaciado entre letras",
+      "min": -8,
+      "max": 8,
+      "step": 1,
+      "unit": "%",
+      "default": -2
+    },
+    {
+      "type": "range",
+      "id": "text_gap",
+      "label": "Espacio entre texto pequeño y título",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "header",
+      "content": "5 · Botón"
+    },
+    {
+      "type": "paragraph",
+      "content": "Ejemplo recomendado: fondo blanco, texto oscuro, 190px de ancho mínimo y 15px de padding vertical en móvil."
+    },
+    {
+      "type": "text",
+      "id": "label",
+      "label": "Texto del botón",
+      "default": "SHOP FOR NOW"
+    },
+    {
+      "type": "url",
+      "id": "link",
+      "label": "Enlace"
+    },
+    {
+      "type": "checkbox",
+      "id": "open_in_new_tab",
+      "label": "Abrir en una pestaña nueva",
+      "default": false
+    },
+    {
+      "type": "select",
+      "id": "style_class",
+      "label": "Estilo",
+      "options": [
+        {
+          "value": "button-custom",
+          "label": "Personalizado · recomendado"
+        },
+        {
+          "value": "button",
+          "label": "Principal del tema"
+        },
+        {
+          "value": "button-secondary",
+          "label": "Secundario del tema"
+        }
+      ],
+      "default": "button-custom"
+    },
+    {
+      "type": "color",
+      "id": "custom_button_background",
+      "label": "Color de fondo",
+      "default": "#FFFFFF",
+      "alpha": true,
+      "visible_if": "{{ block.settings.style_class == 'button-custom' }}"
+    },
+    {
+      "type": "color",
+      "id": "custom_button_text",
+      "label": "Color del texto",
+      "default": "#111111",
+      "alpha": true,
+      "visible_if": "{{ block.settings.style_class == 'button-custom' }}"
+    },
+    {
+      "type": "color",
+      "id": "custom_button_border",
+      "label": "Color del borde",
+      "default": "#FFFFFF",
+      "alpha": true,
+      "visible_if": "{{ block.settings.style_class == 'button-custom' }}"
+    },
+    {
+      "type": "range",
+      "id": "button_border_width",
+      "label": "Grosor del borde",
+      "min": 0,
+      "max": 4,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "button_radius",
+      "label": "Redondeado",
+      "min": 0,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "default": 28
+    },
+    {
+      "type": "range",
+      "id": "button_gap",
+      "label": "Espacio entre título y botón",
+      "min": 0,
+      "max": 70,
+      "step": 1,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "header",
+      "content": "Sombra del botón"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_button_shadow",
+      "label": "Añadir sombra suave al botón",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "button_shadow_opacity",
+      "label": "Intensidad de la sombra",
+      "min": 0,
+      "max": 30,
+      "step": 1,
+      "unit": "%",
+      "default": 12,
+      "visible_if": "{{ block.settings.enable_button_shadow }}"
+    },
+    {
+      "type": "range",
+      "id": "button_shadow_y",
+      "label": "Desplazamiento vertical",
+      "min": 0,
+      "max": 12,
+      "step": 1,
+      "unit": "px",
+      "default": 5,
+      "visible_if": "{{ block.settings.enable_button_shadow }}"
+    },
+    {
+      "type": "range",
+      "id": "button_shadow_blur",
+      "label": "Suavidad",
+      "min": 0,
+      "max": 36,
+      "step": 1,
+      "unit": "px",
+      "default": 16,
+      "visible_if": "{{ block.settings.enable_button_shadow }}"
+    },
+    {
+      "type": "header",
+      "content": "Botón · móvil"
+    },
+    {
+      "type": "range",
+      "id": "button_min_width_mobile",
+      "label": "Ancho mínimo",
+      "min": 100,
+      "max": 320,
+      "step": 5,
+      "unit": "px",
+      "default": 190
+    },
+    {
+      "type": "range",
+      "id": "button_font_size_mobile",
+      "label": "Tamaño del texto",
+      "min": 11,
+      "max": 22,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "button_padding_x_mobile",
+      "label": "Padding horizontal · X",
+      "min": 10,
+      "max": 70,
+      "step": 1,
+      "unit": "px",
+      "default": 30
+    },
+    {
+      "type": "range",
+      "id": "button_padding_y_mobile",
+      "label": "Padding vertical · Y",
+      "min": 6,
+      "max": 35,
+      "step": 1,
+      "unit": "px",
+      "default": 15
+    },
+    {
+      "type": "header",
+      "content": "Botón · escritorio"
+    },
+    {
+      "type": "range",
+      "id": "button_min_width_desktop",
+      "label": "Ancho mínimo",
+      "min": 120,
+      "max": 380,
+      "step": 5,
+      "unit": "px",
+      "default": 220
+    },
+    {
+      "type": "range",
+      "id": "button_font_size_desktop",
+      "label": "Tamaño del texto",
+      "min": 11,
+      "max": 24,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "button_padding_x_desktop",
+      "label": "Padding horizontal · X",
+      "min": 10,
+      "max": 90,
+      "step": 1,
+      "unit": "px",
+      "default": 36
+    },
+    {
+      "type": "range",
+      "id": "button_padding_y_desktop",
+      "label": "Padding vertical · Y",
+      "min": 6,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "default": 17
+    },
+    {
+      "type": "header",
+      "content": "Botón · hover"
+    },
+    {
+      "type": "paragraph",
+      "content": "Este CSS solo se aplica al botón al pasar el ratón o enfocarlo. No afecta a la animación de entrada del texto, título y botón."
+    },
+    {
+      "type": "textarea",
+      "id": "button_hover_css",
+      "label": "CSS del hover",
+      "info": "Escribe solo propiedades CSS, sin selector ni llaves. Ejemplo: transform: scale(1.03); background: #F3F1ED;",
+      "default": "transform: scale(1.03);"
+    },
+    {
+      "type": "header",
+      "content": "6 · Animación"
+    },
+    {
+      "type": "paragraph",
+      "content": "Entra primero el texto pequeño, después el título y por último el botón."
+    },
+    {
+      "type": "range",
+      "id": "animation_duration",
+      "label": "Duración de cada entrada",
+      "min": 300,
+      "max": 1600,
+      "step": 50,
+      "unit": "ms",
+      "default": 750
+    },
+    {
+      "type": "range",
+      "id": "animation_stagger",
+      "label": "Tiempo entre cada elemento",
+      "min": 0,
+      "max": 600,
+      "step": 25,
+      "unit": "ms",
+      "default": 150
+    },
+    {
+      "type": "range",
+      "id": "animation_distance",
+      "label": "Recorrido desde abajo",
+      "min": 0,
+      "max": 50,
+      "step": 2,
+      "unit": "px",
+      "default": 18
+    },
+    {
+      "type": "select",
+      "id": "animation_easing",
+      "label": "Suavidad",
+      "options": [
+        {
+          "value": "cubic-bezier(0.22, 1, 0.36, 1)",
+          "label": "Suave · recomendado"
+        },
+        {
+          "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+          "label": "Muy suave"
+        },
+        {
+          "value": "ease-out",
+          "label": "Normal"
+        }
+      ],
+      "default": "cubic-bezier(0.22, 1, 0.36, 1)"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Hero · texto y botón",
+      "category": "Básicos",
+      "settings": {
+        "slide_1_eyebrow": "PARTY TIME",
+        "slide_1_title": "Skylar\nSequin",
+        "slide_2_eyebrow": "FORMAL FOCUS",
+        "slide_2_title": "Career Styling",
+        "label": "SHOP FOR NOW",
+        "alignment": "center",
+        "style_class": "button-custom"
+      }
+    }
+  ]
+}
+{% endschema %}

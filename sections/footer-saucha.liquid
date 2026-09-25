@@ -1,0 +1,2180 @@
+{% liquid
+  assign logo_svg_file = section.settings.logo_svg_file | strip
+%}
+
+<footer
+  id="FooterSaucha-{{ section.id }}"
+  class="saucha-footer"
+  style="
+    --sf-background: {{ section.settings.background_color }};
+    --sf-text: {{ section.settings.text_color }};
+    --sf-muted: {{ section.settings.muted_color }};
+    --sf-border: {{ section.settings.border_color }};
+
+    --sf-max-width: {{ section.settings.max_width }}px;
+
+    --sf-padding-desktop: {{ section.settings.padding_desktop }}px;
+    --sf-padding-mobile: {{ section.settings.padding_mobile }}px;
+
+    --sf-padding-top: {{ section.settings.padding_top }}px;
+    --sf-padding-bottom: {{ section.settings.padding_bottom }}px;
+
+    --sf-logo-width-desktop: {{ section.settings.logo_width_desktop }}px;
+    --sf-logo-width-mobile: {{ section.settings.logo_width_mobile }}px;
+
+    --sf-logo-margin-top-desktop:
+      {{ section.settings.logo_margin_top_desktop }}px;
+
+    --sf-logo-margin-top-mobile:
+      {{ section.settings.logo_margin_top_mobile }}px;
+
+    --sf-social-size: {{ section.settings.social_icon_size }}px;
+    --sf-social-size-mobile: {{ section.settings.social_icon_size_mobile }}px;
+    --sf-social-gap: {{ section.settings.social_gap }}px;
+
+    --sf-heading-family:
+      var(--font-{{ section.settings.column_heading_preset }}--family);
+
+    --sf-heading-style:
+      var(--font-{{ section.settings.column_heading_preset }}--style);
+
+    --sf-heading-weight:
+      var(--font-{{ section.settings.column_heading_preset }}--weight);
+
+    --sf-heading-size:
+      var(--font-{{ section.settings.column_heading_preset }}--size);
+
+    --sf-heading-line-height:
+      var(--font-{{ section.settings.column_heading_preset }}--line-height);
+
+    --sf-heading-letter-spacing:
+      var(
+        --font-{{ section.settings.column_heading_preset }}--letter-spacing,
+        normal
+      );
+
+    --sf-heading-case:
+      var(
+        --font-{{ section.settings.column_heading_preset }}--case,
+        none
+      );
+
+    --sf-hover-duration: {{ section.settings.hover_duration }}ms;
+
+    --sf-hover-distance:
+      {{ section.settings.hover_distance }}px;
+
+    --sf-hover-scale:
+      {{ section.settings.hover_scale | divided_by: 100.0 }};
+
+    --sf-hover-opacity:
+      {{ section.settings.hover_opacity | divided_by: 100.0 }};
+  "
+>
+  <div class="saucha-footer__inner">
+
+    <!-- =====================================================
+         PARTE SUPERIOR
+         ===================================================== -->
+
+    <div class="saucha-footer__top">
+
+      <div class="saucha-footer__navigation">
+
+        <!-- EMPRESA -->
+
+        <div class="saucha-footer__menu-slot">
+          {% content_for 'block',
+            type: 'menu',
+            id: 'menu-company'
+          %}
+        </div>
+
+
+        <!-- AYUDA -->
+
+        <div class="saucha-footer__menu-slot">
+          {% content_for 'block',
+            type: 'menu',
+            id: 'menu-help'
+          %}
+        </div>
+
+
+        <!-- CUENTA -->
+
+        <div class="saucha-footer__menu-slot">
+          {% content_for 'block',
+            type: 'menu',
+            id: 'menu-account'
+          %}
+        </div>
+
+
+        <!-- =================================================
+             CONECTA
+             ================================================= -->
+
+        <div class="saucha-footer__connect">
+
+          {% if section.settings.connect_title != blank %}
+            <div class="saucha-footer__connect-title">
+              {{ section.settings.connect_title | escape }}
+            </div>
+          {% endif %}
+
+
+          <div
+            class="saucha-footer__social-list"
+            aria-label="Redes sociales"
+          >
+
+            <!-- =========================
+                 INSTAGRAM
+                 ========================= -->
+
+            {% if section.settings.show_instagram %}
+
+              {% if section.settings.instagram_url != blank %}
+
+                <a
+                  class="saucha-footer__social-link"
+                  href="{{ section.settings.instagram_url }}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Instagram"
+                >
+
+              {% else %}
+
+                <span
+                  class="
+                    saucha-footer__social-link
+                    saucha-footer__social-link--disabled
+                  "
+                  aria-label="Instagram"
+                >
+
+              {% endif %}
+
+                  <svg
+                    class="saucha-footer__social-svg"
+                    viewBox="0 0 20 20"
+                    aria-hidden="true"
+                    focusable="false"
+                  >
+                    {% render 'icon', icon: 'instagram' %}
+                  </svg>
+
+              {% if section.settings.instagram_url != blank %}
+
+                </a>
+
+              {% else %}
+
+                </span>
+
+              {% endif %}
+
+            {% endif %}
+
+
+            <!-- =========================
+                 FACEBOOK
+                 ========================= -->
+
+            {% if section.settings.show_facebook %}
+
+              {% if section.settings.facebook_url != blank %}
+
+                <a
+                  class="saucha-footer__social-link"
+                  href="{{ section.settings.facebook_url }}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Facebook"
+                >
+
+              {% else %}
+
+                <span
+                  class="
+                    saucha-footer__social-link
+                    saucha-footer__social-link--disabled
+                  "
+                  aria-label="Facebook"
+                >
+
+              {% endif %}
+
+                  <svg
+                    class="saucha-footer__social-svg"
+                    viewBox="0 0 20 20"
+                    aria-hidden="true"
+                    focusable="false"
+                  >
+                    {% render 'icon', icon: 'facebook' %}
+                  </svg>
+
+              {% if section.settings.facebook_url != blank %}
+
+                </a>
+
+              {% else %}
+
+                </span>
+
+              {% endif %}
+
+            {% endif %}
+
+
+            <!-- =========================
+                 TIKTOK
+                 ========================= -->
+
+            {% if section.settings.show_tiktok %}
+
+              {% if section.settings.tiktok_url != blank %}
+
+                <a
+                  class="saucha-footer__social-link"
+                  href="{{ section.settings.tiktok_url }}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="TikTok"
+                >
+
+              {% else %}
+
+                <span
+                  class="
+                    saucha-footer__social-link
+                    saucha-footer__social-link--disabled
+                  "
+                  aria-label="TikTok"
+                >
+
+              {% endif %}
+
+                  <svg
+                    class="saucha-footer__social-svg"
+                    viewBox="0 0 20 20"
+                    aria-hidden="true"
+                    focusable="false"
+                  >
+                    {% render 'icon', icon: 'tiktok' %}
+                  </svg>
+
+              {% if section.settings.tiktok_url != blank %}
+
+                </a>
+
+              {% else %}
+
+                </span>
+
+              {% endif %}
+
+            {% endif %}
+
+
+            <!-- =========================
+                 X
+                 ========================= -->
+
+            {% if section.settings.show_x %}
+
+              {% if section.settings.x_url != blank %}
+
+                <a
+                  class="saucha-footer__social-link"
+                  href="{{ section.settings.x_url }}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="X"
+                >
+
+              {% else %}
+
+                <span
+                  class="
+                    saucha-footer__social-link
+                    saucha-footer__social-link--disabled
+                  "
+                  aria-label="X"
+                >
+
+              {% endif %}
+
+                  <svg
+                    class="saucha-footer__social-svg"
+                    viewBox="0 0 20 20"
+                    aria-hidden="true"
+                    focusable="false"
+                  >
+                    {% render 'icon', icon: 'x' %}
+                  </svg>
+
+              {% if section.settings.x_url != blank %}
+
+                </a>
+
+              {% else %}
+
+                </span>
+
+              {% endif %}
+
+            {% endif %}
+
+
+            <!-- =========================
+                 YOUTUBE
+                 ========================= -->
+
+            {% if section.settings.show_youtube %}
+
+              {% if section.settings.youtube_url != blank %}
+
+                <a
+                  class="saucha-footer__social-link"
+                  href="{{ section.settings.youtube_url }}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="YouTube"
+                >
+
+              {% else %}
+
+                <span
+                  class="
+                    saucha-footer__social-link
+                    saucha-footer__social-link--disabled
+                  "
+                  aria-label="YouTube"
+                >
+
+              {% endif %}
+
+                  <svg
+                    class="saucha-footer__social-svg"
+                    viewBox="0 0 20 20"
+                    aria-hidden="true"
+                    focusable="false"
+                  >
+                    {% render 'icon', icon: 'youtube' %}
+                  </svg>
+
+              {% if section.settings.youtube_url != blank %}
+
+                </a>
+
+              {% else %}
+
+                </span>
+
+              {% endif %}
+
+            {% endif %}
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- ===================================================
+           NEWSLETTER
+           =================================================== -->
+
+      <div class="saucha-footer__newsletter">
+
+        {% if section.settings.newsletter_text != blank %}
+
+          <div
+            class="
+              saucha-footer__newsletter-text
+              {{ section.settings.newsletter_preset }}
+
+              {% if section.settings.hide_newsletter_text_mobile %}
+                saucha-footer__newsletter-text--hide-mobile
+              {% endif %}
+            "
+          >
+            {{ section.settings.newsletter_text }}
+          </div>
+
+        {% endif %}
+
+
+        <div class="saucha-footer__newsletter-form">
+
+          {% content_for 'block',
+            type: 'email-signup',
+            id: 'newsletter-form'
+          %}
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         LOGO SVG
+         ===================================================== -->
+
+    <div class="saucha-footer__logo-area">
+
+      {% if logo_svg_file != blank %}
+
+        <img
+          class="saucha-footer__logo"
+          src="{{ logo_svg_file | file_url }}"
+          alt="{{ shop.name | escape }}"
+          width="730"
+          height="185"
+          loading="lazy"
+        >
+
+      {% else %}
+
+        <div class="saucha-footer__logo-fallback">
+          {{ shop.name | escape }}
+        </div>
+
+      {% endif %}
+
+    </div>
+
+
+    <!-- =====================================================
+         PIE INFERIOR
+         ===================================================== -->
+
+    <div class="saucha-footer__bottom">
+
+      <div class="saucha-footer__copyright">
+
+        {% if section.settings.copyright_text != blank %}
+
+          {{ section.settings.copyright_text | escape }}
+
+        {% else %}
+
+          © {{ 'now' | date: '%Y' }}
+          {{ shop.name }}.
+          Todos los derechos reservados.
+
+        {% endif %}
+
+
+        {% if section.settings.show_powered_by %}
+
+          <span class="saucha-footer__powered-by">
+            {{ powered_by_link }}
+          </span>
+
+        {% endif %}
+
+      </div>
+
+
+      <div class="saucha-footer__payments">
+
+        {% content_for 'block',
+          type: 'payment-icons',
+          id: 'payment-icons'
+        %}
+
+      </div>
+
+    </div>
+
+  </div>
+</footer>
+
+
+{% stylesheet %}
+
+  /* =========================================================
+     BASE
+     ========================================================= */
+
+  .saucha-footer,
+  .saucha-footer * {
+    box-sizing: border-box;
+  }
+
+
+  .saucha-footer {
+    width: 100%;
+
+    background:
+      var(--sf-background);
+
+    color:
+      var(--sf-text);
+
+    font-family:
+      var(--font-body--family);
+  }
+
+
+  .saucha-footer__inner {
+    width:
+      min(
+        100%,
+        var(--sf-max-width)
+      );
+
+    margin-inline:
+      auto;
+
+    padding:
+      var(--sf-padding-top)
+      var(--sf-padding-desktop)
+      var(--sf-padding-bottom);
+  }
+
+
+  /* =========================================================
+     PARTE SUPERIOR
+     ========================================================= */
+
+  .saucha-footer__top {
+    display:
+      grid;
+
+    grid-template-columns:
+      minmax(0, 1fr)
+      minmax(340px, 470px);
+
+    gap:
+      clamp(
+        64px,
+        7vw,
+        150px
+      );
+
+    align-items:
+      start;
+  }
+
+
+  .saucha-footer__navigation {
+    min-width: 0;
+
+    display:
+      grid;
+
+    grid-template-columns:
+      repeat(
+        4,
+        minmax(0, 1fr)
+      );
+
+    gap:
+      clamp(
+        28px,
+        3.2vw,
+        64px
+      );
+  }
+
+
+.saucha-footer__menu-slot,
+.saucha-footer__connect {
+  min-width: 0;
+}
+
+
+/* =========================================================
+   ALINEACIÓN SUPERIOR DE COLUMNAS
+   ========================================================= */
+
+.saucha-footer__menu-slot .menu,
+.saucha-footer__menu-slot accordion-custom,
+.saucha-footer__menu-slot .menu__details {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+}
+
+
+.saucha-footer__menu-slot .menu__heading,
+.saucha-footer__connect-title,
+.saucha-footer__newsletter-text {
+  margin-top: 0 !important;
+}
+
+
+/*
+ * Horizon usa <summary> para los títulos de los menús.
+ * Lo normalizamos para que su caja empiece exactamente
+ * en la misma coordenada que Conecta y Newsletter.
+ */
+
+.saucha-footer__menu-slot .menu__heading {
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+
+  min-height: 0;
+
+  display: flex;
+  align-items: flex-start;
+}
+
+
+/*
+ * Igualamos el inicio de los tres bloques principales.
+ */
+
+.saucha-footer__navigation,
+.saucha-footer__newsletter {
+  align-self: start;
+}
+
+
+.saucha-footer__connect-title {
+  padding-top: 0;
+}
+
+
+/*
+ * Quitamos posibles márgenes internos del richtext
+ * del newsletter.
+ */
+
+.saucha-footer__newsletter-text > *:first-child {
+  margin-top: 0 !important;
+}
+
+
+  .saucha-footer__menu-slot
+    .menu {
+
+    width:
+      100%;
+  }
+
+
+  /* =========================================================
+     TIPOGRAFÍA GLOBAL DE LOS 4 TÍTULOS
+     ========================================================= */
+
+  /*
+   * Empresa
+   * Ayuda
+   * Cuenta
+   * Conecta
+   *
+   * Todos utilizan EXACTAMENTE el mismo preset global
+   * seleccionado en "Estilo de los títulos".
+   */
+
+  .saucha-footer__menu-slot
+    .menu__heading,
+
+  .saucha-footer__menu-slot
+    .menu__heading__default,
+
+  .saucha-footer__menu-slot
+    .menu__heading__accordion,
+
+  .saucha-footer__connect-title {
+
+    font-family:
+      var(--sf-heading-family)
+      !important;
+
+    font-style:
+      var(--sf-heading-style)
+      !important;
+
+    font-weight:
+      var(--sf-heading-weight)
+      !important;
+
+    font-size:
+      var(--sf-heading-size)
+      !important;
+
+    line-height:
+      var(--sf-heading-line-height)
+      !important;
+
+    letter-spacing:
+      var(--sf-heading-letter-spacing)
+      !important;
+
+    text-transform:
+      var(--sf-heading-case)
+      !important;
+
+    color:
+      var(--sf-text);
+  }
+
+
+  /* =========================================================
+     LINKS DE MENÚ
+     ========================================================= */
+
+  .saucha-footer__menu-slot
+    .menu__item {
+
+    color:
+      var(--sf-text);
+  }
+
+
+  .saucha-footer__menu-slot
+    .menu__item a {
+
+    position:
+      relative;
+
+    display:
+      inline-block;
+
+    color:
+      inherit;
+
+    text-decoration:
+      none;
+
+    text-underline-offset:
+      4px;
+
+    transform:
+      translateX(0);
+
+    opacity:
+      1;
+
+    transition:
+      transform
+        var(--sf-hover-duration)
+        cubic-bezier(0.22, 1, 0.36, 1),
+
+      opacity
+        var(--sf-hover-duration)
+        ease;
+  }
+
+
+  /*
+   * Línea inferior animada.
+   */
+
+  .saucha-footer__menu-slot
+    .menu__item a::after {
+
+    content:
+      '';
+
+    position:
+      absolute;
+
+    left:
+      0;
+
+    right:
+      0;
+
+    bottom:
+      -3px;
+
+    height:
+      1px;
+
+    background:
+      currentColor;
+
+    transform:
+      scaleX(0);
+
+    transform-origin:
+      left center;
+
+    transition:
+      transform
+        var(--sf-hover-duration)
+        cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+
+  .saucha-footer__menu-slot
+    .menu__item a:hover {
+
+    opacity:
+      var(--sf-hover-opacity);
+
+    transform:
+      translateX(
+        var(--sf-hover-distance)
+      );
+  }
+
+
+  .saucha-footer__menu-slot
+    .menu__item a:hover::after {
+
+    transform:
+      scaleX(1);
+  }
+
+
+  /* =========================================================
+     CONECTA
+     ========================================================= */
+
+  .saucha-footer__connect-title {
+    margin:
+      0 0 16px;
+  }
+
+
+  /* =========================================================
+     REDES SOCIALES
+     ========================================================= */
+
+  .saucha-footer__social-list {
+    display:
+      flex;
+
+    flex-wrap:
+      wrap;
+
+    align-items:
+      center;
+
+    gap:
+      var(--sf-social-gap);
+  }
+
+
+  .saucha-footer__social-link {
+    width:
+      var(--sf-social-size);
+
+    height:
+      var(--sf-social-size);
+
+    display:
+      inline-flex;
+
+    align-items:
+      center;
+
+    justify-content:
+      center;
+
+    flex:
+      0 0 auto;
+
+    color:
+      var(--sf-text);
+
+    text-decoration:
+      none;
+
+    opacity:
+      1;
+
+    transform:
+      translateY(0)
+      scale(1);
+
+    transition:
+      transform
+        var(--sf-hover-duration)
+        cubic-bezier(0.22, 1, 0.36, 1),
+
+      opacity
+        var(--sf-hover-duration)
+        ease;
+  }
+
+
+  .saucha-footer__social-link:not(
+    .saucha-footer__social-link--disabled
+  ):hover {
+
+    opacity:
+      var(--sf-hover-opacity);
+
+    transform:
+      translateY(
+        calc(
+          var(--sf-hover-distance)
+          * -1
+        )
+      )
+      scale(
+        var(--sf-hover-scale)
+      );
+  }
+
+
+  .saucha-footer__social-link--disabled {
+    cursor:
+      default;
+  }
+
+
+  /*
+   * IMPORTANTE:
+   * Horizon devuelve los PATH del icono.
+   * El SVG real lo creamos nosotros aquí.
+   */
+
+  .saucha-footer__social-svg {
+    display:
+      block;
+
+    width:
+      100%;
+
+    height:
+      100%;
+
+    overflow:
+      visible;
+
+    fill:
+      currentColor;
+
+    color:
+      currentColor;
+  }
+
+
+  .saucha-footer__social-svg path,
+  .saucha-footer__social-svg circle,
+  .saucha-footer__social-svg rect {
+
+    fill:
+      currentColor;
+  }
+
+
+  /* =========================================================
+     NEWSLETTER
+     ========================================================= */
+
+  .saucha-footer__newsletter {
+    min-width:
+      0;
+  }
+
+
+  .saucha-footer__newsletter-text {
+    max-width:
+      470px;
+
+    color:
+      var(--sf-text);
+
+    text-wrap:
+      pretty;
+  }
+
+
+  .saucha-footer__newsletter-text p {
+    margin:
+      0;
+  }
+
+
+  .saucha-footer__newsletter-form {
+    margin-top:
+      28px;
+  }
+
+
+  .saucha-footer__newsletter
+    .email-signup-block {
+
+    width:
+      100%;
+  }
+
+
+  .saucha-footer__newsletter
+    .email-signup__input-group {
+
+    min-height:
+      76px;
+
+    border-radius:
+      0;
+
+    border-color:
+      var(--sf-border);
+
+    background:
+      transparent;
+
+    transition:
+      border-color
+        var(--sf-hover-duration)
+        ease;
+  }
+
+
+  .saucha-footer__newsletter
+    .email-signup__input-group--integrated {
+
+    border-color:
+      var(--sf-border);
+
+    background:
+      transparent;
+  }
+
+
+  .saucha-footer__newsletter
+    .email-signup__input {
+
+    color:
+      var(--sf-text);
+
+    background:
+      transparent;
+
+    font-family:
+      var(--font-body--family);
+  }
+
+
+  .saucha-footer__newsletter
+    .email-signup__input::placeholder {
+
+    color:
+      var(--sf-muted);
+
+    opacity:
+      1;
+  }
+
+
+  .saucha-footer__newsletter
+    .email-signup__input-group:focus-within {
+
+    border-color:
+      var(--sf-text);
+  }
+
+
+  .saucha-footer__newsletter
+    .email-signup__button {
+
+    color:
+      var(--sf-text);
+
+    font-family:
+      var(--font-body--family);
+
+    font-size:
+      11px;
+
+    letter-spacing:
+      0.16em;
+
+    text-transform:
+      uppercase;
+
+    transform:
+      translateX(0);
+
+    transition:
+      transform
+        var(--sf-hover-duration)
+        cubic-bezier(0.22, 1, 0.36, 1),
+
+      opacity
+        var(--sf-hover-duration)
+        ease;
+  }
+
+
+  .saucha-footer__newsletter
+    .email-signup__button:hover {
+
+    opacity:
+      var(--sf-hover-opacity);
+
+    transform:
+      translateX(
+        var(--sf-hover-distance)
+      );
+  }
+
+
+  /* =========================================================
+     LOGO SVG
+     ========================================================= */
+
+  .saucha-footer__logo-area {
+    width:
+      100%;
+
+    margin-top:
+      var(--sf-logo-margin-top-desktop);
+
+    display:
+      flex;
+
+    align-items:
+      center;
+
+    justify-content:
+      center;
+  }
+
+
+  .saucha-footer__logo {
+    display:
+      block;
+
+    width:
+      min(
+        100%,
+        var(--sf-logo-width-desktop)
+      );
+
+    height:
+      auto;
+
+    margin-inline:
+      auto;
+
+    object-fit:
+      contain;
+  }
+
+
+  .saucha-footer__logo-fallback {
+    width:
+      100%;
+
+    text-align:
+      center;
+
+    font-family:
+      var(--font-heading--family);
+
+    font-size:
+      clamp(
+        100px,
+        16vw,
+        300px
+      );
+
+    line-height:
+      0.85;
+
+    letter-spacing:
+      -0.05em;
+  }
+
+
+  /* =========================================================
+     PARTE INFERIOR
+     ========================================================= */
+
+  .saucha-footer__bottom {
+    margin-top:
+      46px;
+
+    display:
+      flex;
+
+    align-items:
+      flex-end;
+
+    justify-content:
+      space-between;
+
+    gap:
+      32px;
+  }
+
+
+  .saucha-footer__copyright {
+    color:
+      var(--sf-text);
+
+    font-family:
+      var(--font-body--family);
+
+    font-size:
+      11px;
+
+    line-height:
+      1.4;
+  }
+
+
+  .saucha-footer__copyright a {
+    color:
+      inherit;
+  }
+
+
+  .saucha-footer__powered-by {
+    margin-left:
+      4px;
+  }
+
+
+  /* =========================================================
+     PAGOS
+     ========================================================= */
+
+  .saucha-footer__payments {
+    min-width:
+      0;
+  }
+
+
+  .saucha-footer__payments
+    .payment-icons__list {
+
+    justify-content:
+      flex-end;
+
+    gap:
+      7px;
+  }
+
+
+  .saucha-footer__payments
+    .payment-icons__item {
+
+    filter:
+      grayscale(1);
+
+    opacity:
+      0.78;
+  }
+
+
+  .saucha-footer__payments
+    .payment-icons__item svg {
+
+    width:
+      38px;
+
+    height:
+      auto;
+  }
+
+
+  /* =========================================================
+     TABLET
+     ========================================================= */
+
+  @media screen and (min-width: 750px) and (max-width: 1100px) {
+
+    .saucha-footer__top {
+      grid-template-columns:
+        minmax(0, 1fr);
+
+      gap:
+        52px;
+    }
+
+
+    .saucha-footer__newsletter {
+      grid-row:
+        1;
+    }
+
+
+    .saucha-footer__navigation {
+      grid-row:
+        2;
+    }
+
+  }
+
+
+  /* =========================================================
+     MÓVIL
+     ========================================================= */
+
+  @media screen and (max-width: 749px) {
+
+    .saucha-footer__inner {
+      padding:
+        16px
+        var(--sf-padding-mobile)
+        20px;
+    }
+
+
+    .saucha-footer__top {
+      display:
+        flex;
+
+      flex-direction:
+        column;
+
+      gap:
+        0;
+    }
+
+
+    /* Newsletter arriba */
+
+    .saucha-footer__newsletter {
+      order:
+        -1;
+
+      margin-bottom:
+        20px;
+    }
+
+
+    .saucha-footer__newsletter-text {
+      max-width:
+        100%;
+
+      margin-bottom:
+        14px;
+    }
+
+
+    .saucha-footer__newsletter-text--hide-mobile {
+      display:
+        none;
+    }
+
+
+    .saucha-footer__newsletter-form {
+      margin-top:
+        0;
+    }
+
+
+    .saucha-footer__newsletter
+      .email-signup__input-group {
+
+      min-height:
+        42px;
+    }
+
+
+    .saucha-footer__newsletter
+      .email-signup__input {
+
+      font-size:
+        12px;
+
+      padding-inline:
+        16px;
+    }
+
+
+    .saucha-footer__newsletter
+      .email-signup__button--integrated {
+
+      margin:
+        0;
+
+      padding-inline:
+        18px;
+    }
+
+
+    .saucha-footer__newsletter
+      .email-signup__button {
+
+      font-size:
+        10px;
+
+      letter-spacing:
+        0.14em;
+    }
+
+
+    /* Menús acordeón */
+
+    .saucha-footer__navigation {
+      display:
+        block;
+    }
+
+
+    .saucha-footer__menu-slot {
+      width:
+        100%;
+    }
+
+
+    .saucha-footer__menu-slot
+      .menu__details {
+
+      padding-inline:
+        0;
+    }
+
+
+    .saucha-footer__menu-slot
+      .menu--dividers
+      .menu__details {
+
+      border-bottom:
+        1px solid
+        var(--sf-border);
+    }
+
+
+    .saucha-footer__menu-slot
+      .menu__heading {
+
+      min-height:
+        56px;
+
+      display:
+        flex;
+
+      align-items:
+        center;
+
+      justify-content:
+        space-between;
+
+      gap:
+        20px;
+    }
+
+
+    .saucha-footer__menu-slot
+      .menu__heading__toggle {
+
+      width:
+        14px;
+
+      height:
+        14px;
+    }
+
+
+    .saucha-footer__menu-slot
+      .details-content {
+
+      margin-top:
+        0;
+
+      padding-bottom:
+        20px;
+    }
+
+
+    .saucha-footer__menu-slot
+      .menu__item {
+
+      font-size:
+        12px;
+    }
+
+
+    .saucha-footer__menu-slot
+      .menu__item
+      + .menu__item {
+
+      margin-top:
+        10px;
+    }
+
+
+    /* Redes */
+
+    .saucha-footer__connect {
+      padding:
+        18px 0 8px;
+    }
+
+
+    /*
+     * Igual que la referencia:
+     * en móvil no mostramos "Conecta",
+     * solo los iconos.
+     */
+
+    .saucha-footer__connect-title {
+      display:
+        none;
+    }
+
+
+    .saucha-footer__social-list {
+      gap:
+        var(--sf-social-gap);
+    }
+
+
+    .saucha-footer__social-link {
+      width:
+        var(--sf-social-size-mobile);
+
+      height:
+        var(--sf-social-size-mobile);
+    }
+
+
+    /* Logo */
+
+    .saucha-footer__logo-area {
+      margin-top:
+        var(--sf-logo-margin-top-mobile);
+    }
+
+
+    .saucha-footer__logo {
+      width:
+        min(
+          100%,
+          var(--sf-logo-width-mobile)
+        );
+
+      height:
+        auto;
+
+      margin-inline:
+        auto;
+    }
+
+
+    .saucha-footer__logo-fallback {
+      font-size:
+        58px;
+
+      line-height:
+        0.9;
+    }
+
+
+    /* Bottom */
+
+    .saucha-footer__bottom {
+      margin-top:
+        20px;
+
+      flex-direction:
+        column;
+
+      align-items:
+        center;
+
+      gap:
+        12px;
+
+      text-align:
+        center;
+    }
+
+
+    .saucha-footer__copyright {
+      max-width:
+        100%;
+
+      font-size:
+        9px;
+
+      line-height:
+        1.4;
+    }
+
+
+    .saucha-footer__payments {
+      width:
+        100%;
+    }
+
+
+    .saucha-footer__payments
+      .payment-icons__list {
+
+      justify-content:
+        center;
+
+      gap:
+        6px;
+    }
+
+
+    .saucha-footer__payments
+      .payment-icons__item svg {
+
+      width:
+        34px;
+    }
+
+  }
+
+
+  /* =========================================================
+     REDUCED MOTION
+     ========================================================= */
+
+  @media (prefers-reduced-motion: reduce) {
+
+    .saucha-footer__menu-slot
+      .menu__item a,
+
+    .saucha-footer__menu-slot
+      .menu__item a::after,
+
+    .saucha-footer__social-link,
+
+    .saucha-footer__newsletter
+      .email-signup__button,
+
+    .saucha-footer__newsletter
+      .email-signup__input-group {
+
+      transition:
+        none;
+    }
+
+  }
+
+{% endstylesheet %}
+
+
+{% schema %}
+{
+  "name": "Footer Saucha",
+
+  "class": "section-wrapper",
+
+  "enabled_on": {
+    "groups": [
+      "footer"
+    ]
+  },
+
+  "settings": [
+
+    {
+      "type": "header",
+      "content": "Tipografía de columnas"
+    },
+
+    {
+      "type": "select",
+      "id": "column_heading_preset",
+      "label": "Estilo de los títulos",
+      "options": [
+        {
+          "value": "h3",
+          "label": "Encabezado 3"
+        },
+        {
+          "value": "h4",
+          "label": "Encabezado 4"
+        },
+        {
+          "value": "h5",
+          "label": "Encabezado 5"
+        },
+        {
+          "value": "h6",
+          "label": "Encabezado 6"
+        },
+        {
+          "value": "paragraph",
+          "label": "Párrafo"
+        }
+      ],
+      "default": "h4"
+    },
+
+
+    {
+      "type": "header",
+      "content": "Newsletter"
+    },
+
+    {
+      "type": "richtext",
+      "id": "newsletter_text",
+      "label": "Texto",
+      "default": "<p>Suscríbete para recibir novedades, lanzamientos y contenido exclusivo.</p>"
+    },
+
+    {
+      "type": "select",
+      "id": "newsletter_preset",
+      "label": "Estilo del texto",
+      "options": [
+        {
+          "value": "paragraph",
+          "label": "Párrafo"
+        },
+        {
+          "value": "h4",
+          "label": "Encabezado 4"
+        },
+        {
+          "value": "h5",
+          "label": "Encabezado 5"
+        }
+      ],
+      "default": "h5"
+    },
+
+    {
+      "type": "checkbox",
+      "id": "hide_newsletter_text_mobile",
+      "label": "Ocultar texto en móvil",
+      "default": true
+    },
+
+
+    {
+      "type": "header",
+      "content": "Logotipo SVG"
+    },
+
+    {
+      "type": "text",
+      "id": "logo_svg_file",
+      "label": "Nombre del archivo SVG",
+      "default": "saucha_letras_vector_6e4c3d.svg",
+      "info": "Sube el SVG en Contenido > Archivos y escribe aquí el nombre exacto."
+    },
+
+    {
+      "type": "range",
+      "id": "logo_width_desktop",
+      "label": "Ancho · escritorio",
+      "min": 200,
+      "max": 1600,
+      "step": 20,
+      "unit": "px",
+      "default": 1200
+    },
+
+    {
+      "type": "range",
+      "id": "logo_width_mobile",
+      "label": "Ancho · móvil",
+      "min": 100,
+      "max": 400,
+      "step": 10,
+      "unit": "px",
+      "default": 220
+    },
+
+    {
+      "type": "range",
+      "id": "logo_margin_top_desktop",
+      "label": "Espacio antes · escritorio",
+      "min": 20,
+      "max": 180,
+      "step": 4,
+      "unit": "px",
+      "default": 88
+    },
+
+    {
+      "type": "range",
+      "id": "logo_margin_top_mobile",
+      "label": "Espacio antes · móvil",
+      "min": 16,
+      "max": 80,
+      "step": 2,
+      "unit": "px",
+      "default": 30
+    },
+
+
+    {
+      "type": "header",
+      "content": "Redes sociales"
+    },
+
+    {
+      "type": "text",
+      "id": "connect_title",
+      "label": "Título",
+      "default": "Conecta"
+    },
+
+
+    {
+      "type": "checkbox",
+      "id": "show_instagram",
+      "label": "Mostrar Instagram",
+      "default": true
+    },
+
+    {
+      "type": "url",
+      "id": "instagram_url",
+      "label": "Enlace de Instagram",
+      "visible_if": "{{ section.settings.show_instagram }}"
+    },
+
+
+    {
+      "type": "checkbox",
+      "id": "show_facebook",
+      "label": "Mostrar Facebook",
+      "default": true
+    },
+
+    {
+      "type": "url",
+      "id": "facebook_url",
+      "label": "Enlace de Facebook",
+      "visible_if": "{{ section.settings.show_facebook }}"
+    },
+
+
+    {
+      "type": "checkbox",
+      "id": "show_tiktok",
+      "label": "Mostrar TikTok",
+      "default": false
+    },
+
+    {
+      "type": "url",
+      "id": "tiktok_url",
+      "label": "Enlace de TikTok",
+      "visible_if": "{{ section.settings.show_tiktok }}"
+    },
+
+
+    {
+      "type": "checkbox",
+      "id": "show_x",
+      "label": "Mostrar X",
+      "default": false
+    },
+
+    {
+      "type": "url",
+      "id": "x_url",
+      "label": "Enlace de X",
+      "visible_if": "{{ section.settings.show_x }}"
+    },
+
+
+    {
+      "type": "checkbox",
+      "id": "show_youtube",
+      "label": "Mostrar YouTube",
+      "default": false
+    },
+
+    {
+      "type": "url",
+      "id": "youtube_url",
+      "label": "Enlace de YouTube",
+      "visible_if": "{{ section.settings.show_youtube }}"
+    },
+
+
+    {
+      "type": "range",
+      "id": "social_icon_size",
+      "label": "Tamaño iconos · escritorio",
+      "min": 16,
+      "max": 40,
+      "step": 1,
+      "unit": "px",
+      "default": 21
+    },
+
+    {
+      "type": "range",
+      "id": "social_icon_size_mobile",
+      "label": "Tamaño iconos · móvil",
+      "min": 16,
+      "max": 34,
+      "step": 1,
+      "unit": "px",
+      "default": 19
+    },
+
+    {
+      "type": "range",
+      "id": "social_gap",
+      "label": "Separación entre iconos",
+      "min": 8,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "default": 18
+    },
+
+
+    {
+      "type": "header",
+      "content": "Animación hover"
+    },
+
+    {
+      "type": "range",
+      "id": "hover_duration",
+      "label": "Duración",
+      "min": 120,
+      "max": 600,
+      "step": 20,
+      "unit": "ms",
+      "default": 260
+    },
+
+    {
+      "type": "range",
+      "id": "hover_distance",
+      "label": "Movimiento",
+      "min": 0,
+      "max": 6,
+      "step": 1,
+      "unit": "px",
+      "default": 2
+    },
+
+    {
+      "type": "range",
+      "id": "hover_scale",
+      "label": "Escala de iconos",
+      "min": 100,
+      "max": 120,
+      "step": 2,
+      "unit": "%",
+      "default": 106
+    },
+
+    {
+      "type": "range",
+      "id": "hover_opacity",
+      "label": "Opacidad en hover",
+      "min": 50,
+      "max": 100,
+      "step": 5,
+      "unit": "%",
+      "default": 70
+    },
+
+
+    {
+      "type": "header",
+      "content": "Pie inferior"
+    },
+
+    {
+      "type": "text",
+      "id": "copyright_text",
+      "label": "Copyright",
+      "info": "Si lo dejas vacío se genera automáticamente."
+    },
+
+    {
+      "type": "checkbox",
+      "id": "show_powered_by",
+      "label": "Mostrar Powered by Shopify",
+      "default": false
+    },
+
+
+    {
+      "type": "header",
+      "content": "Diseño"
+    },
+
+    {
+      "type": "range",
+      "id": "max_width",
+      "label": "Ancho máximo",
+      "min": 1200,
+      "max": 2000,
+      "step": 20,
+      "unit": "px",
+      "default": 1800
+    },
+
+    {
+      "type": "range",
+      "id": "padding_desktop",
+      "label": "Margen lateral · escritorio",
+      "min": 24,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 72
+    },
+
+    {
+      "type": "range",
+      "id": "padding_mobile",
+      "label": "Margen lateral · móvil",
+      "min": 12,
+      "max": 32,
+      "step": 1,
+      "unit": "px",
+      "default": 16
+    },
+
+    {
+      "type": "range",
+      "id": "padding_top",
+      "label": "Espacio superior",
+      "min": 24,
+      "max": 120,
+      "step": 4,
+      "unit": "px",
+      "default": 56
+    },
+
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "label": "Espacio inferior",
+      "min": 12,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "default": 28
+    },
+
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Fondo",
+      "default": "#FFFDFA"
+    },
+
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Texto",
+      "default": "#211B18"
+    },
+
+    {
+      "type": "color",
+      "id": "muted_color",
+      "label": "Texto secundario",
+      "default": "#756A64"
+    },
+
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "Bordes",
+      "default": "#E8E0D9"
+    }
+
+  ],
+
+  "presets": [
+
+    {
+      "name": "Footer Saucha",
+
+      "category": "t:categories.footer",
+
+      "blocks": {
+
+        "menu-company": {
+          "type": "menu",
+          "name": "Empresa",
+          "static": true,
+
+          "settings": {
+            "heading": "Empresa",
+            "menu_spacing": 10,
+            "show_as_accordion": true,
+            "accordion_icon": "plus",
+            "accordion_dividers": true,
+            "heading_preset": "h4",
+            "link_preset": "paragraph"
+          }
+        },
+
+
+        "menu-help": {
+          "type": "menu",
+          "name": "Ayuda",
+          "static": true,
+
+          "settings": {
+            "heading": "Ayuda",
+            "menu_spacing": 10,
+            "show_as_accordion": true,
+            "accordion_icon": "plus",
+            "accordion_dividers": true,
+            "heading_preset": "h4",
+            "link_preset": "paragraph"
+          }
+        },
+
+
+        "menu-account": {
+          "type": "menu",
+          "name": "Cuenta",
+          "static": true,
+
+          "settings": {
+            "heading": "Cuenta",
+            "menu_spacing": 10,
+            "show_as_accordion": true,
+            "accordion_icon": "plus",
+            "accordion_dividers": true,
+            "heading_preset": "h4",
+            "link_preset": "paragraph"
+          }
+        },
+
+
+        "newsletter-form": {
+          "type": "email-signup",
+          "name": "Newsletter",
+          "static": true,
+
+          "settings": {
+            "width": "fill",
+            "border_style": "all",
+            "input_style": "custom",
+            "border_width": 1,
+            "border_radius": 0,
+            "display_type": "text",
+            "label": "ENVIAR",
+            "integrated_button": true,
+            "style_class": "button-unstyled",
+            "button_type_preset": "paragraph"
+          }
+        },
+
+
+        "payment-icons": {
+          "type": "payment-icons",
+          "name": "Métodos de pago",
+          "static": true,
+
+          "settings": {
+            "horizontal_alignment": "flex-end",
+            "gap": 8
+          }
+        }
+
+      }
+
+    }
+
+  ]
+
+}
+{% endschema %}

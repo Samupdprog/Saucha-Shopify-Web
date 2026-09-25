@@ -1,0 +1,1098 @@
+{% liquid
+  assign slide_count = 0
+
+  for i in (1..4)
+    assign type_key = 'slide_' | append: i | append: '_media_type'
+    assign image_key = 'slide_' | append: i | append: '_image'
+    assign video_key = 'slide_' | append: i | append: '_video'
+
+    assign media_type = section.settings[type_key]
+    assign image = section.settings[image_key]
+    assign video = section.settings[video_key]
+
+    if media_type == 'image' and image != blank
+      assign slide_count = slide_count | plus: 1
+    elsif media_type == 'video' and video != blank
+      assign slide_count = slide_count | plus: 1
+    endif
+  endfor
+
+  assign fetch_priority = 'auto'
+  if section.index == 1
+    assign fetch_priority = 'high'
+  endif
+%}
+
+{% render 'measure-header-heights', only_when_first_section: true %}
+
+<div
+  id="Hero-{{ section.id }}"
+  class="saucha-hero-carousel{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}"
+  data-saucha-carousel
+  data-autoplay="{{ section.settings.autoplay }}"
+  data-interval="{{ section.settings.autoplay_interval | times: 1000 }}"
+  data-transition="{{ section.settings.transition_duration }}"
+  style="
+    --saucha-carousel-transition: {{ section.settings.transition_duration }}ms;
+    --saucha-overlay-color: {{ section.settings.overlay_color }};
+    --saucha-overlay-rgb: {{ section.settings.overlay_color.rgb }};
+    --saucha-overlay-opacity: {{ section.settings.overlay_opacity | divided_by: 100.0 }};
+
+    {% case section.settings.section_height %}
+      {% when 'full-screen' %}
+        --hero-min-height: 100svh;
+      {% when 'full-screen-plus' %}
+        --hero-min-height: 115svh;
+      {% when 'full-screen-expanded' %}
+        --hero-min-height: {{ section.settings.section_height_expanded }}svh;
+      {% when 'custom' %}
+        --hero-min-height: {{ section.settings.section_height_custom }}svh;
+      {% else %}
+        --hero-min-height: var(--section-height-{{ section.settings.section_height }});
+    {% endcase %}
+  "
+>
+  <div
+    class="saucha-hero-carousel__container spacing-style section section--full-width"
+    style="{% render 'spacing-style', settings: section.settings %}"
+  >
+    {% if section.settings.link != blank %}
+      <a
+        href="{{ section.settings.link }}"
+        class="saucha-hero-carousel__section-link"
+        aria-label="Abrir enlace"
+        {% if section.settings.open_in_new_tab %}
+          target="_blank"
+          rel="noopener"
+        {% endif %}
+      ></a>
+    {% endif %}
+
+    <div class="saucha-hero-carousel__media" aria-live="off">
+      {% if slide_count > 0 %}
+        {% assign rendered_slide = 0 %}
+
+        {% for i in (1..4) %}
+          {% liquid
+            assign type_key = 'slide_' | append: i | append: '_media_type'
+            assign image_key = 'slide_' | append: i | append: '_image'
+            assign video_key = 'slide_' | append: i | append: '_video'
+            assign mobile_image_key = 'slide_' | append: i | append: '_image_mobile'
+            assign mobile_video_key = 'slide_' | append: i | append: '_video_mobile'
+
+            assign media_type = section.settings[type_key]
+            assign image = section.settings[image_key]
+            assign video = section.settings[video_key]
+            assign image_mobile = section.settings[mobile_image_key]
+            assign video_mobile = section.settings[mobile_video_key]
+
+            assign slide_valid = false
+            if media_type == 'image' and image != blank
+              assign slide_valid = true
+            elsif media_type == 'video' and video != blank
+              assign slide_valid = true
+            endif
+          %}
+
+          {% if slide_valid %}
+            {% assign rendered_slide = rendered_slide | plus: 1 %}
+
+            <div
+              class="saucha-hero-carousel__slide{% if rendered_slide == 1 %} is-active{% endif %}"
+              data-saucha-slide
+              data-slide-index="{{ rendered_slide | minus: 1 }}"
+              aria-hidden="{% if rendered_slide == 1 %}false{% else %}true{% endif %}"
+            >
+              {% if media_type == 'image' %}
+                <picture class="saucha-hero-carousel__picture">
+                  {% if image_mobile != blank %}
+                    <source
+                      media="(max-width: 749px)"
+                      srcset="
+                        {{ image_mobile | image_url: width: 500 }} 500w,
+                        {{ image_mobile | image_url: width: 750 }} 750w,
+                        {{ image_mobile | image_url: width: 1000 }} 1000w,
+                        {{ image_mobile | image_url: width: 1400 }} 1400w
+                      "
+                      sizes="100vw"
+                    >
+                  {% endif %}
+
+                  {{
+                    image
+                    | image_url: width: 3840
+                    | image_tag:
+                      widths: '832, 1200, 1600, 1920, 2560, 3840',
+                      sizes: '100vw',
+                      class: 'saucha-hero-carousel__asset',
+                      loading: 'eager',
+                      fetchpriority: fetch_priority,
+                      alt: image.alt
+                  }}
+                </picture>
+              {% else %}
+                <div class="saucha-hero-carousel__video saucha-hero-carousel__video--desktop{% if video_mobile == blank %} saucha-hero-carousel__video--all{% endif %}">
+                  {{
+                    video
+                    | video_tag:
+                      autoplay: true,
+                      loop: true,
+                      controls: false,
+                      muted: true,
+                      playsinline: true,
+                      class: 'saucha-hero-carousel__asset'
+                  }}
+                </div>
+
+                {% if video_mobile != blank %}
+                  <div class="saucha-hero-carousel__video saucha-hero-carousel__video--mobile">
+                    {{
+                      video_mobile
+                      | video_tag:
+                        autoplay: true,
+                        loop: true,
+                        controls: false,
+                        muted: true,
+                        playsinline: true,
+                        class: 'saucha-hero-carousel__asset'
+                    }}
+                  </div>
+                {% endif %}
+              {% endif %}
+            </div>
+          {% endif %}
+        {% endfor %}
+      {% else %}
+        <div
+          class="saucha-hero-carousel__slide is-active"
+          data-saucha-slide
+          data-slide-index="0"
+          aria-hidden="false"
+        >
+          {{ 'hero-apparel-1' | placeholder_svg_tag: 'saucha-hero-carousel__asset saucha-hero-carousel__placeholder' }}
+        </div>
+      {% endif %}
+    </div>
+
+    {% if section.settings.toggle_overlay %}
+      <div class="saucha-hero-carousel__overlay" aria-hidden="true"></div>
+    {% endif %}
+
+    <div
+      class="
+        saucha-hero-carousel__content
+        section-content-wrapper
+        {{ section.settings.section_width }}
+        {% if request.design_mode %}saucha-hero-carousel__content--design-mode{% endif %}
+      "
+      style="
+        --saucha-content-horizontal: {{ section.settings.horizontal_alignment_flex_direction_column }};
+        --saucha-content-vertical: {{ section.settings.vertical_alignment_flex_direction_column }};
+        --saucha-content-gap: {{ section.settings.gap }}px;
+      "
+    >
+      {% content_for 'blocks' %}
+    </div>
+
+    {% if slide_count > 1 and section.settings.show_navigation %}
+      <div class="saucha-hero-carousel__navigation" data-carousel-navigation>
+        <button
+          type="button"
+          class="saucha-hero-carousel__arrow"
+          data-carousel-prev
+          aria-label="Imagen anterior"
+        >
+          <span aria-hidden="true">←</span>
+        </button>
+
+        <div class="saucha-hero-carousel__dots" aria-label="Seleccionar imagen">
+          {% for i in (1..slide_count) %}
+            <button
+              type="button"
+              class="saucha-hero-carousel__dot{% if forloop.first %} is-active{% endif %}"
+              data-carousel-dot="{{ forloop.index0 }}"
+              aria-label="Ir a la imagen {{ forloop.index }}"
+              aria-current="{% if forloop.first %}true{% else %}false{% endif %}"
+            ></button>
+          {% endfor %}
+        </div>
+
+        <button
+          type="button"
+          class="saucha-hero-carousel__arrow"
+          data-carousel-next
+          aria-label="Imagen siguiente"
+        >
+          <span aria-hidden="true">→</span>
+        </button>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+{% stylesheet %}
+  .hero-wrapper {
+    --hero-height-offset: 0px;
+  }
+
+  body:has(#header-group > .header-section > #header-component) .hero-wrapper:first-child,
+  body:has(#header-group > .header-section > #header-component) .saucha-hero-carousel.section-wrapper:first-child {
+    --hero-height-offset: var(--header-group-height, 0px);
+  }
+
+  .saucha-hero-carousel {
+    position: relative;
+    min-height: calc(var(--hero-min-height) - var(--hero-height-offset, 0px));
+  }
+
+  .saucha-hero-carousel__container {
+    position: relative;
+    display: grid;
+    min-height: inherit;
+    overflow: hidden;
+    isolation: isolate;
+  }
+
+  .saucha-hero-carousel__media {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    background: var(--color-background);
+  }
+
+  .saucha-hero-carousel__slide {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition:
+      opacity var(--saucha-carousel-transition) cubic-bezier(0.22, 1, 0.36, 1),
+      visibility 0s linear var(--saucha-carousel-transition);
+  }
+
+  .saucha-hero-carousel__slide.is-active {
+    opacity: 1;
+    visibility: visible;
+    transition:
+      opacity var(--saucha-carousel-transition) cubic-bezier(0.22, 1, 0.36, 1),
+      visibility 0s linear 0s;
+  }
+
+  .saucha-hero-carousel__picture,
+  .saucha-hero-carousel__video {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .saucha-hero-carousel__asset {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  .saucha-hero-carousel__video--mobile {
+    display: none;
+  }
+
+  @media screen and (max-width: 749px) {
+    .saucha-hero-carousel__video--desktop:not(.saucha-hero-carousel__video--all) {
+      display: none;
+    }
+
+    .saucha-hero-carousel__video--mobile {
+      display: block;
+    }
+  }
+
+  .saucha-hero-carousel__overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background:
+      rgb(
+        var(--saucha-overlay-rgb) /
+        var(--saucha-overlay-opacity)
+      );
+  }
+
+  .saucha-hero-carousel__content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: var(--saucha-content-horizontal);
+    justify-content: var(--saucha-content-vertical);
+    gap: var(--saucha-content-gap);
+    width: 100%;
+    min-width: 0;
+    min-height: inherit;
+    margin-inline: auto;
+    pointer-events: none;
+  }
+
+  .saucha-hero-carousel__content :is(a, button, input, textarea, select, details, summary),
+  .saucha-hero-carousel__content .shopify-app-block {
+    pointer-events: auto;
+  }
+
+  .saucha-hero-carousel__content--design-mode * {
+    pointer-events: auto;
+  }
+
+  .saucha-hero-carousel__section-link {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+  }
+
+  .saucha-hero-carousel__navigation {
+    position: absolute;
+    z-index: 3;
+    left: 50%;
+    bottom: clamp(18px, 3vw, 34px);
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    transform: translateX(-50%);
+    color: #fff;
+  }
+
+  .saucha-hero-carousel__arrow,
+  .saucha-hero-carousel__dot {
+    appearance: none;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  .saucha-hero-carousel__arrow {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    font-size: 18px;
+    line-height: 1;
+    opacity: 0.82;
+    transition: opacity 220ms ease;
+  }
+
+  .saucha-hero-carousel__arrow:hover,
+  .saucha-hero-carousel__arrow:focus-visible {
+    opacity: 1;
+  }
+
+  .saucha-hero-carousel__dots {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  .saucha-hero-carousel__dot {
+    width: 18px;
+    height: 2px;
+    background: currentColor;
+    opacity: 0.35;
+    transition:
+      opacity 220ms ease,
+      width 220ms ease;
+  }
+
+  .saucha-hero-carousel__dot.is-active {
+    width: 28px;
+    opacity: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .saucha-hero-carousel__slide {
+      transition: none;
+    }
+
+    .saucha-hero-carousel__dot,
+    .saucha-hero-carousel__arrow {
+      transition: none;
+    }
+  }
+{% endstylesheet %}
+
+<script>
+  (() => {
+    const root = document.getElementById('Hero-{{ section.id }}');
+
+    if (!root || root.dataset.carouselInitialized === 'true') return;
+
+    root.dataset.carouselInitialized = 'true';
+
+    const slides = Array.from(root.querySelectorAll('[data-saucha-slide]'));
+    const dots = Array.from(root.querySelectorAll('[data-carousel-dot]'));
+    const previousButton = root.querySelector('[data-carousel-prev]');
+    const nextButton = root.querySelector('[data-carousel-next]');
+
+    if (slides.length <= 1) return;
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const autoplay = root.dataset.autoplay === 'true' && !prefersReducedMotion;
+    const interval = Math.max(2000, Number(root.dataset.interval) || 6000);
+
+    let currentIndex = 0;
+    let timer = null;
+    let visible = true;
+
+    const getActiveVideo = (slide) => {
+      if (!slide) return null;
+
+      const mobileVideo = slide.querySelector('.saucha-hero-carousel__video--mobile video');
+      const desktopVideo = slide.querySelector('.saucha-hero-carousel__video--desktop video');
+
+      if (window.matchMedia('(max-width: 749px)').matches && mobileVideo) {
+        return mobileVideo;
+      }
+
+      return desktopVideo || mobileVideo;
+    };
+
+    const syncVideos = () => {
+      slides.forEach((slide, index) => {
+        const videos = slide.querySelectorAll('video');
+
+        videos.forEach((video) => {
+          if (index === currentIndex) {
+            const playPromise = video.play();
+            if (playPromise && typeof playPromise.catch === 'function') {
+              playPromise.catch(() => {});
+            }
+          } else {
+            video.pause();
+          }
+        });
+      });
+    };
+
+    const showSlide = (index) => {
+      currentIndex = (index + slides.length) % slides.length;
+
+      slides.forEach((slide, slideIndex) => {
+        const active = slideIndex === currentIndex;
+        slide.classList.toggle('is-active', active);
+        slide.setAttribute('aria-hidden', active ? 'false' : 'true');
+      });
+
+      dots.forEach((dot, dotIndex) => {
+        const active = dotIndex === currentIndex;
+        dot.classList.toggle('is-active', active);
+        dot.setAttribute('aria-current', active ? 'true' : 'false');
+      });
+
+      root.dataset.currentSlide = String(currentIndex);
+
+      root.querySelectorAll('[data-copy-slide]').forEach((copyItem) => {
+        const active = Number(copyItem.dataset.copySlide) === currentIndex;
+        copyItem.classList.toggle('is-active', active);
+        copyItem.setAttribute('aria-hidden', active ? 'false' : 'true');
+      });
+
+      syncVideos();
+    };
+
+    const stop = () => {
+      if (timer) {
+        window.clearInterval(timer);
+        timer = null;
+      }
+    };
+
+    const start = () => {
+      stop();
+
+      if (!autoplay || !visible) return;
+
+      timer = window.setInterval(() => {
+        showSlide(currentIndex + 1);
+      }, interval);
+    };
+
+    previousButton?.addEventListener('click', () => {
+      showSlide(currentIndex - 1);
+      start();
+    });
+
+    nextButton?.addEventListener('click', () => {
+      showSlide(currentIndex + 1);
+      start();
+    });
+
+    dots.forEach((dot) => {
+      dot.addEventListener('click', () => {
+        showSlide(Number(dot.dataset.carouselDot) || 0);
+        start();
+      });
+    });
+
+    let pointerStartX = null;
+
+    root.addEventListener('pointerdown', (event) => {
+      if (event.pointerType === 'mouse') return;
+      pointerStartX = event.clientX;
+    });
+
+    root.addEventListener('pointerup', (event) => {
+      if (pointerStartX === null || event.pointerType === 'mouse') return;
+
+      const distance = event.clientX - pointerStartX;
+      pointerStartX = null;
+
+      if (Math.abs(distance) < 45) return;
+
+      showSlide(distance < 0 ? currentIndex + 1 : currentIndex - 1);
+      start();
+    });
+
+    document.addEventListener('visibilitychange', () => {
+      visible = !document.hidden;
+
+      if (visible) {
+        start();
+        syncVideos();
+      } else {
+        stop();
+      }
+    });
+
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          visible = entries[0]?.isIntersecting ?? true;
+
+          if (visible) {
+            start();
+            syncVideos();
+          } else {
+            stop();
+          }
+        },
+        { threshold: 0.05 }
+      );
+
+      observer.observe(root);
+    }
+
+    showSlide(0);
+    start();
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Hero Saucha carrusel",
+  "tag": "section",
+  "class": "saucha-hero-carousel section-wrapper",
+  "blocks": [
+    {
+      "type": "saucha-hero-copy"
+    },
+    {
+      "type": "@theme"
+    },
+    {
+      "type": "text"
+    },
+    {
+      "type": "button"
+    },
+    {
+      "type": "logo"
+    },
+    {
+      "type": "jumbo-text"
+    },
+    {
+      "type": "spacer"
+    },
+    {
+      "type": "group"
+    },
+    {
+      "type": "_marquee"
+    }
+  ],
+  "disabled_on": {
+    "groups": [
+      "header"
+    ]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Carrusel"
+    },
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "Cambiar automáticamente",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "autoplay_interval",
+      "label": "Tiempo entre cambios",
+      "min": 2,
+      "max": 15,
+      "step": 1,
+      "unit": "s",
+      "default": 6
+    },
+    {
+      "type": "range",
+      "id": "transition_duration",
+      "label": "Duración de la transición",
+      "min": 200,
+      "max": 1600,
+      "step": 100,
+      "unit": "ms",
+      "default": 700
+    },
+    {
+      "type": "checkbox",
+      "id": "show_navigation",
+      "label": "Mostrar flechas e indicadores",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Slide 1"
+    },
+    {
+      "type": "select",
+      "id": "slide_1_media_type",
+      "label": "Tipo",
+      "options": [
+        {
+          "value": "image",
+          "label": "Imagen"
+        },
+        {
+          "value": "video",
+          "label": "Vídeo"
+        }
+      ],
+      "default": "image"
+    },
+    {
+      "type": "image_picker",
+      "id": "slide_1_image",
+      "label": "Imagen",
+      "visible_if": "{{ section.settings.slide_1_media_type == 'image' }}"
+    },
+    {
+      "type": "video",
+      "id": "slide_1_video",
+      "label": "Vídeo",
+      "visible_if": "{{ section.settings.slide_1_media_type == 'video' }}"
+    },
+    {
+      "type": "image_picker",
+      "id": "slide_1_image_mobile",
+      "label": "Imagen móvil (opcional)",
+      "info": "Si se deja vacía se usa la imagen de escritorio.",
+      "visible_if": "{{ section.settings.slide_1_media_type == 'image' }}"
+    },
+    {
+      "type": "video",
+      "id": "slide_1_video_mobile",
+      "label": "Vídeo móvil (opcional)",
+      "info": "Si se deja vacío se usa el vídeo de escritorio.",
+      "visible_if": "{{ section.settings.slide_1_media_type == 'video' }}"
+    },
+    {
+      "type": "header",
+      "content": "Slide 2"
+    },
+    {
+      "type": "select",
+      "id": "slide_2_media_type",
+      "label": "Tipo",
+      "options": [
+        {
+          "value": "image",
+          "label": "Imagen"
+        },
+        {
+          "value": "video",
+          "label": "Vídeo"
+        }
+      ],
+      "default": "image"
+    },
+    {
+      "type": "image_picker",
+      "id": "slide_2_image",
+      "label": "Imagen",
+      "visible_if": "{{ section.settings.slide_2_media_type == 'image' }}"
+    },
+    {
+      "type": "video",
+      "id": "slide_2_video",
+      "label": "Vídeo",
+      "visible_if": "{{ section.settings.slide_2_media_type == 'video' }}"
+    },
+    {
+      "type": "image_picker",
+      "id": "slide_2_image_mobile",
+      "label": "Imagen móvil (opcional)",
+      "info": "Si se deja vacía se usa la imagen de escritorio.",
+      "visible_if": "{{ section.settings.slide_2_media_type == 'image' }}"
+    },
+    {
+      "type": "video",
+      "id": "slide_2_video_mobile",
+      "label": "Vídeo móvil (opcional)",
+      "info": "Si se deja vacío se usa el vídeo de escritorio.",
+      "visible_if": "{{ section.settings.slide_2_media_type == 'video' }}"
+    },
+    {
+      "type": "header",
+      "content": "Slide 3"
+    },
+    {
+      "type": "select",
+      "id": "slide_3_media_type",
+      "label": "Tipo",
+      "options": [
+        {
+          "value": "image",
+          "label": "Imagen"
+        },
+        {
+          "value": "video",
+          "label": "Vídeo"
+        }
+      ],
+      "default": "image"
+    },
+    {
+      "type": "image_picker",
+      "id": "slide_3_image",
+      "label": "Imagen",
+      "visible_if": "{{ section.settings.slide_3_media_type == 'image' }}"
+    },
+    {
+      "type": "video",
+      "id": "slide_3_video",
+      "label": "Vídeo",
+      "visible_if": "{{ section.settings.slide_3_media_type == 'video' }}"
+    },
+    {
+      "type": "image_picker",
+      "id": "slide_3_image_mobile",
+      "label": "Imagen móvil (opcional)",
+      "info": "Si se deja vacía se usa la imagen de escritorio.",
+      "visible_if": "{{ section.settings.slide_3_media_type == 'image' }}"
+    },
+    {
+      "type": "video",
+      "id": "slide_3_video_mobile",
+      "label": "Vídeo móvil (opcional)",
+      "info": "Si se deja vacío se usa el vídeo de escritorio.",
+      "visible_if": "{{ section.settings.slide_3_media_type == 'video' }}"
+    },
+    {
+      "type": "header",
+      "content": "Slide 4"
+    },
+    {
+      "type": "select",
+      "id": "slide_4_media_type",
+      "label": "Tipo",
+      "options": [
+        {
+          "value": "image",
+          "label": "Imagen"
+        },
+        {
+          "value": "video",
+          "label": "Vídeo"
+        }
+      ],
+      "default": "image"
+    },
+    {
+      "type": "image_picker",
+      "id": "slide_4_image",
+      "label": "Imagen",
+      "visible_if": "{{ section.settings.slide_4_media_type == 'image' }}"
+    },
+    {
+      "type": "video",
+      "id": "slide_4_video",
+      "label": "Vídeo",
+      "visible_if": "{{ section.settings.slide_4_media_type == 'video' }}"
+    },
+    {
+      "type": "image_picker",
+      "id": "slide_4_image_mobile",
+      "label": "Imagen móvil (opcional)",
+      "info": "Si se deja vacía se usa la imagen de escritorio.",
+      "visible_if": "{{ section.settings.slide_4_media_type == 'image' }}"
+    },
+    {
+      "type": "video",
+      "id": "slide_4_video_mobile",
+      "label": "Vídeo móvil (opcional)",
+      "info": "Si se deja vacío se usa el vídeo de escritorio.",
+      "visible_if": "{{ section.settings.slide_4_media_type == 'video' }}"
+    },
+    {
+      "type": "header",
+      "content": "Enlace de la sección"
+    },
+    {
+      "type": "url",
+      "id": "link",
+      "label": "Enlace"
+    },
+    {
+      "type": "checkbox",
+      "id": "open_in_new_tab",
+      "label": "Abrir en una pestaña nueva",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Diseño"
+    },
+    {
+      "type": "select",
+      "id": "horizontal_alignment_flex_direction_column",
+      "label": "Alineación horizontal",
+      "options": [
+        {
+          "value": "flex-start",
+          "label": "Izquierda"
+        },
+        {
+          "value": "center",
+          "label": "Centro"
+        },
+        {
+          "value": "flex-end",
+          "label": "Derecha"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "select",
+      "id": "vertical_alignment_flex_direction_column",
+      "label": "Posición vertical",
+      "options": [
+        {
+          "value": "flex-start",
+          "label": "Arriba"
+        },
+        {
+          "value": "center",
+          "label": "Centro"
+        },
+        {
+          "value": "flex-end",
+          "label": "Abajo"
+        },
+        {
+          "value": "space-between",
+          "label": "Separar"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "range",
+      "id": "gap",
+      "label": "Separación entre bloques",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Ancho del contenido",
+      "options": [
+        {
+          "value": "page-width",
+          "label": "Ancho de página"
+        },
+        {
+          "value": "full-width",
+          "label": "Ancho completo"
+        }
+      ],
+      "default": "page-width"
+    },
+    {
+      "type": "select",
+      "id": "section_height",
+      "label": "Altura",
+      "options": [
+        {
+          "value": "auto",
+          "label": "Automática"
+        },
+        {
+          "value": "small",
+          "label": "Pequeña"
+        },
+        {
+          "value": "medium",
+          "label": "Media"
+        },
+        {
+          "value": "large",
+          "label": "Grande"
+        },
+        {
+          "value": "full-screen",
+          "label": "Pantalla completa · 100%"
+        },
+        {
+          "value": "full-screen-plus",
+          "label": "Pantalla completa + · 115%"
+        },
+        {
+          "value": "full-screen-expanded",
+          "label": "Pantalla ampliada · ajustable"
+        },
+        {
+          "value": "custom",
+          "label": "Personalizada"
+        }
+      ],
+      "default": "full-screen"
+    },
+    {
+      "type": "range",
+      "id": "section_height_custom",
+      "label": "Altura personalizada",
+      "min": 20,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 70,
+      "visible_if": "{{ section.settings.section_height == 'custom' }}"
+    },
+    {
+      "type": "range",
+      "id": "section_height_expanded",
+      "label": "Altura ampliada",
+      "info": "100% equivale a la altura completa del dispositivo.",
+      "min": 100,
+      "max": 180,
+      "step": 5,
+      "unit": "%",
+      "default": 130,
+      "visible_if": "{{ section.settings.section_height == 'full-screen-expanded' }}"
+    },
+    {
+      "type": "header",
+      "content": "Capa sobre imagen / vídeo"
+    },
+    {
+      "type": "checkbox",
+      "id": "toggle_overlay",
+      "label": "Activar capa de color",
+      "default": true
+    },
+    {
+      "type": "color",
+      "id": "overlay_color",
+      "label": "Color de la capa",
+      "default": "#000000",
+      "visible_if": "{{ section.settings.toggle_overlay }}"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "Opacidad de la capa",
+      "min": 0,
+      "max": 90,
+      "step": 1,
+      "unit": "%",
+      "default": 20,
+      "visible_if": "{{ section.settings.toggle_overlay }}"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Color de fondo",
+      "default": "#FFFFFF"
+    },
+    {
+      "type": "header",
+      "content": "Espaciado"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "Superior",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "Inferior",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    }
+  ],
+  "presets": [
+    {
+      "name": "Hero Saucha carrusel",
+      "category": "Banners",
+      "blocks": {
+        "dynamic_copy": {
+          "type": "saucha-hero-copy",
+          "settings": {
+            "slide_1_eyebrow": "PARTY TIME",
+            "slide_1_title": "Skylar\nSequin",
+            "slide_2_eyebrow": "NEW SEASON",
+            "slide_2_title": "New\nEssentials",
+            "label": "SHOP FOR NOW",
+            "alignment": "center",
+            "text_color": "#FFFFFF"
+          }
+        }
+      },
+      "block_order": [
+        "dynamic_copy"
+      ],
+      "settings": {
+        "horizontal_alignment_flex_direction_column": "center",
+        "vertical_alignment_flex_direction_column": "center",
+        "gap": 16,
+        "section_height": "full-screen",
+        "toggle_overlay": true,
+        "overlay_color": "#000000",
+        "overlay_opacity": 20,
+        "autoplay": true,
+        "autoplay_interval": 6,
+        "transition_duration": 700
+      }
+    }
+  ]
+}
+{% endschema %}

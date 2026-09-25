@@ -1,0 +1,319 @@
+{%- doc -%}
+  Imagen por tarjeta para Bento Saucha.
+  Los datos de cada imagen llegan desde los ajustes de la sección,
+  por posición: tarjeta 1, 2, 3 y 4.
+{%- enddoc -%}
+
+{% liquid
+  assign collection = closest.collection
+
+  assign desktop_image = saucha_image_desktop
+  assign mobile_image = saucha_image_mobile
+
+  if desktop_image == blank and mobile_image != blank
+    assign desktop_image = mobile_image
+  endif
+
+  if desktop_image == blank and collection != blank
+    assign desktop_image = collection.image
+
+    if desktop_image == blank
+      assign desktop_image = collection.products.first.featured_image
+    endif
+  endif
+
+  if mobile_image == blank
+    assign mobile_image = desktop_image
+  endif
+
+  assign ratio = 1
+  case block.settings.image_ratio
+    when 'landscape'
+      assign ratio = '16 / 9'
+    when 'portrait'
+      assign ratio = '4 / 5'
+    when 'square'
+      assign ratio = '1 / 1'
+    when 'adapt'
+      assign ratio = desktop_image.aspect_ratio
+  endcase
+
+  if ratio == 0 or ratio == null
+    assign ratio = 1
+  endif
+
+  assign position_x_desktop = saucha_position_x_desktop | default: 50
+  assign position_y_desktop = saucha_position_y_desktop | default: 50
+  assign position_x_mobile = saucha_position_x_mobile | default: 50
+  assign position_y_mobile = saucha_position_y_mobile | default: 50
+
+  assign zoom_desktop_value = saucha_zoom_desktop | default: 100
+  assign zoom_mobile_value = saucha_zoom_mobile | default: 100
+
+  assign zoom_desktop = zoom_desktop_value | divided_by: 100.0
+  assign zoom_mobile = zoom_mobile_value | divided_by: 100.0
+
+  assign sizes = '(min-width: 901px) 50vw, 100vw'
+  assign widths = '240, 352, 480, 640, 832, 1200, 1600, 1920, 2560'
+%}
+
+{% style %}
+  .collection-card[data-block-id="{{ parent_block_id }}"] {
+    --ratio: {{ ratio }};
+  }
+{% endstyle %}
+
+{% if desktop_image != blank %}
+  <div
+    class="resource-image collection-card__image spacing-style border-style saucha-collection-card-image"
+    style="
+      {% render 'spacing-style', settings: block.settings %}
+      {% render 'border-override', settings: block.settings %}
+      --saucha-image-x-desktop: {{ position_x_desktop }}%;
+      --saucha-image-y-desktop: {{ position_y_desktop }}%;
+      --saucha-image-zoom-desktop: {{ zoom_desktop }};
+      --saucha-image-x-mobile: {{ position_x_mobile }}%;
+      --saucha-image-y-mobile: {{ position_y_mobile }}%;
+      --saucha-image-zoom-mobile: {{ zoom_mobile }};
+    "
+    {{ block.shopify_attributes }}
+  >
+    {% if block.settings.toggle_overlay %}
+      {% render 'overlay', settings: block.settings %}
+    {% endif %}
+
+    <picture class="saucha-collection-card-image__picture">
+      {% if mobile_image != blank %}
+        <source
+          media="(max-width: 749px)"
+          srcset="
+            {{ mobile_image | image_url: width: 352 }} 352w,
+            {{ mobile_image | image_url: width: 480 }} 480w,
+            {{ mobile_image | image_url: width: 640 }} 640w,
+            {{ mobile_image | image_url: width: 832 }} 832w,
+            {{ mobile_image | image_url: width: 1200 }} 1200w
+          "
+          sizes="100vw"
+        >
+      {% endif %}
+
+      {{
+        desktop_image
+        | image_url: width: 2560
+        | image_tag:
+          widths: widths,
+          class: 'resource-image__image saucha-collection-card-image__img',
+          sizes: sizes,
+          loading: 'lazy',
+          alt: collection.title
+      }}
+    </picture>
+  </div>
+{% else %}
+  <div
+    class="resource-image resource-image--placeholder collection-card__image collection-card__image--placeholder spacing-style border-style saucha-collection-card-image"
+    style="
+      {% render 'spacing-style', settings: block.settings %}
+      {% render 'border-override', settings: block.settings %}
+    "
+    {{ block.shopify_attributes }}
+  >
+    {% if block.settings.toggle_overlay %}
+      {% render 'overlay', settings: block.settings %}
+    {% endif %}
+
+    <div class="resource-image__image">
+      {{ 'collection-apparel-1' | placeholder_svg_tag }}
+    </div>
+  </div>
+{% endif %}
+
+{% stylesheet %}
+  .saucha-collection-card-image {
+    position: relative;
+    display: flex;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    max-width: 100%;
+    max-height: 100%;
+    aspect-ratio: var(--ratio);
+  }
+
+  .saucha-collection-card-image__picture {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .saucha-collection-card-image__img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    object-fit: cover;
+
+    object-position:
+      var(--saucha-image-x-mobile)
+      var(--saucha-image-y-mobile);
+
+    transform: scale(var(--saucha-image-zoom-mobile));
+    transform-origin:
+      var(--saucha-image-x-mobile)
+      var(--saucha-image-y-mobile);
+  }
+
+  @media screen and (min-width: 750px) {
+    .saucha-collection-card-image__img {
+      object-position:
+        var(--saucha-image-x-desktop)
+        var(--saucha-image-y-desktop);
+
+      transform: scale(var(--saucha-image-zoom-desktop));
+      transform-origin:
+        var(--saucha-image-x-desktop)
+        var(--saucha-image-y-desktop);
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Imagen colección - Saucha",
+  "tag": null,
+  "settings": [
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "t:settings.aspect_ratio",
+      "info": "t:info.aspect_ratio_adjusted",
+      "options": [
+        {
+          "value": "adapt",
+          "label": "t:options.auto"
+        },
+        {
+          "value": "portrait",
+          "label": "t:options.portrait"
+        },
+        {
+          "value": "square",
+          "label": "t:options.square"
+        },
+        {
+          "value": "landscape",
+          "label": "t:options.landscape"
+        }
+      ],
+      "default": "adapt"
+    },
+    {
+      "type": "checkbox",
+      "id": "toggle_overlay",
+      "label": "t:settings.media_overlay"
+    },
+    {
+      "type": "color",
+      "id": "overlay_color",
+      "label": "t:settings.overlay_color",
+      "alpha": true,
+      "default": "#00000026",
+      "visible_if": "{{ block.settings.toggle_overlay }}"
+    },
+    {
+      "type": "select",
+      "id": "overlay_style",
+      "label": "t:settings.overlay_style",
+      "options": [
+        {
+          "value": "solid",
+          "label": "t:options.solid"
+        },
+        {
+          "value": "gradient",
+          "label": "t:options.gradient"
+        }
+      ],
+      "default": "solid",
+      "visible_if": "{{ block.settings.toggle_overlay }}"
+    },
+    {
+      "type": "select",
+      "id": "gradient_direction",
+      "label": "t:settings.gradient_direction",
+      "options": [
+        {
+          "value": "to top",
+          "label": "t:options.up"
+        },
+        {
+          "value": "to bottom",
+          "label": "t:options.down"
+        }
+      ],
+      "default": "to top",
+      "visible_if": "{{ block.settings.toggle_overlay and block.settings.overlay_style == 'gradient' }}"
+    },
+    {
+      "type": "header",
+      "content": "t:content.borders"
+    },
+    {
+      "type": "select",
+      "id": "border",
+      "label": "t:settings.style",
+      "options": [
+        {
+          "value": "none",
+          "label": "t:options.none"
+        },
+        {
+          "value": "solid",
+          "label": "t:options.solid"
+        }
+      ],
+      "default": "none"
+    },
+    {
+      "type": "range",
+      "id": "border_width",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "label": "t:settings.thickness",
+      "default": 1,
+      "visible_if": "{{ block.settings.border != 'none' }}"
+    },
+    {
+      "type": "range",
+      "id": "border_opacity",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "label": "t:settings.opacity",
+      "default": 100,
+      "visible_if": "{{ block.settings.border != 'none' }}"
+    },
+    {
+      "type": "color",
+      "id": "border_color",
+      "label": "t:settings.color",
+      "placeholder": "t:settings.default",
+      "visible_if": "{{ block.settings.border != 'none' }}"
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "label": "t:settings.border_radius",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 0
+    }
+  ]
+}
+{% endschema %}

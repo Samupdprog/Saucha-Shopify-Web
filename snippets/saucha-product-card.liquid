@@ -1,0 +1,412 @@
+{%- liquid
+  assign native_variant = product.selected_or_first_available_variant
+  assign current_variant = native_variant
+  assign matched_sale_variant = blank
+  assign matched_sale_unavailable_variant = blank
+
+  for candidate_variant in product.variants
+    if candidate_variant.matched
+      if candidate_variant.compare_at_price != blank and candidate_variant.compare_at_price > candidate_variant.price
+        if candidate_variant.available
+          assign matched_sale_variant = candidate_variant
+          break
+        elsif matched_sale_unavailable_variant == blank
+          assign matched_sale_unavailable_variant = candidate_variant
+        endif
+      endif
+    endif
+  endfor
+
+  if matched_sale_variant != blank
+    assign current_variant = matched_sale_variant
+  elsif native_variant.available == false and matched_sale_unavailable_variant != blank
+    assign current_variant = matched_sale_unavailable_variant
+  endif
+
+  assign primary_media = product.featured_media
+
+  if current_variant.featured_media != blank
+    assign primary_media = current_variant.featured_media
+  endif
+
+  if primary_media == blank and product.media.size > 0
+    assign primary_media = product.media.first
+  endif
+
+  assign color_option = blank
+  assign color_option_index = 0
+
+  for option in product.options_with_values
+    assign option_name_normalized = option.name | downcase | strip
+    assign option_has_swatches = false
+
+    for option_value in option.values
+      if option_value.swatch != blank
+        assign option_has_swatches = true
+        break
+      endif
+    endfor
+
+    assign option_is_color = option_has_swatches
+    unless option_is_color
+      if option_name_normalized contains 'color' or option_name_normalized contains 'colour'
+        assign option_is_color = true
+      endif
+    endunless
+
+    if option_is_color
+      assign color_option = option
+      assign color_option_index = option.position | minus: 1
+      break
+    endif
+  endfor
+
+  assign current_color_key = blank
+  if color_option != blank and current_variant != blank
+    assign current_color_value = current_variant.options[color_option_index]
+    assign current_color_key = current_color_value | handleize
+  endif
+
+  if current_variant.featured_media == blank and section.settings.smart_color_media and current_color_key != blank
+    for candidate_media in product.media
+      if candidate_media.media_type == 'image'
+        assign candidate_alt_key = candidate_media.alt | default: '' | handleize
+        assign candidate_src_key = candidate_media.preview_image.src | default: '' | downcase
+
+        if candidate_alt_key contains current_color_key or candidate_src_key contains current_color_key
+          assign primary_media = candidate_media
+          break
+        endif
+      endif
+    endfor
+  endif
+
+  assign primary_image = blank
+  if primary_media != blank
+    assign primary_image = primary_media.preview_image
+  endif
+
+  assign secondary_media = blank
+
+  if section.settings.enable_second_image and product.media.size > 1 and primary_media != blank
+    if section.settings.smart_color_media and color_option != blank and current_color_key != blank
+      for candidate_media in product.media
+        if candidate_media.media_type == 'image' and candidate_media.id != primary_media.id
+          assign candidate_alt_key = candidate_media.alt | default: '' | handleize
+          assign candidate_src_key = candidate_media.preview_image.src | default: '' | downcase
+
+          if candidate_alt_key contains current_color_key or candidate_src_key contains current_color_key
+            assign secondary_media = candidate_media
+            break
+          endif
+        endif
+      endfor
+    endif
+
+    if secondary_media == blank
+      assign found_primary_media = false
+      for candidate_media in product.media
+        if found_primary_media and candidate_media.media_type == 'image'
+          assign secondary_media = candidate_media
+          break
+        endif
+
+        if candidate_media.id == primary_media.id
+          assign found_primary_media = true
+        endif
+      endfor
+    endif
+
+    if secondary_media == blank
+      for candidate_media in product.media
+        if candidate_media.media_type == 'image' and candidate_media.id != primary_media.id
+          assign secondary_media = candidate_media
+          break
+        endif
+      endfor
+    endif
+  endif
+
+  assign secondary_image = blank
+  if secondary_media != blank
+    assign secondary_image = secondary_media.preview_image
+  endif
+
+  assign is_on_sale = false
+  if current_variant.compare_at_price != blank and current_variant.compare_at_price > current_variant.price
+    assign is_on_sale = true
+  endif
+
+  assign discount_percent = 0
+  if is_on_sale and current_variant.compare_at_price > 0
+    assign discount_amount = current_variant.compare_at_price | minus: current_variant.price
+    assign discount_percent = discount_amount | times: 100.0 | divided_by: current_variant.compare_at_price | round
+  endif
+
+  assign media_ratio = '2 / 3'
+  case section.settings.image_ratio
+    when 'editorial'
+      assign media_ratio = '3 / 4'
+    when 'square'
+      assign media_ratio = '1 / 1'
+    when 'adapt'
+      if primary_image != blank and primary_image.aspect_ratio
+        assign media_ratio = primary_image.aspect_ratio
+      endif
+  endcase
+
+  assign primary_alt = product.title
+  if primary_media != blank and primary_media.alt != blank
+    assign primary_alt = primary_media.alt
+  endif
+
+  assign secondary_alt = product.title
+  if secondary_media != blank and secondary_media.alt != blank
+    assign secondary_alt = secondary_media.alt
+  endif
+-%}
+
+<article
+  class="saucha-product-card{% if is_on_sale %} is-on-sale{% endif %}"
+  data-product-card
+  data-product-id="{{ product.id }}"
+>
+  <div
+    class="saucha-product-card__media{% if section.settings.enable_shine %} saucha-product-card__media--shine{% endif %}"
+    data-card-media
+    data-hover-image="{% if secondary_image != blank %}true{% else %}false{% endif %}"
+    style="--saucha-card-ratio: {{ media_ratio }};"
+  >
+    <a
+      class="saucha-product-card__media-link"
+      href="{{ current_variant.url | default: product.url }}"
+      data-product-link
+      aria-label="{{ product.title | escape }}"
+    >
+      {%- if primary_image != blank -%}
+        {{ primary_image
+          | image_url: width: 1400
+          | image_tag:
+            widths: '240, 360, 480, 600, 750, 900, 1100, 1400',
+            sizes: '(min-width: 1400px) 22vw, (min-width: 990px) 26vw, (min-width: 750px) 33vw, 50vw',
+            loading: loading,
+            fetchpriority: fetchpriority,
+            class: 'saucha-product-card__image saucha-product-card__image--primary',
+            alt: primary_alt
+        }}
+      {%- else -%}
+        <div class="saucha-product-card__placeholder" aria-hidden="true">
+          {{ 'product-1' | placeholder_svg_tag }}
+        </div>
+      {%- endif -%}
+
+      {%- if secondary_image != blank -%}
+        {{ secondary_image
+          | image_url: width: 1400
+          | image_tag:
+            widths: '240, 360, 480, 600, 750, 900, 1100, 1400',
+            sizes: '(min-width: 1400px) 22vw, (min-width: 990px) 26vw, (min-width: 750px) 33vw, 50vw',
+            loading: 'lazy',
+            class: 'saucha-product-card__image saucha-product-card__image--secondary',
+            alt: secondary_alt
+        }}
+      {%- endif -%}
+    </a>
+
+    {%- if section.settings.show_sale_badge -%}
+      <span
+        class="saucha-product-card__badge saucha-product-card__badge--sale{% unless is_on_sale %} is-hidden{% endunless %}"
+        data-sale-badge
+        {% if is_on_sale %}aria-label="{{ section.settings.sale_label | escape }}, {{ discount_percent }}%"{% endif %}
+      >
+        <span data-sale-badge-text>{{ section.settings.sale_label | escape }}</span>
+      </span>
+    {%- endif -%}
+
+    {%- if section.settings.show_sold_out_badge -%}
+      <span
+        class="saucha-product-card__badge saucha-product-card__badge--sold-out{% if current_variant.available %} is-hidden{% endif %}"
+        data-sold-out-badge
+      >
+        {{ section.settings.sold_out_label | escape }}
+      </span>
+    {%- endif -%}
+  </div>
+
+  <div class="saucha-product-card__info">
+    {%- if section.settings.show_vendor and product.vendor != blank -%}
+      <div class="saucha-product-card__vendor">{{ product.vendor | escape }}</div>
+    {%- endif -%}
+
+    <h3 class="saucha-product-card__title">
+      <a href="{{ current_variant.url | default: product.url }}" data-product-link>{{ product.title | escape }}</a>
+    </h3>
+
+    <div class="saucha-product-card__price{% if is_on_sale %} is-on-sale{% endif %}" data-price-wrapper>
+      <span class="saucha-product-card__price-current" data-current-price>{{ current_variant.price | money }}</span>
+      {%- if section.settings.show_compare_at -%}
+        <s class="saucha-product-card__price-compare{% unless is_on_sale %} is-hidden{% endunless %}" data-compare-price>
+          {%- if is_on_sale -%}{{ current_variant.compare_at_price | money }}{%- endif -%}
+        </s>
+      {%- endif -%}
+    </div>
+
+    {%- if section.settings.show_swatches and color_option != blank -%}
+      <div class="saucha-product-card__swatches-wrap">
+        <div class="saucha-product-card__swatches" aria-label="{{ color_option.name | escape }}">
+          {%- for option_value in color_option.values limit: section.settings.max_swatches -%}
+            {%- liquid
+              assign option_color_key = option_value.name | handleize
+              assign option_is_current = false
+
+              if current_color_key != blank and option_color_key == current_color_key
+                assign option_is_current = true
+              endif
+
+              assign swatch_variant = option_value.variant
+              if option_is_current
+                assign swatch_variant = current_variant
+              endif
+
+              assign swatch_primary_media = blank
+              assign swatch_color_key = option_value.name | handleize
+
+              if swatch_variant != blank and swatch_variant.featured_media != blank
+                assign swatch_primary_media = swatch_variant.featured_media
+              elsif section.settings.smart_color_media and swatch_color_key != blank
+                for candidate_media in product.media
+                  if candidate_media.media_type == 'image'
+                    assign candidate_alt_key = candidate_media.alt | default: '' | handleize
+                    assign candidate_src_key = candidate_media.preview_image.src | default: '' | downcase
+
+                    if candidate_alt_key contains swatch_color_key or candidate_src_key contains swatch_color_key
+                      assign swatch_primary_media = candidate_media
+                      break
+                    endif
+                  endif
+                endfor
+              endif
+
+              if swatch_primary_media == blank and product.featured_media != blank
+                assign swatch_primary_media = product.featured_media
+              endif
+
+              assign swatch_primary_image = blank
+              if swatch_primary_media != blank
+                assign swatch_primary_image = swatch_primary_media.preview_image
+              endif
+
+              assign swatch_secondary_media = blank
+
+              if section.settings.enable_second_image and product.media.size > 1 and swatch_primary_media != blank
+                if section.settings.smart_color_media
+                  if swatch_color_key != blank
+                    for candidate_media in product.media
+                      if candidate_media.media_type == 'image' and candidate_media.id != swatch_primary_media.id
+                        assign candidate_alt_key = candidate_media.alt | default: '' | handleize
+                        assign candidate_src_key = candidate_media.preview_image.src | default: '' | downcase
+
+                        if candidate_alt_key contains swatch_color_key or candidate_src_key contains swatch_color_key
+                          assign swatch_secondary_media = candidate_media
+                          break
+                        endif
+                      endif
+                    endfor
+                  endif
+                endif
+
+                if swatch_secondary_media == blank
+                  assign found_swatch_primary = false
+                  for candidate_media in product.media
+                    if found_swatch_primary and candidate_media.media_type == 'image'
+                      assign swatch_secondary_media = candidate_media
+                      break
+                    endif
+
+                    if candidate_media.id == swatch_primary_media.id
+                      assign found_swatch_primary = true
+                    endif
+                  endfor
+                endif
+
+                if swatch_secondary_media == blank
+                  for candidate_media in product.media
+                    if candidate_media.media_type == 'image' and candidate_media.id != swatch_primary_media.id
+                      assign swatch_secondary_media = candidate_media
+                      break
+                    endif
+                  endfor
+                endif
+              endif
+
+              assign swatch_secondary_image = blank
+              if swatch_secondary_media != blank
+                assign swatch_secondary_image = swatch_secondary_media.preview_image
+              endif
+
+              assign swatch_is_sale = false
+              assign swatch_available = option_value.available
+              if swatch_variant != blank
+                assign swatch_available = swatch_variant.available
+                if swatch_variant.compare_at_price != blank and swatch_variant.compare_at_price > swatch_variant.price
+                  assign swatch_is_sale = true
+                endif
+              endif
+
+              assign swatch_background_image = blank
+              if option_value.swatch.image != blank
+                assign swatch_background_image = option_value.swatch.image
+              elsif swatch_primary_image != blank
+                assign swatch_background_image = swatch_primary_image
+              endif
+            -%}
+
+            <button
+              class="saucha-swatch{% if option_is_current %} is-active{% endif %}{% unless swatch_available %} is-unavailable{% endunless %}"
+              type="button"
+              data-product-swatch
+              data-color-label="{{ option_value.name | escape }}"
+              data-primary-url="{% if swatch_primary_image != blank %}{{ swatch_primary_image | image_url: width: 1200 }}{% endif %}"
+              data-primary-srcset="{% if swatch_primary_image != blank %}{{ swatch_primary_image | image_url: width: 360 }} 360w, {{ swatch_primary_image | image_url: width: 600 }} 600w, {{ swatch_primary_image | image_url: width: 900 }} 900w, {{ swatch_primary_image | image_url: width: 1200 }} 1200w{% endif %}"
+              data-primary-alt="{% if swatch_primary_media != blank and swatch_primary_media.alt != blank %}{{ swatch_primary_media.alt | escape }}{% else %}{{ product.title | escape }} — {{ option_value.name | escape }}{% endif %}"
+              data-secondary-url="{% if swatch_secondary_image != blank %}{{ swatch_secondary_image | image_url: width: 1200 }}{% endif %}"
+              data-secondary-srcset="{% if swatch_secondary_image != blank %}{{ swatch_secondary_image | image_url: width: 360 }} 360w, {{ swatch_secondary_image | image_url: width: 600 }} 600w, {{ swatch_secondary_image | image_url: width: 900 }} 900w, {{ swatch_secondary_image | image_url: width: 1200 }} 1200w{% endif %}"
+              data-secondary-alt="{% if swatch_secondary_media != blank and swatch_secondary_media.alt != blank %}{{ swatch_secondary_media.alt | escape }}{% else %}{{ product.title | escape }} — {{ option_value.name | escape }}{% endif %}"
+              data-variant-url="{% if swatch_variant != blank %}{{ swatch_variant.url }}{% else %}{{ product.url }}{% endif %}"
+              data-price="{% if swatch_variant != blank %}{{ swatch_variant.price | money | escape }}{% endif %}"
+              data-compare-price="{% if swatch_is_sale %}{{ swatch_variant.compare_at_price | money | escape }}{% endif %}"
+              data-is-sale="{% if swatch_is_sale %}true{% else %}false{% endif %}"
+              data-sale-label="{{ section.settings.sale_label | escape }}"
+              data-available="{% if swatch_available %}true{% else %}false{% endif %}"
+              data-sold-out-label="{{ section.settings.sold_out_label | escape }}"
+              aria-label="{{ color_option.name | escape }}: {{ option_value.name | escape }}{% unless swatch_available %} — {{ section.settings.sold_out_label | escape }}{% endunless %}"
+              aria-pressed="{% if option_is_current %}true{% else %}false{% endif %}"
+              title="{{ option_value.name | escape }}"
+            >
+              <span
+                class="saucha-swatch__visual"
+                aria-hidden="true"
+                style="
+                  {%- if option_value.swatch.image != blank -%}
+                    background-image: url('{{ option_value.swatch.image | image_url: width: 96 }}');
+                  {%- elsif option_value.swatch.color != blank -%}
+                    background-color: {{ option_value.swatch.color }};
+                  {%- elsif swatch_background_image != blank -%}
+                    background-image: url('{{ swatch_background_image | image_url: width: 96 }}');
+                  {%- endif -%}
+                "
+              ></span>
+            </button>
+          {%- endfor -%}
+
+          {%- if color_option.values.size > section.settings.max_swatches -%}
+            {%- assign hidden_swatch_count = color_option.values.size | minus: section.settings.max_swatches -%}
+            <span class="saucha-product-card__swatch-more" aria-label="{{ hidden_swatch_count }} opciones más">+{{ hidden_swatch_count }}</span>
+          {%- endif -%}
+        </div>
+      </div>
+    {%- endif -%}
+
+    <span class="saucha-visually-hidden" data-card-status aria-live="polite"></span>
+  </div>
+</article>

@@ -1,0 +1,1016 @@
+{% liquid
+  assign imagen_escritorio = section.settings.imagen_escritorio
+  assign imagen_movil = section.settings.imagen_movil
+
+  if imagen_movil == blank
+    assign imagen_movil = imagen_escritorio
+  endif
+%}
+
+<section
+  id="HeroSaucha-{{ section.id }}"
+  class="
+    hero-saucha
+    hero-saucha--texto-{{ section.settings.posicion_texto_escritorio }}
+  "
+  style="
+    --hero-altura-movil: {{ section.settings.altura_movil }}svh;
+    --hero-altura-escritorio: {{ section.settings.altura_escritorio }}svh;
+
+    --hero-color-texto: {{ section.settings.color_texto }};
+    --hero-color-boton: {{ section.settings.color_boton }};
+    --hero-color-texto-boton: {{ section.settings.color_texto_boton }};
+
+    --hero-color-texto-movil: {{ section.settings.color_texto_movil }};
+    --hero-color-boton-movil: {{ section.settings.color_boton_movil }};
+    --hero-color-texto-boton-movil: {{ section.settings.color_texto_boton_movil }};
+
+    --hero-degradado-color-movil-rgb: {{ section.settings.color_degradado_movil.rgb }};
+    --hero-degradado-opacidad-movil: {{ section.settings.opacidad_degradado_movil | divided_by: 100.0 }};
+    --hero-degradado-altura-movil: {{ section.settings.altura_degradado_movil }}%;
+    --hero-degradado-transicion-movil: {{ section.settings.transicion_degradado_movil }}%;
+
+    --hero-overlay-movil: {{ section.settings.overlay_movil | divided_by: 100.0 }};
+    --hero-overlay-escritorio: {{ section.settings.overlay_escritorio | divided_by: 100.0 }};
+
+    --hero-posicion-x-movil: {{ section.settings.posicion_x_movil }}%;
+    --hero-posicion-y-movil: {{ section.settings.posicion_y_movil }}%;
+
+    --hero-posicion-x-escritorio: {{ section.settings.posicion_x_escritorio }}%;
+    --hero-posicion-y-escritorio: {{ section.settings.posicion_y_escritorio }}%;
+  "
+>
+
+  <div class="hero-saucha__media">
+    {% if imagen_escritorio != blank %}
+
+      <picture class="hero-saucha__picture">
+
+        {% if imagen_movil != blank %}
+          <source
+            media="(max-width: 749px)"
+            srcset="
+              {{ imagen_movil | image_url: width: 500 }} 500w,
+              {{ imagen_movil | image_url: width: 750 }} 750w,
+              {{ imagen_movil | image_url: width: 1000 }} 1000w,
+              {{ imagen_movil | image_url: width: 1400 }} 1400w
+            "
+            sizes="100vw"
+          >
+        {% endif %}
+
+        {{
+          imagen_escritorio
+          | image_url: width: 2560
+          | image_tag:
+            loading: 'eager',
+            fetchpriority: 'high',
+            widths: '1000, 1400, 1800, 2200, 2560',
+            sizes: '100vw',
+            class: 'hero-saucha__imagen',
+            alt: imagen_escritorio.alt
+        }}
+
+      </picture>
+
+    {% else %}
+
+      {{ 'lifestyle-1' | placeholder_svg_tag: 'hero-saucha__placeholder' }}
+
+    {% endif %}
+  </div>
+
+  <div
+    class="hero-saucha__overlay"
+    aria-hidden="true"
+  ></div>
+
+  <div
+    class="hero-saucha__degradado"
+    aria-hidden="true"
+  ></div>
+
+  <div class="hero-saucha__contenido">
+
+    <div class="hero-saucha__contenido-interior">
+
+      {% if section.settings.etiqueta != blank %}
+        <p class="hero-saucha__etiqueta">
+          {{ section.settings.etiqueta }}
+        </p>
+      {% endif %}
+
+      {% if section.settings.titulo != blank %}
+        <h1 class="hero-saucha__titulo">
+          {{ section.settings.titulo }}
+        </h1>
+      {% endif %}
+
+      {% if section.settings.subtitulo != blank %}
+        <div class="hero-saucha__subtitulo">
+          {{ section.settings.subtitulo }}
+        </div>
+      {% endif %}
+
+      {% if section.settings.texto != blank %}
+        <div class="hero-saucha__texto">
+          {{ section.settings.texto }}
+        </div>
+      {% endif %}
+
+      {% if section.settings.texto_boton != blank %}
+        <a
+          class="hero-saucha__boton"
+          {% if section.settings.enlace_boton != blank %}
+            href="{{ section.settings.enlace_boton }}"
+          {% else %}
+            role="link"
+            aria-disabled="true"
+          {% endif %}
+        >
+          <span>
+            {{ section.settings.texto_boton }}
+          </span>
+
+          <span
+            class="hero-saucha__boton-flecha"
+            aria-hidden="true"
+          >
+            →
+          </span>
+        </a>
+      {% endif %}
+
+    </div>
+
+  </div>
+
+  {% if section.settings.mostrar_indicador %}
+    <div
+      class="hero-saucha__indicador"
+      aria-hidden="true"
+    >
+      <span></span>
+    </div>
+  {% endif %}
+
+</section>
+
+
+{% stylesheet %}
+
+/* ============================================================
+   SAUCHA — HERO
+   MOBILE FIRST
+   ============================================================ */
+
+.hero-saucha {
+  position: relative;
+
+  width: 100%;
+  min-height: clamp(560px, var(--hero-altura-movil), 800px);
+
+  overflow: hidden;
+
+  background: #ead8ca;
+  color: var(--hero-color-texto);
+  isolation: isolate;
+}
+
+.hero-saucha *,
+.hero-saucha *::before,
+.hero-saucha *::after {
+  box-sizing: border-box;
+}
+
+
+/* ============================================================
+   IMAGEN
+   ============================================================ */
+
+.hero-saucha__media,
+.hero-saucha__picture {
+  position: absolute;
+  inset: 0;
+
+  display: block;
+
+  width: 100%;
+  height: 100%;
+}
+
+.hero-saucha__imagen,
+.hero-saucha__placeholder {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+
+  object-position:
+    var(--hero-posicion-x-movil)
+    var(--hero-posicion-y-movil);
+}
+
+
+/* ============================================================
+   OSCURECIMIENTO GENERAL MÓVIL
+   ============================================================ */
+
+.hero-saucha__overlay {
+  position: absolute;
+  inset: 0;
+
+  z-index: 1;
+
+  pointer-events: none;
+
+  background:
+    rgb(
+      34 27 23 /
+      var(--hero-overlay-movil)
+    );
+}
+
+
+/* ============================================================
+   DEGRADADO MÓVIL CONFIGURABLE
+   ============================================================ */
+
+.hero-saucha__degradado {
+  position: absolute;
+  inset: 0;
+
+  z-index: 2;
+
+  pointer-events: none;
+
+  background:
+    linear-gradient(
+      to top,
+
+      rgb(
+        var(--hero-degradado-color-movil-rgb) /
+        var(--hero-degradado-opacidad-movil)
+      ) 0%,
+
+      rgb(
+        var(--hero-degradado-color-movil-rgb) /
+        calc(var(--hero-degradado-opacidad-movil) * 0.72)
+      ) var(--hero-degradado-transicion-movil),
+
+      transparent var(--hero-degradado-altura-movil)
+    );
+}
+
+
+/* ============================================================
+   CONTENIDO MÓVIL
+   ============================================================ */
+
+.hero-saucha__contenido {
+  position: relative;
+  z-index: 3;
+
+  display: flex;
+  align-items: flex-end;
+
+  width: 100%;
+  min-height: inherit;
+
+  padding:
+    34px
+    20px
+    42px;
+
+  color: var(--hero-color-texto-movil);
+}
+
+.hero-saucha__contenido-interior {
+  width: 100%;
+  max-width: 390px;
+}
+
+.hero-saucha__etiqueta {
+  margin: 0 0 13px;
+
+  font-family: var(--font-body--family);
+  font-size: 9px;
+  font-weight: 500;
+  line-height: 1;
+
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.hero-saucha__titulo {
+  max-width: 340px;
+
+  margin: 0;
+
+  font-family: var(--font-heading--family);
+  font-size: clamp(42px, 13vw, 61px);
+  font-weight: 400;
+  line-height: 0.92;
+
+  letter-spacing: -0.05em;
+
+  text-wrap: balance;
+}
+
+.hero-saucha__subtitulo {
+  max-width: 310px;
+
+  margin-top: 20px;
+
+  font-family: var(--font-heading--family);
+  font-size: clamp(22px, 6.8vw, 31px);
+  font-weight: 400;
+  line-height: 1.06;
+
+  letter-spacing: -0.025em;
+
+  text-wrap: balance;
+}
+
+.hero-saucha__texto {
+  max-width: 300px;
+
+  margin-top: 14px;
+
+  font-family: var(--font-body--family);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.55;
+
+  opacity: 0.9;
+}
+
+
+/* ============================================================
+   BOTÓN MÓVIL
+   ============================================================ */
+
+.hero-saucha__boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 30px;
+
+  min-width: 196px;
+
+  margin-top: 26px;
+
+  padding:
+    15px
+    18px;
+
+  border: 1px solid var(--hero-color-boton-movil);
+
+  background: var(--hero-color-boton-movil);
+  color: var(--hero-color-texto-boton-movil);
+
+  font-family: var(--font-body--family);
+  font-size: 9px;
+  font-weight: 500;
+  line-height: 1;
+
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+
+  text-decoration: none;
+
+  transition:
+    background 180ms ease,
+    color 180ms ease,
+    border-color 180ms ease;
+}
+
+.hero-saucha__boton-flecha {
+  display: inline-block;
+
+  font-size: 15px;
+  line-height: 1;
+
+  transition: transform 180ms ease;
+}
+
+.hero-saucha__boton:hover .hero-saucha__boton-flecha {
+  transform: translateX(4px);
+}
+
+
+/* ============================================================
+   INDICADOR
+   ============================================================ */
+
+.hero-saucha__indicador {
+  position: absolute;
+
+  z-index: 4;
+
+  right: 20px;
+  bottom: 21px;
+
+  width: 28px;
+  height: 42px;
+
+  color: var(--hero-color-texto-movil);
+
+  border: 1px solid currentColor;
+  border-radius: 999px;
+
+  opacity: 0.7;
+}
+
+.hero-saucha__indicador span {
+  position: absolute;
+
+  top: 9px;
+  left: 50%;
+
+  width: 2px;
+  height: 7px;
+
+  background: currentColor;
+  border-radius: 99px;
+
+  transform: translateX(-50%);
+
+  animation: hero-saucha-scroll 1.8s ease-in-out infinite;
+}
+
+@keyframes hero-saucha-scroll {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: translate(-50%, 0);
+  }
+
+  50% {
+    opacity: 1;
+    transform: translate(-50%, 8px);
+  }
+}
+
+
+/* ============================================================
+   MÓVILES PEQUEÑOS
+   ============================================================ */
+
+@media screen and (max-width: 390px) {
+
+  .hero-saucha {
+    min-height: 580px;
+  }
+
+  .hero-saucha__contenido {
+    padding:
+      28px
+      17px
+      36px;
+  }
+
+  .hero-saucha__titulo {
+    max-width: 310px;
+    font-size: 42px;
+  }
+
+  .hero-saucha__subtitulo {
+    max-width: 290px;
+  }
+
+  .hero-saucha__boton {
+    min-width: 185px;
+
+    padding:
+      14px
+      16px;
+  }
+}
+
+
+/* ============================================================
+   TABLET / ESCRITORIO
+   ============================================================ */
+
+@media screen and (min-width: 750px) {
+
+  .hero-saucha {
+    min-height: clamp(
+      620px,
+      var(--hero-altura-escritorio),
+      860px
+    );
+  }
+
+  .hero-saucha__imagen {
+    object-position:
+      var(--hero-posicion-x-escritorio)
+      var(--hero-posicion-y-escritorio);
+  }
+
+  .hero-saucha__overlay {
+    background:
+      rgb(
+        34 27 23 /
+        var(--hero-overlay-escritorio)
+      );
+  }
+
+
+  /* ==========================================================
+     DEGRADADO ESCRITORIO
+     ========================================================== */
+
+  .hero-saucha--texto-derecha .hero-saucha__degradado {
+    background:
+      linear-gradient(
+        to left,
+        rgb(249 236 222 / 0.94) 0%,
+        rgb(249 236 222 / 0.82) 26%,
+        rgb(249 236 222 / 0.32) 48%,
+        transparent 0%
+      );
+  }
+
+  .hero-saucha--texto-izquierda .hero-saucha__degradado {
+    background:
+      linear-gradient(
+        to right,
+        rgb(249 236 222 / 0.94) 0%,
+        rgb(249 236 222 / 0.82) 26%,
+        rgb(249 236 222 / 0.32) 48%,
+        transparent 66%
+      );
+  }
+
+
+  /* ==========================================================
+     CONTENIDO ESCRITORIO
+     ========================================================== */
+
+  .hero-saucha__contenido {
+    align-items: center;
+
+    min-height: inherit;
+
+    padding:
+      60px
+      clamp(40px, 6vw, 110px);
+
+    color: var(--hero-color-texto);
+  }
+
+  .hero-saucha--texto-derecha .hero-saucha__contenido {
+    justify-content: flex-end;
+  }
+
+  .hero-saucha--texto-izquierda .hero-saucha__contenido {
+    justify-content: flex-start;
+  }
+
+  .hero-saucha__contenido-interior {
+    width: min(39vw, 510px);
+    max-width: 510px;
+  }
+
+  .hero-saucha__etiqueta {
+    margin-bottom: 18px;
+
+    font-size: 10px;
+
+    letter-spacing: 0.27em;
+  }
+
+  .hero-saucha__titulo {
+    max-width: 500px;
+
+    font-size: clamp(56px, 5.3vw, 88px);
+    line-height: 0.9;
+
+    letter-spacing: -0.055em;
+  }
+
+  .hero-saucha__subtitulo {
+    max-width: 420px;
+
+    margin-top: 27px;
+
+    font-size: clamp(25px, 2.1vw, 35px);
+    line-height: 1.05;
+  }
+
+  .hero-saucha__texto {
+    max-width: 360px;
+
+    margin-top: 16px;
+
+    font-size: 13px;
+    line-height: 1.6;
+
+    opacity: 0.76;
+  }
+
+
+  /* ==========================================================
+     BOTÓN ESCRITORIO
+     ========================================================== */
+
+  .hero-saucha__boton {
+    min-width: 215px;
+
+    margin-top: 31px;
+
+    padding:
+      16px
+      19px;
+
+    border-color: var(--hero-color-boton);
+
+    background: var(--hero-color-boton);
+    color: var(--hero-color-texto-boton);
+
+    font-size: 10px;
+  }
+
+  .hero-saucha__boton:hover {
+    background: transparent;
+    color: var(--hero-color-boton);
+  }
+
+  .hero-saucha__indicador {
+    right: 34px;
+    bottom: 30px;
+
+    color: var(--hero-color-texto);
+  }
+}
+
+
+/* ============================================================
+   ESCRITORIO GRANDE
+   ============================================================ */
+
+@media screen and (min-width: 1400px) {
+
+  .hero-saucha__contenido {
+    padding-inline:
+      clamp(70px, 8vw, 150px);
+  }
+
+  .hero-saucha__contenido-interior {
+    width: min(35vw, 540px);
+  }
+}
+
+
+/* ============================================================
+   ACCESIBILIDAD
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+
+  .hero-saucha__indicador span {
+    animation: none;
+  }
+
+  .hero-saucha__boton,
+  .hero-saucha__boton-flecha {
+    transition: none;
+  }
+}
+
+{% endstylesheet %}
+
+
+{% schema %}
+{
+  "name": "Hero Saucha",
+  "tag": "section",
+  "class": "seccion-hero-saucha",
+
+  "settings": [
+
+    {
+      "type": "header",
+      "content": "Imágenes"
+    },
+    {
+      "type": "image_picker",
+      "id": "imagen_escritorio",
+      "label": "Imagen para escritorio"
+    },
+    {
+      "type": "image_picker",
+      "id": "imagen_movil",
+      "label": "Imagen para móvil",
+      "info": "Si no seleccionas una imagen, se utilizará la imagen de escritorio."
+    },
+
+    {
+      "type": "header",
+      "content": "Contenido"
+    },
+    {
+      "type": "text",
+      "id": "etiqueta",
+      "label": "Etiqueta superior",
+      "default": "NUEVA COLECCIÓN"
+    },
+    {
+      "type": "textarea",
+      "id": "titulo",
+      "label": "Título",
+      "default": "Encuentra tu estilo"
+    },
+    {
+      "type": "textarea",
+      "id": "subtitulo",
+      "label": "Subtítulo",
+      "default": "Looks que te inspiran cada día."
+    },
+    {
+      "type": "textarea",
+      "id": "texto",
+      "label": "Texto",
+      "default": "Prendas y complementos elegidos para acompañarte y hacer tuyo cada look."
+    },
+    {
+      "type": "text",
+      "id": "texto_boton",
+      "label": "Texto del botón",
+      "default": "DESCUBRIR"
+    },
+    {
+      "type": "url",
+      "id": "enlace_boton",
+      "label": "Enlace del botón"
+    },
+
+    {
+      "type": "header",
+      "content": "Posición del contenido"
+    },
+    {
+      "type": "select",
+      "id": "posicion_texto_escritorio",
+      "label": "Posición del texto en escritorio",
+      "options": [
+        {
+          "value": "izquierda",
+          "label": "Izquierda"
+        },
+        {
+          "value": "derecha",
+          "label": "Derecha"
+        }
+      ],
+      "default": "derecha"
+    },
+
+    {
+      "type": "header",
+      "content": "Encuadre de la imagen en móvil"
+    },
+    {
+      "type": "range",
+      "id": "posicion_x_movil",
+      "label": "Posición horizontal",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 38
+    },
+    {
+      "type": "range",
+      "id": "posicion_y_movil",
+      "label": "Posición vertical",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+
+    {
+      "type": "header",
+      "content": "Encuadre de la imagen en escritorio"
+    },
+    {
+      "type": "range",
+      "id": "posicion_x_escritorio",
+      "label": "Posición horizontal",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "posicion_y_escritorio",
+      "label": "Posición vertical",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+
+    {
+      "type": "header",
+      "content": "Altura"
+    },
+    {
+      "type": "range",
+      "id": "altura_movil",
+      "label": "Altura en móvil",
+      "min": 60,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 82
+    },
+    {
+      "type": "range",
+      "id": "altura_escritorio",
+      "label": "Altura en escritorio",
+      "min": 55,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 74
+    },
+
+    {
+      "type": "header",
+      "content": "Legibilidad en móvil"
+    },
+    {
+      "type": "color",
+      "id": "color_degradado_movil",
+      "label": "Color del degradado en móvil",
+      "default": "#3A241A"
+    },
+    {
+      "type": "range",
+      "id": "opacidad_degradado_movil",
+      "label": "Intensidad del degradado en móvil",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 82
+    },
+    {
+      "type": "range",
+      "id": "transicion_degradado_movil",
+      "label": "Punto medio del degradado",
+      "min": 10,
+      "max": 80,
+      "step": 1,
+      "unit": "%",
+      "default": 42
+    },
+    {
+      "type": "range",
+      "id": "altura_degradado_movil",
+      "label": "Altura del degradado en móvil",
+      "min": 30,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 76
+    },
+    {
+      "type": "range",
+      "id": "overlay_movil",
+      "label": "Oscurecimiento general en móvil",
+      "min": 0,
+      "max": 70,
+      "step": 1,
+      "unit": "%",
+      "default": 2
+    },
+
+    {
+      "type": "header",
+      "content": "Legibilidad en escritorio"
+    },
+    {
+      "type": "range",
+      "id": "overlay_escritorio",
+      "label": "Oscurecimiento general en escritorio",
+      "min": 0,
+      "max": 50,
+      "step": 1,
+      "unit": "%",
+      "default": 0
+    },
+
+    {
+      "type": "header",
+      "content": "Colores en móvil"
+    },
+    {
+      "type": "color",
+      "id": "color_texto_movil",
+      "label": "Color del texto en móvil",
+      "default": "#FFF9F4"
+    },
+    {
+      "type": "color",
+      "id": "color_boton_movil",
+      "label": "Color del botón en móvil",
+      "default": "#3A241A"
+    },
+    {
+      "type": "color",
+      "id": "color_texto_boton_movil",
+      "label": "Color del texto del botón en móvil",
+      "default": "#FFFFFF"
+    },
+
+    {
+      "type": "header",
+      "content": "Colores en escritorio"
+    },
+    {
+      "type": "color",
+      "id": "color_texto",
+      "label": "Color del texto en escritorio",
+      "default": "#3A312D"
+    },
+    {
+      "type": "color",
+      "id": "color_boton",
+      "label": "Color del botón en escritorio",
+      "default": "#3A312D"
+    },
+    {
+      "type": "color",
+      "id": "color_texto_boton",
+      "label": "Color del texto del botón en escritorio",
+      "default": "#FFFDF9"
+    },
+
+    {
+      "type": "header",
+      "content": "Detalles"
+    },
+    {
+      "type": "checkbox",
+      "id": "mostrar_indicador",
+      "label": "Mostrar indicador de desplazamiento",
+      "default": false
+    }
+
+  ],
+
+  "presets": [
+    {
+      "name": "Hero Saucha",
+      "settings": {
+        "etiqueta": "NUEVA COLECCIÓN",
+        "titulo": "Encuentra tu estilo",
+        "subtitulo": "Looks que te inspiran cada día.",
+        "texto": "Prendas y complementos elegidos para acompañarte y hacer tuyo cada look.",
+        "texto_boton": "DESCUBRIR",
+
+        "posicion_texto_escritorio": "derecha",
+
+        "posicion_x_movil": 38,
+        "posicion_y_movil": 50,
+
+        "posicion_x_escritorio": 50,
+        "posicion_y_escritorio": 50,
+
+        "altura_movil": 82,
+        "altura_escritorio": 74,
+
+        "color_degradado_movil": "#3A241A",
+        "opacidad_degradado_movil": 82,
+        "transicion_degradado_movil": 42,
+        "altura_degradado_movil": 76,
+        "overlay_movil": 2,
+
+        "overlay_escritorio": 0,
+
+        "color_texto_movil": "#FFF9F4",
+        "color_boton_movil": "#3A241A",
+        "color_texto_boton_movil": "#FFFFFF",
+
+        "color_texto": "#3A312D",
+        "color_boton": "#3A312D",
+        "color_texto_boton": "#FFFDF9",
+
+        "mostrar_indicador": false
+      }
+    }
+  ]
+}
+{% endschema %}

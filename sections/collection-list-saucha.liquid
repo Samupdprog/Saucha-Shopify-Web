@@ -1,0 +1,836 @@
+{% liquid
+  if section.settings.collection_list != blank
+    assign section_collections = section.settings.collection_list
+    assign max_items = section.settings.collection_list.count
+
+    if max_items > 4
+      assign max_items = 4
+    endif
+  else
+    assign max_items = 4
+  endif
+
+  if section.settings.background_color != blank
+    render 'contrast-override', background_color: section.settings.background_color, section_id: section.id
+  endif
+%}
+
+<div
+  id="BentoSaucha-{{ section.id }}"
+  class="saucha-bento{% if section.settings.animation_enabled %} saucha-bento--animate{% endif %}"
+  style="
+    --saucha-bento-duration: {{ section.settings.animation_duration }}ms;
+    --saucha-bento-stagger: {{ section.settings.animation_stagger }}ms;
+    --saucha-bento-distance: {{ section.settings.animation_distance }}px;
+  "
+>
+  <div
+    class="section-background{% if section.settings.background_color != blank %} color-custom-{{ section.id }}{% endif %}"
+  ></div>
+
+  <div
+    class="
+      section
+      section--{{ section.settings.section_width }}
+      {% if section.settings.background_color != blank %}color-custom-{{ section.id }}{% endif %}
+      section-resource-list
+      spacing-style
+    "
+    style="
+      {% render 'spacing-style', settings: section.settings %}
+    "
+    data-testid="collection-list"
+  >
+    <div class="section-resource-list__content">
+      {% content_for 'blocks' %}
+    </div>
+
+    {% if section_collections == null %}
+      {% for i in (1..max_items) %}
+        {% assign section_collections = section_collections | append: ', ' %}
+      {% endfor %}
+      {% assign section_collections = section_collections | split: ',' %}
+    {% endif %}
+
+    {% capture list_items %}
+      {% for collection in section_collections limit: max_items %}
+        {% liquid
+          assign index = forloop.index
+
+          assign image_desktop_key = 'card_' | append: index | append: '_image_desktop'
+          assign image_mobile_key = 'card_' | append: index | append: '_image_mobile'
+
+          assign x_desktop_key = 'card_' | append: index | append: '_x_desktop'
+          assign y_desktop_key = 'card_' | append: index | append: '_y_desktop'
+          assign zoom_desktop_key = 'card_' | append: index | append: '_zoom_desktop'
+
+          assign x_mobile_key = 'card_' | append: index | append: '_x_mobile'
+          assign y_mobile_key = 'card_' | append: index | append: '_y_mobile'
+          assign zoom_mobile_key = 'card_' | append: index | append: '_zoom_mobile'
+
+          assign saucha_image_desktop = section.settings[image_desktop_key]
+          assign saucha_image_mobile = section.settings[image_mobile_key]
+
+          assign saucha_position_x_desktop = section.settings[x_desktop_key]
+          assign saucha_position_y_desktop = section.settings[y_desktop_key]
+          assign saucha_zoom_desktop = section.settings[zoom_desktop_key]
+
+          assign saucha_position_x_mobile = section.settings[x_mobile_key]
+          assign saucha_position_y_mobile = section.settings[y_mobile_key]
+          assign saucha_zoom_mobile = section.settings[zoom_mobile_key]
+        %}
+
+        <div class="resource-list__item">
+          {% content_for 'block',
+            type: '_collection-card-saucha',
+            id: 'static-collection-card',
+            closest.collection: collection,
+            saucha_image_desktop: saucha_image_desktop,
+            saucha_image_mobile: saucha_image_mobile,
+            saucha_position_x_desktop: saucha_position_x_desktop,
+            saucha_position_y_desktop: saucha_position_y_desktop,
+            saucha_zoom_desktop: saucha_zoom_desktop,
+            saucha_position_x_mobile: saucha_position_x_mobile,
+            saucha_position_y_mobile: saucha_position_y_mobile,
+            saucha_zoom_mobile: saucha_zoom_mobile
+          %}
+        </div>
+
+        {% unless forloop.last %}
+          <!--@list/split-->
+        {% endunless %}
+      {% endfor %}
+    {% endcapture %}
+
+    {% liquid
+      assign list_items_array = list_items | strip | split: '<!--@list/split-->'
+    %}
+
+    {% render 'resource-list-styles' %}
+
+    <div
+      class="resource-list resource-list--bento"
+      style="
+        --resource-list-column-gap-desktop: {{ section.settings.bento_gap }}px;
+        --bento-gap: var(--resource-list-column-gap);
+      "
+      data-testid="collections-list-grid"
+    >
+      {% render 'bento-grid', items: list_items_array %}
+    </div>
+  </div>
+</div>
+
+{% stylesheet %}
+  /* =========================================================
+     SAUCHA · BENTO
+     Animación suave de entrada
+     ========================================================= */
+
+  .saucha-bento--animate.is-animation-ready .bento-box__item {
+    opacity: 0;
+    transform: translateY(var(--saucha-bento-distance));
+
+    transition:
+      opacity var(--saucha-bento-duration)
+        cubic-bezier(0.22, 1, 0.36, 1),
+      transform var(--saucha-bento-duration)
+        cubic-bezier(0.22, 1, 0.36, 1);
+
+    will-change: opacity, transform;
+  }
+
+  .saucha-bento--animate.is-animation-ready
+    .bento-box__item:nth-child(1) {
+    transition-delay: 0ms;
+  }
+
+  .saucha-bento--animate.is-animation-ready
+    .bento-box__item:nth-child(2) {
+    transition-delay: var(--saucha-bento-stagger);
+  }
+
+  .saucha-bento--animate.is-animation-ready
+    .bento-box__item:nth-child(3) {
+    transition-delay:
+      calc(
+        var(--saucha-bento-stagger)
+        + var(--saucha-bento-stagger)
+      );
+  }
+
+  .saucha-bento--animate.is-animation-ready
+    .bento-box__item:nth-child(4) {
+    transition-delay:
+      calc(
+        var(--saucha-bento-stagger)
+        + var(--saucha-bento-stagger)
+        + var(--saucha-bento-stagger)
+      );
+  }
+
+  .saucha-bento--animate.is-animation-ready.is-visible
+    .bento-box__item {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .saucha-bento--animate.is-animation-ready .bento-box__item,
+    .saucha-bento--animate.is-animation-ready.is-visible
+      .bento-box__item {
+      opacity: 1;
+      transform: none;
+      transition: none;
+      will-change: auto;
+    }
+  }
+{% endstylesheet %}
+
+<script>
+  (() => {
+    const section = document.getElementById(
+      'BentoSaucha-{{ section.id }}'
+    );
+
+    if (
+      !section ||
+      !section.classList.contains('saucha-bento--animate')
+    ) {
+      return;
+    }
+
+    const showSection = () => {
+      section.classList.add('is-visible');
+    };
+
+    if (
+      window.matchMedia(
+        '(prefers-reduced-motion: reduce)'
+      ).matches
+    ) {
+      section.classList.add('is-animation-ready');
+      showSection();
+      return;
+    }
+
+    section.classList.add('is-animation-ready');
+
+    if (!('IntersectionObserver' in window)) {
+      showSection();
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+
+          showSection();
+          observer.unobserve(section);
+        });
+      },
+      {
+        threshold: 0.12,
+        rootMargin: '0px 0px -5% 0px'
+      }
+    );
+
+    observer.observe(section);
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Bento Saucha",
+  "class": "ui-test-collection-list",
+  "blocks": [
+    {
+      "type": "@theme"
+    },
+    {
+      "type": "@app"
+    },
+    {
+      "type": "text"
+    },
+    {
+      "type": "icon"
+    },
+    {
+      "type": "image"
+    },
+    {
+      "type": "button"
+    },
+    {
+      "type": "video"
+    },
+    {
+      "type": "group"
+    },
+    {
+      "type": "spacer"
+    },
+    {
+      "type": "_divider"
+    }
+  ],
+  "disabled_on": {
+    "groups": [
+      "header",
+      "footer"
+    ]
+  },
+  "settings": [
+    {
+      "type": "collection_list",
+      "id": "collection_list",
+      "label": "Colecciones"
+    },
+    {
+      "type": "paragraph",
+      "content": "Bento de Saucha usa como máximo las primeras 4 colecciones. Las imágenes personalizadas se asignan por orden."
+    },
+    {
+      "type": "range",
+      "id": "bento_gap",
+      "label": "Separación",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 8
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "t:settings.width",
+      "options": [
+        {
+          "value": "page-width",
+          "label": "t:options.page"
+        },
+        {
+          "value": "full-width",
+          "label": "t:options.full"
+        }
+      ],
+      "default": "page-width"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "t:settings.background_color",
+      "placeholder": "t:settings.default"
+    },
+    {
+      "type": "header",
+      "content": "t:content.padding"
+    },
+    {
+      "type": "range",
+      "id": "padding-block-start",
+      "label": "t:settings.top",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "padding-block-end",
+      "label": "t:settings.bottom",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "header",
+      "content": "Animación"
+    },
+    {
+      "type": "checkbox",
+      "id": "animation_enabled",
+      "label": "Activar animación suave",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "animation_duration",
+      "label": "Duración",
+      "min": 300,
+      "max": 1200,
+      "step": 50,
+      "unit": "ms",
+      "default": 850
+    },
+    {
+      "type": "range",
+      "id": "animation_stagger",
+      "label": "Retraso entre tarjetas",
+      "min": 0,
+      "max": 200,
+      "step": 10,
+      "unit": "ms",
+      "default": 80
+    },
+    {
+      "type": "range",
+      "id": "animation_distance",
+      "label": "Desplazamiento vertical",
+      "min": 0,
+      "max": 30,
+      "step": 1,
+      "unit": "px",
+      "default": 20
+    },
+
+    {
+      "type": "header",
+      "content": "Tarjeta 1 · imagen"
+    },
+    {
+      "type": "paragraph",
+      "content": "Se aplica a la colección nº 1 según el orden de la lista."
+    },
+    {
+      "type": "image_picker",
+      "id": "card_1_image_desktop",
+      "label": "Tarjeta 1 · imagen escritorio"
+    },
+    {
+      "type": "image_picker",
+      "id": "card_1_image_mobile",
+      "label": "Tarjeta 1 · imagen móvil"
+    },
+    {
+      "type": "range",
+      "id": "card_1_x_desktop",
+      "label": "Tarjeta 1 · X escritorio",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "card_1_y_desktop",
+      "label": "Tarjeta 1 · Y escritorio",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "card_1_zoom_desktop",
+      "label": "Tarjeta 1 · zoom escritorio",
+      "min": 60,
+      "max": 180,
+      "step": 2,
+      "unit": "%",
+      "default": 100
+    },
+    {
+      "type": "range",
+      "id": "card_1_x_mobile",
+      "label": "Tarjeta 1 · X móvil",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "card_1_y_mobile",
+      "label": "Tarjeta 1 · Y móvil",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "card_1_zoom_mobile",
+      "label": "Tarjeta 1 · zoom móvil",
+      "min": 60,
+      "max": 180,
+      "step": 2,
+      "unit": "%",
+      "default": 100
+    },
+
+    {
+      "type": "header",
+      "content": "Tarjeta 2 · imagen"
+    },
+    {
+      "type": "paragraph",
+      "content": "Se aplica a la colección nº 2 según el orden de la lista."
+    },
+    {
+      "type": "image_picker",
+      "id": "card_2_image_desktop",
+      "label": "Tarjeta 2 · imagen escritorio"
+    },
+    {
+      "type": "image_picker",
+      "id": "card_2_image_mobile",
+      "label": "Tarjeta 2 · imagen móvil"
+    },
+    {
+      "type": "range",
+      "id": "card_2_x_desktop",
+      "label": "Tarjeta 2 · X escritorio",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "card_2_y_desktop",
+      "label": "Tarjeta 2 · Y escritorio",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "card_2_zoom_desktop",
+      "label": "Tarjeta 2 · zoom escritorio",
+      "min": 60,
+      "max": 180,
+      "step": 2,
+      "unit": "%",
+      "default": 100
+    },
+    {
+      "type": "range",
+      "id": "card_2_x_mobile",
+      "label": "Tarjeta 2 · X móvil",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "card_2_y_mobile",
+      "label": "Tarjeta 2 · Y móvil",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "card_2_zoom_mobile",
+      "label": "Tarjeta 2 · zoom móvil",
+      "min": 60,
+      "max": 180,
+      "step": 2,
+      "unit": "%",
+      "default": 100
+    },
+
+    {
+      "type": "header",
+      "content": "Tarjeta 3 · imagen"
+    },
+    {
+      "type": "paragraph",
+      "content": "Se aplica a la colección nº 3 según el orden de la lista."
+    },
+    {
+      "type": "image_picker",
+      "id": "card_3_image_desktop",
+      "label": "Tarjeta 3 · imagen escritorio"
+    },
+    {
+      "type": "image_picker",
+      "id": "card_3_image_mobile",
+      "label": "Tarjeta 3 · imagen móvil"
+    },
+    {
+      "type": "range",
+      "id": "card_3_x_desktop",
+      "label": "Tarjeta 3 · X escritorio",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "card_3_y_desktop",
+      "label": "Tarjeta 3 · Y escritorio",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "card_3_zoom_desktop",
+      "label": "Tarjeta 3 · zoom escritorio",
+      "min": 60,
+      "max": 180,
+      "step": 2,
+      "unit": "%",
+      "default": 100
+    },
+    {
+      "type": "range",
+      "id": "card_3_x_mobile",
+      "label": "Tarjeta 3 · X móvil",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "card_3_y_mobile",
+      "label": "Tarjeta 3 · Y móvil",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "card_3_zoom_mobile",
+      "label": "Tarjeta 3 · zoom móvil",
+      "min": 60,
+      "max": 180,
+      "step": 2,
+      "unit": "%",
+      "default": 100
+    },
+
+    {
+      "type": "header",
+      "content": "Tarjeta 4 · imagen"
+    },
+    {
+      "type": "paragraph",
+      "content": "Se aplica a la colección nº 4 según el orden de la lista."
+    },
+    {
+      "type": "image_picker",
+      "id": "card_4_image_desktop",
+      "label": "Tarjeta 4 · imagen escritorio"
+    },
+    {
+      "type": "image_picker",
+      "id": "card_4_image_mobile",
+      "label": "Tarjeta 4 · imagen móvil"
+    },
+    {
+      "type": "range",
+      "id": "card_4_x_desktop",
+      "label": "Tarjeta 4 · X escritorio",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "card_4_y_desktop",
+      "label": "Tarjeta 4 · Y escritorio",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "card_4_zoom_desktop",
+      "label": "Tarjeta 4 · zoom escritorio",
+      "min": 60,
+      "max": 180,
+      "step": 2,
+      "unit": "%",
+      "default": 100
+    },
+    {
+      "type": "range",
+      "id": "card_4_x_mobile",
+      "label": "Tarjeta 4 · X móvil",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "card_4_y_mobile",
+      "label": "Tarjeta 4 · Y móvil",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "card_4_zoom_mobile",
+      "label": "Tarjeta 4 · zoom móvil",
+      "min": 60,
+      "max": 180,
+      "step": 2,
+      "unit": "%",
+      "default": 100
+    }
+  ],
+  "presets": [
+    {
+      "name": "Bento Saucha",
+      "category": "t:categories.collections",
+      "settings": {
+        "collection_list": [],
+        "bento_gap": 8,
+        "section_width": "page-width",
+        "padding-block-start": 24,
+        "padding-block-end": 24,
+        "animation_enabled": true,
+        "animation_duration": 650,
+        "animation_stagger": 60,
+        "animation_distance": 10
+      },
+      "blocks": {
+        "group_Lg9LkF": {
+          "type": "group",
+          "name": "t:names.header",
+          "settings": {
+            "content_direction": "column",
+            "vertical_on_mobile": true,
+            "horizontal_alignment": "flex-start",
+            "vertical_alignment": "center",
+            "horizontal_alignment_flex_direction_column": "flex-start",
+            "vertical_alignment_flex_direction_column": "center",
+            "gap": 16,
+            "width": "fill",
+            "custom_width": 100,
+            "width_mobile": "fill",
+            "custom_width_mobile": 100,
+            "height": "fit",
+            "custom_height": 100,
+            "background_media": "none",
+            "video_position": "cover",
+            "background_image_position": "cover",
+            "border": "none",
+            "border_width": 1,
+            "border_opacity": 100,
+            "border_radius": 0,
+            "padding-block-start": 0,
+            "padding-block-end": 0,
+            "padding-inline-start": 0,
+            "padding-inline-end": 0
+          },
+          "blocks": {
+            "text_bc98Wh": {
+              "type": "text",
+              "name": "t:names.text",
+              "settings": {
+                "text": "t:html_defaults.shop_by_collection",
+                "type_preset": "rte",
+                "font": "var(--font-body--family)",
+                "font_size": "",
+                "line_height": "normal",
+                "letter_spacing": "normal",
+                "case": "none",
+                "wrap": "pretty",
+                "width": "fit-content",
+                "max_width": "normal",
+                "alignment": "left",
+                "padding-block-start": 0,
+                "padding-block-end": 16,
+                "padding-inline-start": 0,
+                "padding-inline-end": 0
+              }
+            }
+          },
+          "block_order": [
+            "text_bc98Wh"
+          ]
+        },
+        "static-collection-card": {
+          "type": "_collection-card-saucha",
+          "name": "Collection card - Saucha",
+          "static": true,
+          "settings": {
+            "horizontal_alignment": "flex-start",
+            "vertical_alignment": "flex-end",
+            "placement": "on_image",
+            "border": "none",
+            "border_width": 1,
+            "border_opacity": 100,
+            "border_radius": 0
+          },
+          "blocks": {
+            "collection-card-image": {
+              "type": "_collection-card-image-saucha",
+              "name": "Imagen colección - Saucha",
+              "static": true,
+              "settings": {
+                "image_ratio": "adapt"
+              }
+            },
+            "collection-title": {
+              "type": "collection-title",
+              "name": "t:names.collection_title",
+              "settings": {
+                "type_preset": "rte",
+                "font": "var(--font-body--family)",
+                "font_size": "",
+                "line_height": "normal",
+                "letter_spacing": "normal",
+                "case": "none",
+                "wrap": "pretty",
+                "width": "fit-content",
+                "max_width": "normal",
+                "alignment": "left",
+                "background": true,
+                "background_color": "#ffffff",
+                "padding-block-start": 4,
+                "padding-block-end": 4,
+                "padding-inline-start": 8,
+                "padding-inline-end": 8
+              }
+            }
+          },
+          "block_order": [
+            "collection-title"
+          ]
+        }
+      },
+      "block_order": [
+        "group_Lg9LkF"
+      ]
+    }
+  ]
+}
+{% endschema %}

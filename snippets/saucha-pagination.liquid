@@ -1,0 +1,41 @@
+{%- if paginate.pages > 1 -%}
+  <nav class="saucha-pagination" role="navigation" aria-label="Paginación">
+    {%- if paginate.previous -%}
+      <a class="saucha-pagination__arrow" href="{{ paginate.previous.url }}" data-collection-link aria-label="Página anterior">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+          <path d="M14.5 6L8.5 12l6 6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+    {%- else -%}
+      <span class="saucha-pagination__arrow is-disabled" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14.5 6L8.5 12l6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+    {%- endif -%}
+
+    <div class="saucha-pagination__pages">
+      {%- for part in paginate.parts -%}
+        {%- if part.is_link -%}
+          <a href="{{ part.url }}" data-collection-link>{{ part.title }}</a>
+        {%- else -%}
+          {%- if part.title == paginate.current_page -%}
+            <span class="is-current" aria-current="page">{{ part.title }}</span>
+          {%- else -%}
+            <span>{{ part.title }}</span>
+          {%- endif -%}
+        {%- endif -%}
+      {%- endfor -%}
+    </div>
+
+    {%- if paginate.next -%}
+      <a class="saucha-pagination__arrow" href="{{ paginate.next.url }}" data-collection-link aria-label="Página siguiente">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">
+          <path d="M9.5 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </a>
+    {%- else -%}
+      <span class="saucha-pagination__arrow is-disabled" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9.5 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+    {%- endif -%}
+  </nav>
+{%- endif -%}

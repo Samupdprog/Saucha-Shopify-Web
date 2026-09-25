@@ -1,0 +1,389 @@
+{% render 'text-block-styles' %}
+
+{%- assign block_settings = block.settings -%}
+{%- assign plain_text = block_settings.text | strip_newlines | strip_html | strip -%}
+{%- assign block_index = section.blocks | find_index: 'id', block.id -%}
+
+{%- unless plain_text == '' -%}
+  <slideshow-slide
+    ref="slides[]"
+    class="
+      announcement-bar__slide
+      saucha-announcement
+      text-block
+      text-block--{{ block.id }}
+      text-block--align-center
+      text-block--full-width
+      custom-typography
+      {% if block_settings.font_size != blank %}custom-font-size{% endif %}
+      {% if block_settings.weight != blank %}custom-font-weight{% endif %}
+    "
+    style="
+      {% render 'typography-style', settings: block_settings, preset: 'custom' %}
+      {% if block_settings.text_color != blank %}
+        --color: {{ block_settings.text_color }};
+        --color-rgb: {{ block_settings.text_color.rgb }};
+      {% endif %}
+      --width: 100%;
+      --text-align: center;
+      --line-height: 1;
+    "
+    {{ block.shopify_attributes }}
+    aria-hidden="{% if block_index == 0 %}false{% else %}true{% endif %}"
+  >
+    <div class="saucha-announcement__inner">
+
+      {% if block_settings.show_shipping_icon %}
+        <span
+          class="saucha-announcement__icon saucha-announcement__icon--shipping"
+          aria-hidden="true"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M3 6.75h11.25v9H3z"
+              stroke="currentColor"
+              stroke-width="1.35"
+              stroke-linejoin="round"
+            />
+            <path
+              d="M14.25 9.25h3.25l3.5 3.5v3h-6.75v-6.5Z"
+              stroke="currentColor"
+              stroke-width="1.35"
+              stroke-linejoin="round"
+            />
+            <circle
+              cx="7"
+              cy="17.25"
+              r="1.75"
+              stroke="currentColor"
+              stroke-width="1.35"
+            />
+            <circle
+              cx="17.5"
+              cy="17.25"
+              r="1.75"
+              stroke="currentColor"
+              stroke-width="1.35"
+            />
+          </svg>
+        </span>
+      {% endif %}
+
+      <p class="announcement-bar__text saucha-announcement__text">
+        {{ block_settings.text }}
+      </p>
+
+      {% if block_settings.show_heart %}
+        <span
+          class="saucha-announcement__icon saucha-announcement__icon--heart"
+          aria-hidden="true"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78Z"
+              stroke="currentColor"
+              stroke-width="1.35"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </span>
+      {% endif %}
+
+    </div>
+
+    {% if block_settings.link != blank %}
+      <a
+        class="announcement-bar__link"
+        href="{{ block_settings.link }}"
+      >
+        <span class="visually-hidden">
+          {{ block_settings.text | strip_html }}
+        </span>
+      </a>
+    {% endif %}
+  </slideshow-slide>
+{%- endunless -%}
+
+
+<style>
+  .saucha-announcement {
+    width: 100%;
+    background: #f1af92;
+    color: #3a312d;
+  }
+
+  .saucha-announcement__inner {
+    width: 100%;
+    min-height: 32px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 11px;
+
+    padding: 7px 18px;
+    box-sizing: border-box;
+  }
+
+  .saucha-announcement__text {
+    margin: 0;
+
+    font-size: 10px;
+    font-weight: 500;
+    line-height: 1;
+
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+
+    color: currentColor;
+    white-space: nowrap;
+  }
+
+  .saucha-announcement__icon {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: currentColor;
+  }
+
+  .saucha-announcement__icon svg {
+    display: block;
+    width: 15px;
+    height: 15px;
+  }
+
+  .saucha-announcement__icon--heart svg {
+    width: 13px;
+    height: 13px;
+  }
+
+  @media screen and (max-width: 749px) {
+    .saucha-announcement__inner {
+      min-height: 32px;
+      gap: 7px;
+      padding: 6px 10px;
+    }
+
+    .saucha-announcement__text {
+      font-size: 8.5px;
+      letter-spacing: 0.15em;
+    }
+
+    .saucha-announcement__icon svg {
+      width: 13px;
+      height: 13px;
+    }
+
+    .saucha-announcement__icon--heart {
+      display: none;
+    }
+  }
+
+  @media screen and (max-width: 360px) {
+    .saucha-announcement__text {
+      font-size: 8px;
+      letter-spacing: 0.11em;
+    }
+  }
+</style>
+
+
+{% schema %}
+{
+  "name": "Anuncio",
+  "tag": null,
+  "settings": [
+    {
+      "type": "inline_richtext",
+      "id": "text",
+      "label": "Texto",
+      "default": "ENVÍOS GRATIS EN PEDIDOS A PARTIR DE 50€"
+    },
+    {
+      "type": "url",
+      "id": "link",
+      "label": "Enlace"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_shipping_icon",
+      "label": "Mostrar icono de envío",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_heart",
+      "label": "Mostrar corazón",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Tipografía"
+    },
+    {
+      "type": "select",
+      "id": "font",
+      "label": "Fuente",
+      "options": [
+        {
+          "value": "var(--font-body--family)",
+          "label": "Texto"
+        },
+        {
+          "value": "var(--font-subheading--family)",
+          "label": "Subtítulo"
+        },
+        {
+          "value": "var(--font-heading--family)",
+          "label": "Título"
+        },
+        {
+          "value": "var(--font-accent--family)",
+          "label": "Acento"
+        }
+      ],
+      "default": "var(--font-body--family)"
+    },
+    {
+      "type": "select",
+      "id": "font_size",
+      "label": "Tamaño",
+      "options": [
+        {
+          "value": "",
+          "label": "Predeterminado"
+        },
+        {
+          "value": "0.625rem",
+          "label": "10px"
+        },
+        {
+          "value": "0.75rem",
+          "label": "12px"
+        },
+        {
+          "value": "0.875rem",
+          "label": "14px"
+        },
+        {
+          "value": "1rem",
+          "label": "16px"
+        },
+        {
+          "value": "1.125rem",
+          "label": "18px"
+        },
+        {
+          "value": "1.25rem",
+          "label": "20px"
+        }
+      ],
+      "default": "0.75rem"
+    },
+    {
+      "type": "select",
+      "id": "weight",
+      "label": "Grosor",
+      "options": [
+        {
+          "value": "",
+          "label": "Predeterminado"
+        },
+        {
+          "value": "300",
+          "label": "Ligero"
+        },
+        {
+          "value": "400",
+          "label": "Normal"
+        },
+        {
+          "value": "500",
+          "label": "Medio"
+        },
+        {
+          "value": "600",
+          "label": "Seminegrita"
+        },
+        {
+          "value": "700",
+          "label": "Negrita"
+        }
+      ],
+      "default": "500"
+    },
+    {
+      "type": "select",
+      "id": "letter_spacing",
+      "label": "Espaciado entre letras",
+      "options": [
+        {
+          "value": "tight",
+          "label": "Reducido"
+        },
+        {
+          "value": "normal",
+          "label": "Normal"
+        },
+        {
+          "value": "loose",
+          "label": "Amplio"
+        }
+      ],
+      "default": "loose"
+    },
+    {
+      "type": "select",
+      "id": "case",
+      "label": "Mayúsculas",
+      "options": [
+        {
+          "value": "none",
+          "label": "Normal"
+        },
+        {
+          "value": "uppercase",
+          "label": "Mayúsculas"
+        }
+      ],
+      "default": "uppercase"
+    },
+    {
+      "type": "header",
+      "content": "Apariencia"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Color del texto",
+      "default": "#3A312D"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Anuncio Saucha",
+      "settings": {
+        "text": "ENVÍOS GRATIS EN PEDIDOS A PARTIR DE 50€",
+        "font": "var(--font-body--family)",
+        "font_size": "0.75rem",
+        "weight": "500",
+        "letter_spacing": "loose",
+        "case": "uppercase",
+        "text_color": "#3A312D",
+        "show_shipping_icon": true,
+        "show_heart": true
+      }
+    }
+  ]
+}
+{% endschema %}

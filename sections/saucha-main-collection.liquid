@@ -1,0 +1,676 @@
+{{ 'saucha-collection.css' | asset_url | stylesheet_tag }}
+<script src="{{ 'saucha-collection.js' | asset_url }}" defer></script>
+
+{%- liquid
+  assign sort_by = collection.sort_by | default: collection.default_sort_by
+  assign hover_scale = section.settings.hover_zoom | divided_by: 100.0
+  assign has_filters = false
+
+  if collection.filters.size > 0 and section.settings.enable_filtering
+    assign has_filters = true
+  endif
+-%}
+
+<saucha-collection
+  class="saucha-collection"
+  data-section-id="{{ section.id }}"
+  data-auto-apply="{{ section.settings.desktop_auto_apply }}"
+  data-content-width="{{ section.settings.content_width }}"
+  data-card-alignment="{{ section.settings.card_alignment }}"
+  data-title-font="{{ section.settings.product_title_font }}"
+  data-text-density="{{ section.settings.text_density }}"
+  style="
+    --saucha-columns-desktop: {{ section.settings.columns_desktop }};
+    --saucha-columns-tablet: {{ section.settings.columns_tablet }};
+    --saucha-columns-mobile: {{ section.settings.columns_mobile }};
+    --saucha-sidebar-width: {{ section.settings.sidebar_width }}px;
+    --saucha-grid-gap: {{ section.settings.grid_gap }}px;
+    --saucha-row-gap: {{ section.settings.row_gap }}px;
+    --saucha-image-radius: {{ section.settings.image_radius }}px;
+    --saucha-hover-scale: {{ hover_scale }};
+    --saucha-sticky-top: {{ section.settings.sticky_top }}px;
+    --saucha-padding-top: {{ section.settings.padding_top }}px;
+    --saucha-padding-bottom: {{ section.settings.padding_bottom }}px;
+  "
+>
+  <div class="saucha-collection__shell">
+    <div class="saucha-collection__toolbar" data-toolbar>
+      <div class="saucha-collection__toolbar-left">
+        {%- if has_filters -%}
+          <button
+            class="saucha-collection__mobile-filter-button"
+            type="button"
+            data-filter-open
+            aria-controls="SauchaFilters-{{ section.id }}"
+            aria-expanded="false"
+          >
+            <span class="saucha-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+                <path d="M4 7h16M7 12h10M10 17h4" stroke-linecap="round"/>
+              </svg>
+            </span>
+            <span>{{ section.settings.filter_button_label | escape }}</span>
+
+            {%- assign active_filter_count = 0 -%}
+            {%- for filter in collection.filters -%}
+              {%- if filter.type == 'price_range' -%}
+                {%- if filter.min_value.value != nil or filter.max_value.value != nil -%}
+                  {%- assign active_filter_count = active_filter_count | plus: 1 -%}
+                {%- endif -%}
+              {%- else -%}
+                {%- assign active_filter_count = active_filter_count | plus: filter.active_values.size -%}
+              {%- endif -%}
+            {%- endfor -%}
+
+            {%- if active_filter_count > 0 -%}
+              <span
+                class="saucha-collection__filter-count"
+                aria-label="{{ active_filter_count }} filtros activos"
+              >
+                {{ active_filter_count }}
+              </span>
+            {%- endif -%}
+          </button>
+        {%- endif -%}
+
+        {%- if section.settings.show_product_count -%}
+          <span class="saucha-collection__count" data-results-count aria-live="polite">
+            {{ collection.products_count }} {{ section.settings.products_label | escape }}
+          </span>
+        {%- endif -%}
+      </div>
+
+      {%- if section.settings.enable_sorting -%}
+        <form class="saucha-collection__sort-form" action="{{ collection.url }}" method="get" data-sort-form>
+          {%- for filter in collection.filters -%}
+            {%- if filter.type == 'price_range' -%}
+              {%- if filter.min_value.value != nil -%}
+                <input
+                  type="hidden"
+                  name="{{ filter.min_value.param_name }}"
+                  value="{{ filter.min_value.value | money_without_currency | replace: ',', '' }}"
+                >
+              {%- endif -%}
+
+              {%- if filter.max_value.value != nil -%}
+                <input
+                  type="hidden"
+                  name="{{ filter.max_value.param_name }}"
+                  value="{{ filter.max_value.value | money_without_currency | replace: ',', '' }}"
+                >
+              {%- endif -%}
+            {%- else -%}
+              {%- for active_value in filter.active_values -%}
+                <input
+                  type="hidden"
+                  name="{{ active_value.param_name }}"
+                  value="{{ active_value.value | escape }}"
+                >
+              {%- endfor -%}
+            {%- endif -%}
+          {%- endfor -%}
+
+          <label class="saucha-visually-hidden" for="SauchaSortBy-{{ section.id }}">
+            {{ section.settings.sort_label | escape }}
+          </label>
+
+          <select
+            id="SauchaSortBy-{{ section.id }}"
+            class="saucha-collection__sort"
+            name="sort_by"
+            data-sort-select
+          >
+            {%- for option in collection.sort_options -%}
+              <option
+                value="{{ option.value | escape }}"
+                {% if option.value == sort_by %}selected{% endif %}
+              >
+                {{ option.name | escape }}
+              </option>
+            {%- endfor -%}
+          </select>
+
+          <button class="saucha-collection__sort-submit" type="submit">
+            {{ section.settings.apply_label | escape }}
+          </button>
+        </form>
+      {%- endif -%}
+    </div>
+
+    <div class="saucha-collection__layout{% unless has_filters %} saucha-collection__layout--no-filters{% endunless %}">
+      {%- if has_filters -%}
+        <aside
+          id="SauchaFilters-{{ section.id }}"
+          class="saucha-filters"
+          data-filter-drawer
+          aria-label="{{ section.settings.filter_button_label | escape }}"
+        >
+          <div class="saucha-filters__mobile-head">
+            <h2 class="saucha-filters__mobile-title" data-drawer-title tabindex="-1">
+              {{ section.settings.filter_button_label | escape }}
+            </h2>
+
+            <button
+              class="saucha-filters__close"
+              type="button"
+              data-filter-close
+              aria-label="{{ section.settings.close_filters_label | escape }}"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                <path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/>
+              </svg>
+            </button>
+          </div>
+
+          <form class="saucha-filters__form" action="{{ collection.url }}" method="get" data-filter-form>
+            {%- if section.settings.enable_sorting -%}
+              <input type="hidden" name="sort_by" value="{{ sort_by | escape }}">
+            {%- endif -%}
+
+            {% render 'saucha-facets',
+              collection: collection,
+              section: section
+            %}
+
+            <div class="saucha-filters__actions">
+              <button class="saucha-filters__apply" type="submit">
+                {{ section.settings.apply_label | escape }}
+              </button>
+
+              <a class="saucha-filters__clear" href="{{ collection.url }}" data-collection-link>
+                {{ section.settings.clear_label | escape }}
+              </a>
+            </div>
+          </form>
+        </aside>
+
+        <button
+          class="saucha-filters__backdrop"
+          type="button"
+          data-filter-backdrop
+          tabindex="-1"
+          aria-hidden="true"
+        ></button>
+      {%- endif -%}
+
+      <div class="saucha-results" data-results>
+        {%- assign has_active_filters = false -%}
+
+        {%- for filter in collection.filters -%}
+          {%- if filter.type == 'price_range' -%}
+            {%- if filter.min_value.value != nil or filter.max_value.value != nil -%}
+              {%- assign has_active_filters = true -%}
+              {%- break -%}
+            {%- endif -%}
+          {%- elsif filter.active_values.size > 0 -%}
+            {%- assign has_active_filters = true -%}
+            {%- break -%}
+          {%- endif -%}
+        {%- endfor -%}
+
+        {%- if has_active_filters -%}
+          <div class="saucha-active-filters" aria-label="Filtros activos">
+            <div class="saucha-active-filters__items">
+              {%- for filter in collection.filters -%}
+                {%- if filter.type == 'price_range' -%}
+                  {%- if filter.min_value.value != nil or filter.max_value.value != nil -%}
+                    {%- assign min_value = filter.min_value.value | default: 0 -%}
+                    {%- assign max_value = filter.max_value.value | default: filter.range_max -%}
+
+                    <a class="saucha-active-filters__item" href="{{ filter.url_to_remove }}" data-collection-link>
+                      <span>{{ filter.label | escape }}: {{ min_value | money }} – {{ max_value | money }}</span>
+                      <span aria-hidden="true">×</span>
+                    </a>
+                  {%- endif -%}
+                {%- else -%}
+                  {%- for active_value in filter.active_values -%}
+                    <a class="saucha-active-filters__item" href="{{ active_value.url_to_remove }}" data-collection-link>
+                      <span>{{ filter.label | escape }}: {{ active_value.label | escape }}</span>
+                      <span aria-hidden="true">×</span>
+                    </a>
+                  {%- endfor -%}
+                {%- endif -%}
+              {%- endfor -%}
+            </div>
+
+            <a class="saucha-active-filters__clear" href="{{ collection.url }}" data-collection-link>
+              {{ section.settings.clear_label | escape }}
+            </a>
+          </div>
+        {%- endif -%}
+
+        {%- paginate collection.products by section.settings.products_per_page -%}
+          {%- if collection.products_count > 0 -%}
+            <div class="saucha-product-grid" data-product-grid>
+              {%- for product in collection.products -%}
+                {%- liquid
+                  assign card_loading = 'lazy'
+                  assign card_fetchpriority = 'auto'
+
+                  if paginate.current_page == 1 and forloop.index <= section.settings.columns_desktop
+                    assign card_loading = 'eager'
+                  endif
+
+                  if paginate.current_page == 1 and forloop.first and section.index <= 2
+                    assign card_fetchpriority = 'high'
+                  endif
+                -%}
+
+                {% render 'saucha-product-card',
+                  product: product,
+                  section: section,
+                  loading: card_loading,
+                  fetchpriority: card_fetchpriority
+                %}
+              {%- endfor -%}
+            </div>
+          {%- else -%}
+            <div class="saucha-results__empty" role="status">
+              <p>{{ section.settings.empty_label | escape }}</p>
+              <a href="{{ collection.url }}" data-collection-link>{{ section.settings.clear_label | escape }}</a>
+            </div>
+          {%- endif -%}
+
+          {% render 'saucha-pagination', paginate: paginate %}
+        {%- endpaginate -%}
+      </div>
+    </div>
+  </div>
+</saucha-collection>
+
+{% schema %}
+{
+  "name": "Saucha · Colección",
+  "tag": "section",
+  "class": "saucha-main-collection-section",
+  "enabled_on": {
+    "templates": ["collection"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Integración con el tema"
+    },
+    {
+      "type": "paragraph",
+      "content": "La sección hereda las tipografías, colores y estilos base del tema. Usa estos ajustes solo para composición y escala; los cambios globales de marca se hacen en Configuración del tema."
+    },
+    {
+      "type": "select",
+      "id": "content_width",
+      "label": "Ancho del contenido",
+      "default": "theme",
+      "options": [
+        { "value": "theme", "label": "Ancho global del tema" },
+        { "value": "wide", "label": "Más ancho" },
+        { "value": "full", "label": "Casi todo el ancho" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "text_density",
+      "label": "Escala de texto",
+      "default": "normal",
+      "options": [
+        { "value": "compact", "label": "Compacta" },
+        { "value": "normal", "label": "Normal" },
+        { "value": "large", "label": "Grande" }
+      ]
+    },
+    {
+      "type": "select",
+      "id": "product_title_font",
+      "label": "Tipografía del nombre del producto",
+      "default": "heading",
+      "options": [
+        { "value": "heading", "label": "Tipografía global de títulos" },
+        { "value": "body", "label": "Tipografía global de texto" }
+      ],
+      "info": "Usa exclusivamente las tipografías globales del tema; no carga fuentes nuevas."
+    },
+    {
+      "type": "select",
+      "id": "card_alignment",
+      "label": "Alineación de la información",
+      "default": "center",
+      "options": [
+        { "value": "left", "label": "Izquierda" },
+        { "value": "center", "label": "Centrada" }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "padding_top",
+      "min": 0,
+      "max": 96,
+      "step": 4,
+      "unit": "px",
+      "label": "Espacio superior",
+      "default": 20
+    },
+    {
+      "type": "range",
+      "id": "padding_bottom",
+      "min": 0,
+      "max": 128,
+      "step": 4,
+      "unit": "px",
+      "label": "Espacio inferior",
+      "default": 80
+    },
+
+    {
+      "type": "header",
+      "content": "Cuadrícula"
+    },
+    {
+      "type": "range",
+      "id": "products_per_page",
+      "min": 8,
+      "max": 48,
+      "step": 4,
+      "label": "Productos por página",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "min": 2,
+      "max": 5,
+      "step": 1,
+      "label": "Columnas en escritorio",
+      "default": 4
+    },
+    {
+      "type": "range",
+      "id": "columns_tablet",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "label": "Columnas en tablet",
+      "default": 3
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "label": "Columnas en móvil",
+      "default": "2",
+      "options": [
+        { "value": "1", "label": "1 columna" },
+        { "value": "2", "label": "2 columnas" }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "grid_gap",
+      "min": 6,
+      "max": 36,
+      "step": 2,
+      "unit": "px",
+      "label": "Separación horizontal",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "row_gap",
+      "min": 24,
+      "max": 80,
+      "step": 4,
+      "unit": "px",
+      "label": "Separación vertical",
+      "default": 56
+    },
+
+    {
+      "type": "header",
+      "content": "Imágenes y colores"
+    },
+    {
+      "type": "paragraph",
+      "content": "Imágenes por color: asigna a cada variante su foto principal y sube el resto juntas (negro-1, negro-2, plateado-1…). La tarjeta usa la imagen de variante como A; para B busca otra del mismo color por nombre/alt y, si no existe, usa la siguiente foto de la galería."
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "Proporción de imagen",
+      "default": "portrait",
+      "options": [
+        { "value": "portrait", "label": "Vertical 2:3" },
+        { "value": "editorial", "label": "Vertical 3:4" },
+        { "value": "square", "label": "Cuadrada 1:1" },
+        { "value": "adapt", "label": "Adaptar a la imagen" }
+      ]
+    },
+    {
+      "type": "range",
+      "id": "image_radius",
+      "min": 0,
+      "max": 28,
+      "step": 2,
+      "unit": "px",
+      "label": "Redondeo de imagen",
+      "default": 14
+    },
+    {
+      "type": "checkbox",
+      "id": "smart_color_media",
+      "label": "Agrupar imágenes por color automáticamente",
+      "default": true,
+      "info": "Primero intenta relacionar la segunda foto por el nombre del color en el nombre/alt de la imagen; después usa el orden de la galería como respaldo."
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_second_image",
+      "label": "Mostrar segunda foto al pasar el ratón",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_swatches",
+      "label": "Mostrar colores en la tarjeta",
+      "default": true,
+      "info": "Usa los swatches nativos de Shopify. Si un color no tiene swatch configurado, usa la imagen de su variante como respaldo visual."
+    },
+    {
+      "type": "range",
+      "id": "max_swatches",
+      "min": 2,
+      "max": 10,
+      "step": 1,
+      "label": "Máximo de colores visibles",
+      "default": 5,
+      "visible_if": "{{ section.settings.show_swatches }}"
+    },
+
+    {
+      "type": "header",
+      "content": "Información del producto"
+    },
+    {
+      "type": "paragraph",
+      "content": "Las promociones se detectan a nivel de variante. Si hay filtros activos, se prioriza una variante rebajada que coincida con ellos; sin filtros, basta con que exista una variante disponible en oferta para mostrarla correctamente en la tarjeta."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_vendor",
+      "label": "Mostrar marca/proveedor",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_compare_at",
+      "label": "Mostrar precio anterior",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_sale_badge",
+      "label": "Mostrar etiqueta de oferta",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "sale_label",
+      "label": "Texto de oferta",
+      "default": "OFERTA",
+      "visible_if": "{{ section.settings.show_sale_badge }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_sold_out_badge",
+      "label": "Mostrar etiqueta de agotado",
+      "default": true
+    },
+
+    {
+      "type": "header",
+      "content": "Filtros y ordenación"
+    },
+    {
+      "type": "paragraph",
+      "content": "Los filtros se generan automáticamente desde Shopify Search & Discovery (talla, color, disponibilidad, precio, metafields, etc.). Aquí solo decides su presentación y comportamiento; no debes recrearlos manualmente."
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_filtering",
+      "label": "Mostrar filtros",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_sorting",
+      "label": "Mostrar ordenación",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_product_count",
+      "label": "Mostrar número de productos",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "desktop_auto_apply",
+      "label": "Aplicar filtros al seleccionar en escritorio",
+      "default": true,
+      "info": "En móvil se mantiene el botón Aplicar para evitar recargas mientras el cliente marca varias opciones.",
+      "visible_if": "{{ section.settings.enable_filtering }}"
+    },
+    {
+      "type": "select",
+      "id": "filters_default_open",
+      "label": "Filtros abiertos al entrar",
+      "default": "active",
+      "options": [
+        { "value": "none", "label": "Ninguno" },
+        { "value": "active", "label": "Solo los que tengan selección" },
+        { "value": "swatches", "label": "Colores y seleccionados" },
+        { "value": "all", "label": "Todos" }
+      ],
+      "visible_if": "{{ section.settings.enable_filtering }}"
+    },
+    {
+      "type": "range",
+      "id": "sidebar_width",
+      "min": 240,
+      "max": 380,
+      "step": 10,
+      "unit": "px",
+      "label": "Anchura de filtros en escritorio",
+      "default": 300,
+      "visible_if": "{{ section.settings.enable_filtering }}"
+    },
+    {
+      "type": "range",
+      "id": "sticky_top",
+      "min": 0,
+      "max": 160,
+      "step": 4,
+      "unit": "px",
+      "label": "Margen para cabecera fija",
+      "default": 0,
+      "info": "Si el header del tema es sticky y tapa la barra, indica aquí aproximadamente su altura."
+    },
+
+    {
+      "type": "header",
+      "content": "Movimiento"
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_shine",
+      "label": "Destello sutil",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "hover_zoom",
+      "min": 100,
+      "max": 108,
+      "step": 1,
+      "unit": "%",
+      "label": "Zoom al pasar el ratón",
+      "default": 104,
+      "visible_if": "{{ section.settings.enable_second_image }}"
+    },
+
+    {
+      "type": "header",
+      "content": "Textos"
+    },
+    {
+      "type": "text",
+      "id": "products_label",
+      "label": "Etiqueta del contador",
+      "default": "PRODUCTOS"
+    },
+    {
+      "type": "text",
+      "id": "filter_button_label",
+      "label": "Filtros",
+      "default": "FILTROS"
+    },
+    {
+      "type": "text",
+      "id": "sort_label",
+      "label": "Ordenar por",
+      "default": "Ordenar por"
+    },
+    {
+      "type": "text",
+      "id": "apply_label",
+      "label": "Aplicar",
+      "default": "Aplicar"
+    },
+    {
+      "type": "text",
+      "id": "clear_label",
+      "label": "Borrar filtros",
+      "default": "Borrar filtros"
+    },
+    {
+      "type": "text",
+      "id": "close_filters_label",
+      "label": "Cerrar filtros",
+      "default": "Cerrar filtros"
+    },
+    {
+      "type": "text",
+      "id": "sold_out_label",
+      "label": "Agotado",
+      "default": "AGOTADO"
+    },
+    {
+      "type": "text",
+      "id": "empty_label",
+      "label": "Sin resultados",
+      "default": "No hay productos que coincidan con estos filtros."
+    }
+  ],
+  "presets": [
+    {
+      "name": "Saucha · Colección"
+    }
+  ]
+}
+{% endschema %}
