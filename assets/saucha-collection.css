@@ -866,6 +866,16 @@ saucha-collection[data-enhanced='true'][data-auto-apply='true'] .saucha-filters_
   top: 45px;
 }
 
+.saucha-product-card__badge--new {
+  background-color: var(--s-color-surface, #fffcf8);
+  color: var(--s-color-cacao, #6e4c3d);
+}
+
+/* Una sola etiqueta informativa: rebaja o agotado mandan sobre «Nuevo» */
+.saucha-product-card__media:has(.saucha-product-card__badge--sale:not(.is-hidden), .saucha-product-card__badge--sold-out:not(.is-hidden)) .saucha-product-card__badge--new {
+  display: none;
+}
+
 .saucha-product-card__info {
   padding: var(--s-space-4, 16px) 4px 0;
   text-align: center;

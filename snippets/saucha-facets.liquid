@@ -114,9 +114,12 @@
                   <span
                     class="saucha-filter-swatch__visual"
                     aria-hidden="true"
+                    {%- capture filter_tone -%}{%- render 'saucha-swatch-color', name: filter_value.label -%}{%- endcapture -%}
                     style="
                       {%- if filter_value.swatch.image != blank -%}
                         background-image: url('{{ filter_value.swatch.image | image_url: width: 80 }}');
+                      {%- elsif filter_tone != blank -%}
+                        background: {{ filter_tone }};
                       {%- elsif filter_value.swatch.color != blank -%}
                         background-color: {{ filter_value.swatch.color }};
                       {%- endif -%}

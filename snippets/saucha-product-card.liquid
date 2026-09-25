@@ -23,16 +23,6 @@
     assign current_variant = matched_sale_unavailable_variant
   endif
 
-  assign primary_media = product.featured_media
-
-  if current_variant.featured_media != blank
-    assign primary_media = current_variant.featured_media
-  endif
-
-  if primary_media == blank and product.media.size > 0
-    assign primary_media = product.media.first
-  endif
-
   assign color_option = blank
   assign color_option_index = 0
 
@@ -67,18 +57,33 @@
     assign current_color_key = current_color_value | handleize
   endif
 
-  if current_variant.featured_media == blank and section.settings.smart_color_media and current_color_key != blank
-    for candidate_media in product.media
-      if candidate_media.media_type == 'image'
-        assign candidate_alt_key = candidate_media.alt | default: '' | handleize
-        assign candidate_src_key = candidate_media.preview_image.src | default: '' | downcase
+  # Saucha · misma regla de color que la galería de la ficha (snippets/saucha-card-media-pair)
+  assign card_color = ''
+  if section.settings.smart_color_media and color_option != blank and color_option.values.size > 1
+    assign card_color = current_color_value
+  endif
+  capture media_pair
+    render 'saucha-card-media-pair', product: product, variant: current_variant, color: card_color
+  endcapture
+  assign media_pair = media_pair | strip | split: ','
+  assign primary_id = media_pair[0] | default: ''
+  assign secondary_id = ''
+  if section.settings.enable_second_image
+    assign secondary_id = media_pair[1] | default: ''
+  endif
 
-        if candidate_alt_key contains current_color_key or candidate_src_key contains current_color_key
-          assign primary_media = candidate_media
-          break
-        endif
-      endif
-    endfor
+  assign primary_media = blank
+  assign secondary_media = blank
+  for candidate_media in product.media
+    assign candidate_id = candidate_media.id | append: ''
+    if candidate_id == primary_id
+      assign primary_media = candidate_media
+    elsif candidate_id == secondary_id
+      assign secondary_media = candidate_media
+    endif
+  endfor
+  if primary_media == blank and product.media.size > 0
+    assign primary_media = product.media.first
   endif
 
   assign primary_image = blank
@@ -86,50 +91,26 @@
     assign primary_image = primary_media.preview_image
   endif
 
-  assign secondary_media = blank
-
-  if section.settings.enable_second_image and product.media.size > 1 and primary_media != blank
-    if section.settings.smart_color_media and color_option != blank and current_color_key != blank
-      for candidate_media in product.media
-        if candidate_media.media_type == 'image' and candidate_media.id != primary_media.id
-          assign candidate_alt_key = candidate_media.alt | default: '' | handleize
-          assign candidate_src_key = candidate_media.preview_image.src | default: '' | downcase
-
-          if candidate_alt_key contains current_color_key or candidate_src_key contains current_color_key
-            assign secondary_media = candidate_media
-            break
-          endif
-        endif
-      endfor
-    endif
-
-    if secondary_media == blank
-      assign found_primary_media = false
-      for candidate_media in product.media
-        if found_primary_media and candidate_media.media_type == 'image'
-          assign secondary_media = candidate_media
-          break
-        endif
-
-        if candidate_media.id == primary_media.id
-          assign found_primary_media = true
-        endif
-      endfor
-    endif
-
-    if secondary_media == blank
-      for candidate_media in product.media
-        if candidate_media.media_type == 'image' and candidate_media.id != primary_media.id
-          assign secondary_media = candidate_media
-          break
-        endif
-      endfor
-    endif
-  endif
-
   assign secondary_image = blank
   if secondary_media != blank
     assign secondary_image = secondary_media.preview_image
+  endif
+
+  # Saucha · «Nuevo»: etiqueta nuevo/new o publicado hace menos de N días
+  assign is_new = false
+  if section.settings.show_new_badge
+    assign product_tags = product.tags | join: ',' | downcase | prepend: ',' | append: ','
+    if product_tags contains ',nuevo,' or product_tags contains ',new,'
+      assign is_new = true
+    elsif section.settings.new_days > 0 and product.published_at != blank
+      assign now_seconds = 'now' | date: '%s' | plus: 0
+      assign published_seconds = product.published_at | date: '%s' | plus: 0
+      assign age_seconds = now_seconds | minus: published_seconds
+      assign max_seconds = section.settings.new_days | times: 86400
+      if age_seconds < max_seconds
+        assign is_new = true
+      endif
+    endif
   endif
 
   assign is_on_sale = false
@@ -231,6 +212,12 @@
         {{ section.settings.sold_out_label | escape }}
       </span>
     {%- endif -%}
+
+    {%- if is_new -%}
+      <span class="saucha-product-card__badge saucha-product-card__badge--new">
+        {{ section.settings.new_label | default: 'Nuevo' | escape }}
+      </span>
+    {%- endif -%}
   </div>
 
   <div class="saucha-product-card__info">
@@ -263,80 +250,50 @@
                 assign option_is_current = true
               endif
 
+              # Primera variante disponible de este color (la de option_value puede ser una talla agotada)
               assign swatch_variant = option_value.variant
+              for color_variant in product.variants
+                if color_variant.options[color_option_index] == option_value.name
+                  if color_variant.available
+                    assign swatch_variant = color_variant
+                    break
+                  elsif swatch_variant == blank
+                    assign swatch_variant = color_variant
+                  endif
+                endif
+              endfor
               if option_is_current
                 assign swatch_variant = current_variant
               endif
 
+              assign swatch_color = ''
+              if section.settings.smart_color_media and color_option.values.size > 1
+                assign swatch_color = option_value.name
+              endif
+              capture swatch_pair
+                render 'saucha-card-media-pair', product: product, variant: swatch_variant, color: swatch_color
+              endcapture
+              assign swatch_pair = swatch_pair | strip | split: ','
+              assign swatch_primary_id = swatch_pair[0] | default: ''
+              assign swatch_secondary_id = ''
+              if section.settings.enable_second_image
+                assign swatch_secondary_id = swatch_pair[1] | default: ''
+              endif
+
               assign swatch_primary_media = blank
-              assign swatch_color_key = option_value.name | handleize
-
-              if swatch_variant != blank and swatch_variant.featured_media != blank
-                assign swatch_primary_media = swatch_variant.featured_media
-              elsif section.settings.smart_color_media and swatch_color_key != blank
-                for candidate_media in product.media
-                  if candidate_media.media_type == 'image'
-                    assign candidate_alt_key = candidate_media.alt | default: '' | handleize
-                    assign candidate_src_key = candidate_media.preview_image.src | default: '' | downcase
-
-                    if candidate_alt_key contains swatch_color_key or candidate_src_key contains swatch_color_key
-                      assign swatch_primary_media = candidate_media
-                      break
-                    endif
-                  endif
-                endfor
-              endif
-
-              if swatch_primary_media == blank and product.featured_media != blank
-                assign swatch_primary_media = product.featured_media
-              endif
+              assign swatch_secondary_media = blank
+              for candidate_media in product.media
+                assign candidate_id = candidate_media.id | append: ''
+                if candidate_id == swatch_primary_id
+                  assign swatch_primary_media = candidate_media
+                elsif candidate_id == swatch_secondary_id
+                  assign swatch_secondary_media = candidate_media
+                endif
+              endfor
 
               assign swatch_primary_image = blank
               if swatch_primary_media != blank
                 assign swatch_primary_image = swatch_primary_media.preview_image
-              endif
-
-              assign swatch_secondary_media = blank
-
-              if section.settings.enable_second_image and product.media.size > 1 and swatch_primary_media != blank
-                if section.settings.smart_color_media
-                  if swatch_color_key != blank
-                    for candidate_media in product.media
-                      if candidate_media.media_type == 'image' and candidate_media.id != swatch_primary_media.id
-                        assign candidate_alt_key = candidate_media.alt | default: '' | handleize
-                        assign candidate_src_key = candidate_media.preview_image.src | default: '' | downcase
-
-                        if candidate_alt_key contains swatch_color_key or candidate_src_key contains swatch_color_key
-                          assign swatch_secondary_media = candidate_media
-                          break
-                        endif
-                      endif
-                    endfor
-                  endif
-                endif
-
-                if swatch_secondary_media == blank
-                  assign found_swatch_primary = false
-                  for candidate_media in product.media
-                    if found_swatch_primary and candidate_media.media_type == 'image'
-                      assign swatch_secondary_media = candidate_media
-                      break
-                    endif
-
-                    if candidate_media.id == swatch_primary_media.id
-                      assign found_swatch_primary = true
-                    endif
-                  endfor
-                endif
-
-                if swatch_secondary_media == blank
-                  for candidate_media in product.media
-                    if candidate_media.media_type == 'image' and candidate_media.id != swatch_primary_media.id
-                      assign swatch_secondary_media = candidate_media
-                      break
-                    endif
-                  endfor
-                endif
               endif
 
               assign swatch_secondary_image = blank
@@ -359,6 +316,10 @@
               elsif swatch_primary_image != blank
                 assign swatch_background_image = swatch_primary_image
               endif
+
+              capture swatch_tone
+                render 'saucha-swatch-color', name: option_value.name
+              endcapture
             -%}
 
             <button
@@ -389,6 +350,8 @@
                 style="
                   {%- if option_value.swatch.image != blank -%}
                     background-image: url('{{ option_value.swatch.image | image_url: width: 96 }}');
+                  {%- elsif swatch_tone != blank -%}
+                    background: {{ swatch_tone }};
                   {%- elsif option_value.swatch.color != blank -%}
                     background-color: {{ option_value.swatch.color }};
                   {%- elsif swatch_background_image != blank -%}

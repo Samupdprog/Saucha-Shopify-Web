@@ -1,0 +1,69 @@
+{%- doc -%}
+  Saucha · imagen principal y segunda imagen de una tarjeta.
+
+  Devuelve (como texto) «idPrincipal,idSegunda». La segunda puede faltar.
+
+  Con color: usa snippets/saucha-color-media (la misma regla que la galería de la ficha).
+    La segunda imagen es siempre del mismo color; si el color solo tiene una, no hay segunda:
+    nunca se enseña un color distinto al pasar el ratón.
+    Si el color no tiene imágenes propias, la principal es la de la variante o la del producto.
+  Sin color (producto sin opción de color, o de un solo color): la imagen siguiente del producto.
+
+  @param {product} product - Producto
+  @param {variant} [variant] - Variante cuya imagen se usa de respaldo
+  @param {string} [color] - Valor de color. Vacío = sin agrupar por color
+
+  @example
+  {% capture pair %}{% render 'saucha-card-media-pair', product: product, variant: v, color: 'Negro' %}{% endcapture %}
+{%- enddoc -%}
+
+{%- liquid
+  assign primary_id = ''
+  assign secondary_id = ''
+
+  if color != blank
+    capture color_ids
+      render 'saucha-color-media', product: product, color: color
+    endcapture
+    assign color_list = color_ids | strip | split: ','
+    if color_list.size > 0
+      assign primary_id = color_list[0]
+      if color_list.size > 1
+        assign secondary_id = color_list[1]
+      endif
+    endif
+  endif
+
+  if primary_id == ''
+    if variant.featured_media != blank
+      assign primary_id = variant.featured_media.id | append: ''
+    elsif product.featured_media != blank
+      assign primary_id = product.featured_media.id | append: ''
+    endif
+
+    if color == blank and primary_id != ''
+      assign found_primary = false
+      for media in product.media
+        assign mid = media.id | append: ''
+        if found_primary and media.media_type == 'image'
+          assign secondary_id = mid
+          break
+        endif
+        if mid == primary_id
+          assign found_primary = true
+        endif
+      endfor
+      if secondary_id == ''
+        for media in product.media
+          assign mid = media.id | append: ''
+          if media.media_type == 'image' and mid != primary_id
+            assign secondary_id = mid
+            break
+          endif
+        endfor
+      endif
+    endif
+  endif
+
+  echo primary_id | append: ',' | append: secondary_id
+-%}

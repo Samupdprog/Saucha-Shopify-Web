@@ -1,4 +1,4 @@
-{% doc %}
+{%- doc -%}
   Saucha · color de muestra a partir del nombre.
 
   Devuelve (como texto) un valor CSS de fondo para pintar la muestra de un color cuando
@@ -13,7 +13,7 @@
 
   @example
   {% capture bg %}{% render 'saucha-swatch-color', name: product_option_value.name %}{% endcapture %}
-{% enddoc %}
+{%- enddoc -%}
 
 {%- liquid
   assign key = name | handleize | prepend: '-' | append: '-'

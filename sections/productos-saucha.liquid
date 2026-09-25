@@ -349,6 +349,31 @@
       "default": true
     },
     {
+      "type": "checkbox",
+      "id": "show_new_badge",
+      "label": "Etiqueta «Nuevo»",
+      "info": "Productos con la etiqueta «nuevo» o publicados hace pocos días. No aparece si ya hay etiqueta de rebaja o agotado.",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "new_label",
+      "label": "Texto de «Nuevo»",
+      "default": "Nuevo",
+      "visible_if": "{{ section.settings.show_new_badge }}"
+    },
+    {
+      "type": "range",
+      "id": "new_days",
+      "label": "Nuevo durante (días desde su publicación)",
+      "min": 0,
+      "max": 90,
+      "step": 5,
+      "unit": "d",
+      "default": 30,
+      "visible_if": "{{ section.settings.show_new_badge }}"
+    },
+    {
       "type": "text",
       "id": "sold_out_label",
       "label": "Texto de agotado",
