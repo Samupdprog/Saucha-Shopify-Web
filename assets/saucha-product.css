@@ -1,0 +1,253 @@
+/*
+  SAUCHA · FICHA DE PRODUCTO
+  ---------------------------------------------------------------
+  Capa sobre la sección «Información del producto» de Horizon.
+  Solo tipografía, color y ritmo: la estructura y el JS siguen siendo
+  los de Horizon, así que todos los bloques se editan en el personalizador.
+
+  Columna de detalles ... ancho de lectura y ritmo vertical
+  Cabecera .............. título serif · precio · etiqueta de descuento
+  Selector .............. etiquetas en versalitas, muestras, tallas
+  Stock ................. punto de estado + texto
+  Compra ................ botón principal · «Comprar ahora» secundario
+  Garantías ............. blocks/saucha-product-benefits.liquid
+  Acordeones ............ Descripción · Envíos y devoluciones
+*/
+
+/* ---------- Columna de detalles ---------- */
+
+.product-information .product-details > .group-block-content,
+.product-information .product-details .details-content {
+  max-width: 460px;
+}
+
+/* ---------- Cabecera: título y precio ---------- */
+
+.product-information .product-details h1 {
+  font-family: var(--s-font-serif);
+  font-weight: var(--s-font-serif-weight);
+  font-size: var(--s-type-h2);
+  line-height: var(--s-leading-title);
+  letter-spacing: var(--s-tracking-display);
+  text-wrap: balance;
+}
+
+.product-information product-price [ref='priceContainer'] {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--s-space-2) var(--s-space-3);
+}
+
+.product-information product-price .price {
+  font-family: var(--s-font-sans);
+  font-size: 1.0625rem;
+  letter-spacing: 0.01em;
+  color: var(--s-color-ink);
+}
+
+.product-information product-price .compare-at-price {
+  font-size: var(--s-type-body);
+  color: var(--s-color-muted);
+  text-decoration-thickness: 1px;
+}
+
+.product-information product-price .tax-note {
+  margin-block-start: var(--s-space-1);
+  font-size: var(--s-type-body-sm);
+  color: var(--s-color-muted);
+}
+
+/* ---------- Selector de variantes ---------- */
+
+.product-information .variant-picker__form {
+  gap: var(--s-space-6);
+}
+
+.product-information .variant-option legend,
+.product-information .variant-option--dropdowns > label {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-space-2);
+  margin-block-end: var(--s-space-3);
+  font-size: var(--s-type-eyebrow);
+  font-weight: 500;
+  letter-spacing: var(--s-tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--s-color-ink);
+}
+
+.product-information .variant-option__swatch-value {
+  padding: 0;
+  font-size: var(--s-type-body-sm);
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--s-color-muted);
+}
+
+.product-information .variant-option__swatch-value::before {
+  content: '·';
+  margin-inline-end: var(--s-space-2);
+}
+
+/* Muestras: aro fino al seleccionar, separado del color */
+.product-information .variant-option--swatches {
+  --variant-picker-swatch-width: 30px;
+  --variant-picker-swatch-height: 30px;
+  gap: var(--s-space-3);
+}
+
+.product-information .variant-option__button-label--has-swatch .swatch {
+  box-shadow: inset 0 0 0 1px rgb(var(--s-color-ink-rgb) / 0.12);
+}
+
+/* Tallas: botones compactos y tranquilos */
+.product-information .variant-option--equal-width-buttons {
+  gap: var(--s-space-2);
+}
+
+.product-information .variant-option__button-label:not(.variant-option__button-label--has-swatch) {
+  min-height: 44px;
+  font-size: var(--s-type-body-sm);
+  letter-spacing: 0.04em;
+}
+
+.product-information .variant-option__button-label:has([data-option-available='false']) {
+  color: rgb(var(--s-color-ink-rgb) / 0.4);
+}
+
+/* Talla agotada seleccionada: contorno en tinta, sin relleno, para que no parezca elegida y disponible */
+.product-information .variant-option__button-label:not(.variant-option__button-label--has-swatch):has([data-option-available='false']):has(:checked),
+.product-information .variant-option__button-label:not(.variant-option__button-label--has-swatch):has([data-option-available='false']):has(:checked):hover {
+  --variant-strikethrough-color: rgb(var(--s-color-ink-rgb) / 0.45);
+  background-color: transparent;
+  color: rgb(var(--s-color-ink-rgb) / 0.55);
+}
+
+/* ---------- Stock ---------- */
+
+.product-information .product-inventory__status {
+  gap: var(--s-space-2);
+  font-size: var(--s-type-body-sm);
+  color: var(--s-color-ink);
+}
+
+.product-information .product-inventory__icon,
+.product-information .product-inventory__icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* ---------- Compra ---------- */
+
+.product-information .product-form-buttons {
+  gap: var(--s-space-3);
+}
+
+.product-information .add-to-cart-button,
+.product-information .shopify-payment-button__button {
+  min-height: 52px;
+}
+
+.product-information .add-to-cart-button {
+  font-size: var(--s-type-button);
+  letter-spacing: var(--s-tracking-button);
+  text-transform: uppercase;
+}
+
+.product-information .add-to-cart-button .svg-wrapper.add-to-cart-icon {
+  display: none;
+}
+
+/* «Comprar ahora» sin marca: secundario, contorno fino */
+.product-information .shopify-payment-button__button--unbranded,
+.product-information .shopify-payment-button__button--unbranded:hover:not([disabled]) {
+  background: transparent;
+  color: var(--s-color-ink);
+  box-shadow: inset 0 0 0 1px var(--s-color-ink);
+  border-radius: var(--style-border-radius-buttons-primary, 100px);
+  font-family: var(--s-font-sans);
+  font-size: var(--s-type-button);
+  font-weight: 500;
+  letter-spacing: var(--s-tracking-button);
+  text-transform: uppercase;
+  transition: background-color var(--s-dur-micro) var(--s-ease), color var(--s-dur-micro) var(--s-ease);
+}
+
+.product-information .shopify-payment-button__button--unbranded:hover:not([disabled]) {
+  background: var(--s-color-ink);
+  color: var(--s-color-surface);
+}
+
+.product-information .shopify-payment-button__more-options {
+  font-size: var(--s-type-body-sm);
+  color: var(--s-color-muted);
+}
+
+/* ---------- Garantías ---------- */
+
+.s-pdp-benefits {
+  display: grid;
+  gap: var(--s-space-3);
+  margin: 0;
+  padding: var(--s-space-5) 0 0;
+  list-style: none;
+  border-top: 1px solid var(--s-color-line);
+}
+
+.s-pdp-benefits__row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-space-3);
+  font-size: var(--s-type-body-sm);
+  line-height: 1.4;
+  color: var(--s-color-ink);
+}
+
+.s-pdp-benefits__icon {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  color: var(--s-color-cacao);
+}
+
+.s-pdp-benefits__icon circle {
+  fill: var(--s-color-surface);
+}
+
+/* ---------- Acordeones ---------- */
+
+.product-information .accordion .details__header {
+  padding-block: var(--s-space-5);
+  font-family: var(--s-font-sans);
+  font-size: var(--s-type-eyebrow);
+  font-weight: 500;
+  letter-spacing: var(--s-tracking-eyebrow);
+  text-transform: uppercase;
+}
+
+.product-information .accordion .details-content {
+  padding-block-end: var(--s-space-6);
+  font-size: var(--s-type-body);
+  line-height: var(--s-leading-body);
+  color: var(--s-color-ink);
+}
+
+.product-information .accordion .details-content a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+
+/* ---------- Móvil ---------- */
+
+@media screen and (max-width: 749px) {
+  .product-information .product-details h1 {
+    font-size: var(--s-type-h3);
+  }
+
+  .product-information .product-details {
+    padding-block-start: var(--s-space-2);
+  }
+}

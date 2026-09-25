@@ -628,3 +628,23 @@ html.s-motion.s-settle [data-s-reveal='media'].is-in .s-media__img {
   white-space: nowrap !important;
   border: 0 !important;
 }
+
+/* =========================================================
+   PRECIO · etiqueta de descuento (snippets/price.liquid)
+   ========================================================= */
+
+.s-price-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  border-radius: 100px;
+  background: var(--s-color-salmon);
+  color: var(--s-color-ink);
+  font-family: var(--s-font-sans);
+  font-size: var(--s-type-eyebrow);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+  white-space: nowrap;
+  align-self: center;
+}

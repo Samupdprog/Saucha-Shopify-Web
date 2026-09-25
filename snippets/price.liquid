@@ -19,6 +19,8 @@
   assign show_compare_price = false
   if compare_at_price > price
     assign show_compare_price = true
+    # Saucha · porcentaje de descuento para la etiqueta junto al precio
+    assign saucha_discount = compare_at_price | minus: price | times: 100.0 | divided_by: compare_at_price | round
   endif
 
   if product_resource == blank
@@ -99,6 +101,9 @@
           <span class="visually-hidden">{{ 'content.price_regular' | t }}&nbsp;</span>
           {{- compare_at_price -}}
         </span>
+      {%- if saucha_discount > 0 -%}
+        <span class="s-price-badge">&minus;{{ saucha_discount }}%</span>
+      {%- endif -%}
       {% else %}
         <span class="price-item__group price-item--regular compare-at-price">
           <span class="visually-hidden">{{ 'content.price_regular' | t }}&nbsp;</span>
@@ -108,6 +113,9 @@
           <span class="visually-hidden">{{ 'content.price_sale' | t }}&nbsp;</span>
           {{ price | default: '&nbsp;' }}
         </span>
+      {%- if saucha_discount > 0 -%}
+        <span class="s-price-badge">&minus;{{ saucha_discount }}%</span>
+      {%- endif -%}
       {% endif %}
     {% else %}
       <span class="price">{{ price | default: '&nbsp;' }}</span>

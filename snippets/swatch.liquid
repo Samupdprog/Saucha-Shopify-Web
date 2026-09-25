@@ -5,6 +5,8 @@
   @param {object} [variant_image] - an alternate image when there is no swatch value
   @param {string} [mode] - one of 'unscaled', 'filter', 'pill'
   @param {string} [label] - visually-hidden accessible label for the swatch (e.g. the color name)
+  @param {string} [name] - Saucha: color name. If snippets/saucha-swatch-color knows it, its brand tone wins over the
+    generic swatch color (swatch images are kept)
 
   @example
   {% render 'swatch', swatch: swatch, variant_image: variant_image, mode: 'unscaled', label: option_value.name %}
@@ -12,6 +14,7 @@
 
 {% liquid
   assign swatch_value = null
+  assign saucha_color = ''
   assign extra_classes = ''
   if settings.show_variant_image and variant_image
     assign swatch_image_width = settings.variant_swatch_width | times: 2
@@ -21,8 +24,26 @@
   elsif swatch.image
     assign swatch_image_url = swatch.image | image_url: width: 80
     assign swatch_value = 'url(' | append: swatch_image_url | append: ')'
+  else
+    # Saucha · tono de marca a partir del nombre (snippets/saucha-swatch-color)
+    if name != blank
+      capture saucha_color
+        render 'saucha-swatch-color', name: name
+      endcapture
+    endif
+  endif
+
+  if swatch_value != null
+  elsif saucha_color != blank
+    assign swatch_value = saucha_color
+    assign extra_classes = extra_classes | append: ' swatch--saucha'
   elsif swatch.color
     assign swatch_value = 'rgb(' | append: swatch.color.rgb | append: ')'
+  elsif variant_image
+    assign swatch_image_width = settings.variant_swatch_width | times: 2
+    assign swatch_image_url = variant_image | image_url: width: swatch_image_width
+    assign swatch_value = 'url(' | append: swatch_image_url | append: ')'
+    assign extra_classes = extra_classes | append: ' swatch--variant-image'
   endif
 
   case mode

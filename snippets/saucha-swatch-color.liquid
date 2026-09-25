@@ -1,0 +1,52 @@
+{% doc %}
+  Saucha · color de muestra a partir del nombre.
+
+  Devuelve (como texto) un valor CSS de fondo para pintar la muestra de un color cuando
+  Shopify no tiene muestra nativa (Productos › Opciones › muestra). Si el nombre no se
+  reconoce, no devuelve nada y quien llama usa la imagen de la variante o el botón de texto.
+
+  Reconoce el color como palabra dentro del nombre: «Negro», «Vestido negro», «Azul marino».
+  Los nombres compuestos van antes que los simples («azul marino» antes que «azul»).
+  Para añadir un color: una línea más en la lista con «clave:valor».
+
+  @param {string} name - Nombre del color (valor de la opción)
+
+  @example
+  {% capture bg %}{% render 'saucha-swatch-color', name: product_option_value.name %}{% endcapture %}
+{% enddoc %}
+
+{%- liquid
+  assign key = name | handleize | prepend: '-' | append: '-'
+
+  capture palette
+    echo 'azul-marino:#1f2a44|verde-botella:#1f3d2b|verde-oliva:#6b6b3a|rosa-palo:#e8c4bc|gris-perla:#cfcac4|'
+    echo 'off-white:#f4efe6|multicolor:conic-gradient(#e8b7a4,#c4a36d,#b7c0b3,#8c9bb5,#e8b7a4)|'
+    echo 'estampado:linear-gradient(135deg,#f3ece4 0 50%,#8c9bb5 50% 100%)|'
+    echo 'plateado:linear-gradient(135deg,#f2f2f0,#b9b9b6 48%,#ededea 52%,#a7a7a3)|'
+    echo 'plata:linear-gradient(135deg,#f2f2f0,#b9b9b6 48%,#ededea 52%,#a7a7a3)|'
+    echo 'dorado:linear-gradient(135deg,#f3e2b3,#c4a36d 48%,#f1dfae 52%,#a9864c)|'
+    echo 'oro:linear-gradient(135deg,#f3e2b3,#c4a36d 48%,#f1dfae 52%,#a9864c)|'
+    echo 'negro:#1c1917|blanco:#ffffff|crudo:#efe6d6|marfil:#f4ecdc|hueso:#ebe3d5|beige:#dccbb2|arena:#d8c3a5|'
+    echo 'nude:#e2c2ab|camel:#b8875a|tostado:#a9784f|marron:#6e4c3d|chocolate:#4a3128|cacao:#6e4c3d|'
+    echo 'gris:#9a9591|antracita:#3b3a39|topo:#8b7d70|'
+    echo 'rojo:#b3262d|burdeos:#6d1f2a|granate:#7a2230|vino:#5e1f2b|'
+    echo 'rosa:#eab3b9|fucsia:#c8307a|coral:#ec8a74|salmon:#f2b39a|melocoton:#f4c3a1|'
+    echo 'morado:#5f3a7a|purpura:#6b3a7d|lila:#b9a2cf|lavanda:#c9bde0|malva:#b58ea5|'
+    echo 'azul:#3f5f93|celeste:#a9c7e3|turquesa:#3aa7a3|marino:#1f2a44|'
+    echo 'verde:#4f7a52|salvia:#b7c0b3|menta:#b6dccb|kaki:#8a7f55|caqui:#8a7f55|oliva:#6b6b3a|'
+    echo 'amarillo:#e9c74f|mostaza:#c99a2e|naranja:#e07a36|teja:#b5573a|terracota:#b5573a'
+  endcapture
+
+  assign swatch_bg = ''
+  assign entries = palette | split: '|'
+  for entry in entries
+    assign pair = entry | split: ':'
+    assign token = pair[0] | prepend: '-' | append: '-'
+    if key contains token
+      assign swatch_bg = entry | remove_first: pair[0] | remove_first: ':'
+      break
+    endif
+  endfor
+
+  echo swatch_bg
+-%}

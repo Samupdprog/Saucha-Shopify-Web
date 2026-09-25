@@ -65,7 +65,7 @@
                   echo active_value_count
                 elsif active_value_count > 0 and active_value_count <= 3
                   for value in filter.active_values
-                    render 'swatch', swatch: value.swatch, mode: 'filter', label: value.label
+                    render 'swatch', swatch: value.swatch, mode: 'filter', label: value.label, name: value.label
                   endfor
                 endif
               -%}
@@ -304,7 +304,7 @@
                           {% endif %}
                           ref="facetInputs[]"
                         >
-                        {% render 'swatch', swatch: value.swatch, mode: 'filter' %}
+                        {% render 'swatch', swatch: value.swatch, mode: 'filter', name: value.label %}
                         {% if is_disabled %}
                           <svg
                             aria-hidden="true"

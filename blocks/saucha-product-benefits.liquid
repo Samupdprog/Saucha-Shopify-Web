@@ -1,0 +1,86 @@
+{%- doc -%}
+  Saucha · garantías bajo el botón de compra (envío, devoluciones, pago).
+  Una línea vacía no se muestra.
+{%- enddoc -%}
+
+{%- liquid
+  assign rows = ''
+  if block.settings.text_1 != blank
+    assign rows = rows | append: 'truck,'
+  endif
+  if block.settings.text_2 != blank
+    assign rows = rows | append: 'return,'
+  endif
+  if block.settings.text_3 != blank
+    assign rows = rows | append: 'lock,'
+  endif
+-%}
+
+{%- if rows != blank -%}
+  <ul class="s-pdp-benefits" {{ block.shopify_attributes }}>
+    {%- if block.settings.text_1 != blank -%}
+      <li class="s-pdp-benefits__row">
+        <svg class="s-pdp-benefits__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M2.75 6.75h11v9.5h-11zM13.75 9.75h4.1l3.4 3.4v3.1h-7.5z" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/>
+          <circle cx="6.75" cy="17.25" r="1.75" fill="var(--color-background, #fff)" stroke="currentColor" stroke-width="1.2"/>
+          <circle cx="17.25" cy="17.25" r="1.75" fill="var(--color-background, #fff)" stroke="currentColor" stroke-width="1.2"/>
+        </svg>
+        <span>{{ block.settings.text_1 }}</span>
+      </li>
+    {%- endif -%}
+    {%- if block.settings.text_2 != blank -%}
+      <li class="s-pdp-benefits__row">
+        <svg class="s-pdp-benefits__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M8.5 5.5 4.75 9.25 8.5 13M5 9.25h9.25a5.25 5.25 0 0 1 0 10.5H9" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>{{ block.settings.text_2 }}</span>
+      </li>
+    {%- endif -%}
+    {%- if block.settings.text_3 != blank -%}
+      <li class="s-pdp-benefits__row">
+        <svg class="s-pdp-benefits__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <rect x="5.25" y="10.75" width="13.5" height="9.5" rx="1" fill="none" stroke="currentColor" stroke-width="1.2"/>
+          <path d="M8.25 10.75V8a3.75 3.75 0 0 1 7.5 0v2.75" fill="none" stroke="currentColor" stroke-width="1.2"/>
+        </svg>
+        <span>{{ block.settings.text_3 }}</span>
+      </li>
+    {%- endif -%}
+  </ul>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Garantías Saucha",
+  "tag": null,
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Tres líneas cortas bajo el botón de compra. Deja una vacía para ocultarla."
+    },
+    {
+      "type": "inline_richtext",
+      "id": "text_1",
+      "label": "Envío",
+      "default": "Envío gratis a partir de 50 €"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "text_2",
+      "label": "Devoluciones",
+      "default": "Cambios y devoluciones sencillos"
+    },
+    {
+      "type": "inline_richtext",
+      "id": "text_3",
+      "label": "Pago",
+      "default": "Pago 100 % seguro"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Garantías Saucha",
+      "category": "t:categories.product"
+    }
+  ]
+}
+{% endschema %}

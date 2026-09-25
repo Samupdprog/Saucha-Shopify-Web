@@ -79,7 +79,7 @@
     "show_submenu": "Mostrar submenú de {{ title }}"
   },
   "actions": {
-    "add_to_cart": "Agregar al carrito",
+    "add_to_cart": "Añadir al carrito",
     "clear_all": "Borrar todo",
     "remove": "Eliminar",
     "view_in_your_space": "Ver en tu espacio",
@@ -95,7 +95,7 @@
     "view_all": "Ver todo",
     "add": "Agregar",
     "choose": "Elegir",
-    "added": "Agregado",
+    "added": "Añadido",
     "show_less": "Mostrar menos",
     "show_more": "Mostrar más",
     "close": "Cerrar",
@@ -228,14 +228,14 @@
     "store_owner_link_html": "¿Esta tienda es tuya? <a href=\"{{ link }}\">Inicia sesión aquí</a>",
     "shipping_discount_error": "Los descuentos de envío se muestran en la pantalla de pago tras agregar una dirección",
     "discount_code_error": "El código de descuento no se puede aplicar a tu carrito",
-    "inventory_low_stock": "Bajas existencias",
-    "inventory_in_stock": "En existencias",
+    "inventory_low_stock": "Últimas unidades",
+    "inventory_in_stock": "Disponible",
     "inventory_out_of_stock": "Agotado",
     "shipping_policy": "Envío calculado en el pago.",
     "inventory_low_stock_show_count": {
-      "one": "{{ count }} restante",
-      "other": "{{ count }} restantes",
-      "many": "{{ count }} restantes"
+      "one": "Última unidad",
+      "other": "Solo quedan {{ count }}",
+      "many": "Solo quedan {{ count }}"
     },
     "recipient_form_send_to": "Enviar a",
     "recipient_form_email_label": "Correo electrónico del destinatario",
@@ -277,9 +277,9 @@
     "view_cart": "Ver carrito",
     "your_cart": "Tu carrito",
     "items_added_to_cart": {
-      "one": "Se agregó un artículo al carrito",
-      "other": "Se agregaron {{ count }} artículos al carrito",
-      "many": "Se agregaron {{ count }} artículos al carrito"
+      "one": "Se ha añadido un artículo al carrito",
+      "other": "Se han añadido {{ count }} artículos al carrito",
+      "many": "Se han añadido {{ count }} artículos al carrito"
     },
     "quick_order_list": "Lista de pedidos rápidos",
     "product_disclosures": "Avisos sobre el producto"
@@ -311,10 +311,10 @@
   },
   "products": {
     "product": {
-      "add_to_cart": "Agregar al carrito",
-      "added_to_cart": "Agregado al carrito",
+      "add_to_cart": "Añadir al carrito",
+      "added_to_cart": "Añadido al carrito",
       "adding_to_cart": "Agregando...",
-      "add_to_cart_error": "Error al agregar al carrito",
+      "add_to_cart_error": "No se ha podido añadir al carrito",
       "sold_out": "Agotado",
       "unavailable": "No disponible",
       "quantity_error_max": "Este artículo tiene un máximo de {{ maximum }}.",
@@ -324,7 +324,7 @@
       "quantity_maximum": "Máximo de {{ maximum }}",
       "in_cart": "en el carrito",
       "default_title": "Título predeterminado",
-      "sticky_add_to_cart": "Barra de agregar rápido al carrito"
+      "sticky_add_to_cart": "Barra para añadir al carrito"
     }
   },
   "fields": {

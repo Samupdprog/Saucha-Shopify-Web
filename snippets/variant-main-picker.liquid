@@ -58,6 +58,25 @@
           assign swatch_count = product_option.values | map: 'swatch' | compact | size
           assign variant_style = block_settings.variant_style
 
+          # Saucha · opción de color sin muestras nativas: se pintan desde el nombre (snippets/saucha-swatch-color)
+          assign saucha_swatch_count = 0
+          assign option_key = product_option.name | downcase
+          if swatch_count == 0 and block_settings.show_swatches and block_settings.variant_style == 'buttons'
+            if option_key contains 'color' or option_key contains 'colour' or option_key contains 'couleur'
+              for product_option_value in product_option.values
+                capture saucha_bg
+                  render 'saucha-swatch-color', name: product_option_value.name
+                endcapture
+                if saucha_bg != blank or product_option_value.variant.featured_media != blank
+                  assign saucha_swatch_count = saucha_swatch_count | plus: 1
+                endif
+              endfor
+              if saucha_swatch_count == product_option.values.size
+                assign swatch_count = saucha_swatch_count
+              endif
+            endif
+          endif
+
           if swatch_count > 0 and block_settings.show_swatches
             if block_settings.variant_style == 'dropdown'
               assign variant_style = 'swatch_dropdown'
@@ -146,6 +165,7 @@
                   {% render 'swatch',
                     swatch: product_option_value.swatch,
                     variant_image: featured_media,
+                    name: product_option_value.name,
                     mode: 'unscaled'
                   %}
                 {% else %}
