@@ -2,12 +2,64 @@
 <script src="{{ 'saucha-collection.js' | asset_url }}" defer></script>
 
 {% liquid
-  assign collection = section.settings.collection
+  # Origen de los productos:
+  #   collection ........ la colección elegida
+  #   product_collection  (ficha) la categoría del producto: colección desde la que se llegó o su primera colección
+  #   related ........... (ficha) relacionados de Shopify
+  #   complementary ..... (ficha) complementarios (Search & Discovery)
+  assign source = section.settings.source | default: 'collection'
+  assign list_collection = section.settings.collection
   assign limit = section.settings.products_to_show
 
+  assign is_recommendations = false
+  if source == 'related' or source == 'complementary'
+    assign is_recommendations = true
+  endif
+
+  assign exclude_id = 0
+  if product != blank
+    assign exclude_id = product.id
+  endif
+
+  if source == 'product_collection' and product != blank
+    assign auto_collection = blank
+    if collection != blank and collection.handle != 'all' and collection.handle != 'frontpage'
+      assign auto_collection = collection
+    else
+      for product_collection in product.collections
+        if product_collection.handle != 'all' and product_collection.handle != 'frontpage' and product_collection.products_count > 1
+          assign auto_collection = product_collection
+          break
+        endif
+      endfor
+    endif
+    if auto_collection != blank
+      assign list_collection = auto_collection
+    endif
+  endif
+
+  assign list_products = blank
+  assign reco_performed = false
+  if is_recommendations
+    if recommendations.performed? and recommendations.products_count > 0
+      assign list_products = recommendations.products
+      assign reco_performed = true
+    endif
+  elsif list_collection != blank and list_collection.products_count > 0
+    assign list_products = list_collection.products
+  endif
+
+  # «[categoria]» en el título se sustituye por el nombre de la colección
+  assign section_title = section.settings.title
+  if list_collection != blank
+    assign section_title = section_title | replace: '[categoria]', list_collection.title | replace: '[categoría]', list_collection.title
+  else
+    assign section_title = section_title | replace: '[categoria]', '' | replace: '[categoría]', '' | strip
+  endif
+
   assign link_url = section.settings.link_url
-  if link_url == blank and collection != blank
-    assign link_url = collection.url
+  if link_url == blank and list_collection != blank and is_recommendations == false
+    assign link_url = list_collection.url
   endif
 
   assign heading_link_label = blank
@@ -16,75 +68,175 @@
   endif
 
   assign hover_scale = section.settings.hover_zoom | divided_by: 100.0
+
+  # Fuera del editor, una sección sin productos no se muestra.
+  # Las recomendaciones se piden después de cargar la página (esqueleto mientras tanto).
+  assign hide_section = false
+  if is_recommendations
+    if product == blank and reco_performed == false and request.design_mode == false
+      assign hide_section = true
+    endif
+  elsif list_products == blank and request.design_mode == false
+    assign hide_section = true
+  endif
 %}
 
-<section
-  id="ProductosSaucha-{{ section.id }}"
-  class="
-    s-section s-scheme-{{ section.settings.scheme }}
-    s-pt-{{ section.settings.spacing_top }} s-pb-{{ section.settings.spacing_bottom }}
-    saucha-products saucha-products--mobile-{{ section.settings.mobile_layout }}
-  "
->
-  <div class="s-container">
-    {% render 'saucha-heading',
-      eyebrow: section.settings.eyebrow,
-      title: section.settings.title,
-      text: section.settings.text,
-      alignment: section.settings.heading_alignment,
-      link_label: heading_link_label,
-      link_url: link_url
-    %}
-
-    <saucha-collection
-      class="saucha-products__collection"
-      data-section-id="{{ section.id }}"
-      data-card-alignment="{{ section.settings.card_alignment }}"
-      data-title-font="heading"
-      style="
-        --saucha-image-radius: var(--s-radius-media);
-        --saucha-hover-scale: {{ hover_scale }};
-        --sp-columns: {{ section.settings.columns_desktop }};
-      "
+{%- unless hide_section -%}
+  {%- if is_recommendations -%}
+    <saucha-recommendations
+      class="saucha-products-reco"
+      {% unless reco_performed %}
+        data-url="{{ routes.product_recommendations_url }}?product_id={{ product.id }}&limit={{ limit | plus: 1 }}&section_id={{ section.id }}&intent={{ source }}"
+      {% endunless %}
     >
-      <ul class="saucha-products__list" role="list">
-        {%- if collection != blank and collection.products_count > 0 -%}
-          {%- for product in collection.products limit: limit -%}
-            {%- liquid
-              assign card_loading = 'lazy'
-              if section.index <= 2 and forloop.index <= 2
-                assign card_loading = 'eager'
-              endif
-            -%}
-            <li class="saucha-products__item" data-s-reveal="up" style="--s-i: {{ forloop.index0 }};">
-              {% render 'saucha-product-card', product: product, section: section, loading: card_loading, fetchpriority: 'auto' %}
-            </li>
-          {%- endfor -%}
-        {%- else -%}
-          {%- for i in (1..4) -%}
-            <li class="saucha-products__item">
-              <article class="saucha-product-card">
-                <div class="saucha-product-card__media" style="--saucha-card-ratio: 3 / 4;">
-                  <div class="saucha-product-card__placeholder">{{ 'product-apparel-' | append: i | placeholder_svg_tag }}</div>
-                </div>
-                <div class="saucha-product-card__info">
-                  <h3 class="saucha-product-card__title">Nombre del producto</h3>
-                  <div class="saucha-product-card__price"><span class="saucha-product-card__price-current">39,00 €</span></div>
-                </div>
-              </article>
-            </li>
-          {%- endfor -%}
-        {%- endif -%}
-      </ul>
-    </saucha-collection>
+  {%- endif -%}
+  <section
+    id="ProductosSaucha-{{ section.id }}"
+    class="
+      s-section s-scheme-{{ section.settings.scheme }}
+      s-pt-{{ section.settings.spacing_top }} s-pb-{{ section.settings.spacing_bottom }}
+      saucha-products saucha-products--mobile-{{ section.settings.mobile_layout }}
+    "
+  >
+    <div class="s-container">
+      {% render 'saucha-heading',
+        eyebrow: section.settings.eyebrow,
+        title: section_title,
+        text: section.settings.text,
+        alignment: section.settings.heading_alignment,
+        link_label: heading_link_label,
+        link_url: link_url
+      %}
 
-    {%- if section.settings.link_position == 'bottom' and section.settings.link_label != blank and link_url != blank -%}
-      <div class="saucha-products__footer" data-s-reveal="up">
-        <a class="button-secondary" href="{{ link_url }}">{{ section.settings.link_label | escape }}</a>
-      </div>
-    {%- endif -%}
-  </div>
-</section>
+      <saucha-collection
+        class="saucha-products__collection"
+        data-section-id="{{ section.id }}"
+        data-card-alignment="{{ section.settings.card_alignment }}"
+        data-title-font="heading"
+        style="
+          --saucha-image-radius: var(--s-radius-media);
+          --saucha-hover-scale: {{ hover_scale }};
+          --sp-columns: {{ section.settings.columns_desktop }};
+        "
+      >
+        <ul class="saucha-products__list" role="list">
+          {%- if list_products != blank -%}
+            {%- assign shown = 0 -%}
+            {%- for list_product in list_products -%}
+              {%- if list_product.id == exclude_id -%}{%- continue -%}{%- endif -%}
+              {%- if shown >= limit -%}{%- break -%}{%- endif -%}
+              {%- liquid
+                assign card_loading = 'lazy'
+                if section.index <= 2 and shown < 2
+                  assign card_loading = 'eager'
+                endif
+              -%}
+              <li class="saucha-products__item" data-s-reveal="up" style="--s-i: {{ shown }};">
+                {% render 'saucha-product-card', product: list_product, section: section, loading: card_loading, fetchpriority: 'auto' %}
+              </li>
+              {%- assign shown = shown | plus: 1 -%}
+            {%- endfor -%}
+          {%- elsif is_recommendations and request.design_mode == false -%}
+            {%- for i in (1..4) -%}
+              <li class="saucha-products__item saucha-products__item--skeleton" aria-hidden="true">
+                <span class="saucha-products__skeleton-media"></span>
+                <span class="saucha-products__skeleton-line"></span>
+                <span class="saucha-products__skeleton-line saucha-products__skeleton-line--short"></span>
+              </li>
+            {%- endfor -%}
+          {%- else -%}
+            {%- for i in (1..4) -%}
+              <li class="saucha-products__item">
+                <article class="saucha-product-card">
+                  <div class="saucha-product-card__media" style="--saucha-card-ratio: 3 / 4;">
+                    <div class="saucha-product-card__placeholder">{{ 'product-apparel-' | append: i | placeholder_svg_tag }}</div>
+                  </div>
+                  <div class="saucha-product-card__info">
+                    <h3 class="saucha-product-card__title">Nombre del producto</h3>
+                    <div class="saucha-product-card__price"><span class="saucha-product-card__price-current">39,00 €</span></div>
+                  </div>
+                </article>
+              </li>
+            {%- endfor -%}
+          {%- endif -%}
+        </ul>
+      </saucha-collection>
+
+      {%- if section.settings.link_position == 'bottom' and section.settings.link_label != blank and link_url != blank -%}
+        <div class="saucha-products__footer" data-s-reveal="up">
+          <a class="button-secondary" href="{{ link_url }}">{{ section.settings.link_label | escape }}</a>
+        </div>
+      {%- endif -%}
+    </div>
+  </section>
+  {%- if is_recommendations -%}
+    </saucha-recommendations>
+  {%- endif -%}
+{%- endunless -%}
+
+{%- if is_recommendations -%}
+  <script>
+    /* Recomendaciones de Shopify: se piden al acercarse a la sección y sustituyen al esqueleto.
+       Si no hay ninguna, la sección desaparece. */
+    (() => {
+      if (customElements.get('saucha-recommendations')) return;
+
+      class SauchaRecommendations extends HTMLElement {
+        connectedCallback() {
+          if (!this.dataset.url || this.dataset.loading) return;
+          if (!('IntersectionObserver' in window)) {
+            this.load();
+            return;
+          }
+          this.observer = new IntersectionObserver(
+            (entries) => {
+              if (!entries.some((entry) => entry.isIntersecting)) return;
+              this.observer.disconnect();
+              this.load();
+            },
+            { rootMargin: '0px 0px 600px 0px' }
+          );
+          this.observer.observe(this);
+        }
+
+        disconnectedCallback() {
+          this.observer?.disconnect();
+        }
+
+        async load() {
+          this.dataset.loading = 'true';
+          try {
+            const response = await fetch(this.dataset.url);
+            const html = new DOMParser().parseFromString(await response.text(), 'text/html');
+            const incoming = html.querySelector('saucha-recommendations');
+            const hasProducts = incoming?.querySelector('.saucha-products__item:not(.saucha-products__item--skeleton)');
+            if (!incoming || !hasProducts) {
+              this.hide();
+              return;
+            }
+
+            this.classList.add('is-swapping');
+            this.innerHTML = incoming.innerHTML;
+            this.removeAttribute('data-url');
+            window.SauchaMotion?.scan(this);
+            requestAnimationFrame(() => {
+              requestAnimationFrame(() => this.classList.remove('is-swapping'));
+            });
+          } catch (error) {
+            this.hide();
+          }
+        }
+
+        hide() {
+          const section = this.closest('.shopify-section');
+          (section || this).setAttribute('hidden', '');
+        }
+      }
+
+      customElements.define('saucha-recommendations', SauchaRecommendations);
+    })();
+  </script>
+{%- endif -%}
 
 {% stylesheet %}
   /* Productos Saucha: la misma tarjeta que la página de colección, en rejilla o carril */
@@ -150,6 +302,64 @@
     justify-content: center;
     margin-top: var(--s-heading-gap);
   }
+
+  /* Esqueleto mientras llegan las recomendaciones: mismas proporciones que la tarjeta */
+  .saucha-products__item--skeleton {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-space-2);
+  }
+
+  .saucha-products__skeleton-media,
+  .saucha-products__skeleton-line {
+    display: block;
+    border-radius: var(--s-radius-media);
+    background: linear-gradient(
+        100deg,
+        var(--s-color-cream) 40%,
+        rgb(var(--s-color-surface-rgb) / 0.9) 50%,
+        var(--s-color-cream) 60%
+      )
+      0 0 / 220% 100%;
+    animation: saucha-skeleton 1.6s var(--s-ease-inout) infinite;
+  }
+
+  .saucha-products__skeleton-media {
+    aspect-ratio: 3 / 4;
+    margin-block-end: var(--s-space-2);
+  }
+
+  .saucha-products__skeleton-line {
+    width: 70%;
+    height: 12px;
+    margin-inline: auto;
+  }
+
+  .saucha-products__skeleton-line--short {
+    width: 36%;
+  }
+
+  @keyframes saucha-skeleton {
+    to {
+      background-position: -120% 0;
+    }
+  }
+
+  .saucha-products-reco {
+    display: block;
+    transition: opacity var(--s-dur-enter) var(--s-ease);
+  }
+
+  .saucha-products-reco.is-swapping {
+    opacity: 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .saucha-products__skeleton-media,
+    .saucha-products__skeleton-line {
+      animation: none;
+    }
+  }
 {% endstylesheet %}
 
 {% schema %}
@@ -183,9 +393,23 @@
       "label": "Texto"
     },
     {
+      "type": "select",
+      "id": "source",
+      "label": "Productos",
+      "options": [
+        { "value": "collection", "label": "Colección elegida" },
+        { "value": "product_collection", "label": "Categoría del producto (ficha)" },
+        { "value": "related", "label": "Relacionados de Shopify (ficha)" },
+        { "value": "complementary", "label": "Complementarios de Shopify (ficha)" }
+      ],
+      "default": "collection",
+      "info": "Las opciones «(ficha)» usan el producto que se está viendo y se ocultan si no hay productos. En el título, [categoria] se sustituye por el nombre de la colección."
+    },
+    {
       "type": "collection",
       "id": "collection",
-      "label": "Colección"
+      "label": "Colección",
+      "info": "Con «Categoría del producto» solo se usa si el producto no pertenece a ninguna colección."
     },
     {
       "type": "range",

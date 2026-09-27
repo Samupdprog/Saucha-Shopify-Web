@@ -125,35 +125,42 @@
     assign sorted_media = selected_product.media
   endif
 
-  # SAUCHA · galería por color: solo las imágenes del color seleccionado
-  # (nombre de archivo, texto alternativo o imagen de variante; ver snippets/saucha-color-media).
-  # Si el color no tiene imágenes propias se mantiene la galería de Horizon.
-  assign saucha_color_ids = ''
+  # SAUCHA · galería por color: primero las imágenes del color seleccionado y después
+  # las del resto de colores (ver snippets/saucha-gallery-order y saucha-color-media).
+  # saucha_colors guarda, en el mismo orden que sorted_media, el color de cada imagen
+  # para pintar la etiqueta «Plateado» en las fotos de otros colores.
+  assign saucha_order = ''
+  assign saucha_colors = '' | split: ','
+  assign saucha_selected_color = ''
   if block_settings.saucha_color_gallery != false
-    capture saucha_color_ids
-      render 'saucha-color-media', product: selected_product
+    capture saucha_order
+      render 'saucha-gallery-order', product: selected_product
     endcapture
-    assign saucha_color_ids = saucha_color_ids | strip
+    assign saucha_order = saucha_order | strip
   endif
 
-  if saucha_color_ids != blank
-    assign saucha_id_list = saucha_color_ids | split: ','
+  if saucha_order != blank
+    assign saucha_entries = saucha_order | split: '|'
     assign sorted_media = '' | split: ','
-    for saucha_id in saucha_id_list
+    assign saucha_color_names = ''
+    for saucha_entry in saucha_entries
+      assign saucha_pair = saucha_entry | split: '~'
+      assign saucha_id = saucha_pair[0]
+      assign saucha_color = saucha_pair[1] | default: ''
       for media in selected_product.media
         assign saucha_mid = media.id | append: ''
         if saucha_mid == saucha_id
           assign found_media = selected_product.media | where: 'id', media.id
           assign sorted_media = sorted_media | concat: found_media
+          assign saucha_color_names = saucha_color_names | append: saucha_color | append: '§§'
           break
         endif
       endfor
     endfor
-
-    if sorted_media.size <= 1
-      assign slideshow_class = 'product-media-gallery__slideshow--single-media slideshow--single-media'
-      assign render_slideshow_arrows = false
-    endif
+    assign saucha_colors = saucha_color_names | split: '§§'
+    # La primera foto es siempre del color elegido; si ese color no tiene fotos propias la primera es
+    # neutra (vacío) y entonces todas las fotos de color llevan etiqueta, que es lo correcto.
+    assign saucha_selected_color = saucha_colors | first
   endif
   assign has_image_drop = sorted_media | has: 'media_type', 'image'
 
@@ -395,6 +402,7 @@
     style="{% render 'spacing-style', settings: block_settings %} --thumbnail-width: {{ block_settings.thumbnail_width }}px; --media-radius: {{ block_settings.media_radius }}px;{% if block_settings.icons_style contains 'large' %} --slideshow-icon-padding: 0px;{% endif %}--image-gap: {{ block_settings.image_gap }}px;{% unless block_settings.aspect_ratio == 'adapt' %} --gallery-aspect-ratio: {{ block_settings.aspect_ratio }};{% endunless %}"
     data-presentation="{{ media_presentation }}"
     data-media-signature="{{ sorted_media | map: 'id' | join: '-' }}"
+    data-saucha-color="{{ saucha_selected_color | escape }}"
     {{ block_shopify_attributes }}
   >
     {% capture slides %}
@@ -415,9 +423,10 @@
           {% else %}
             {%- render 'product-media', media: media, sizes: media_sizes, is_main_product_media: forloop.first -%}
           {% endif %}
+          {%- render 'saucha-media-color-tag', color: saucha_colors[forloop.index0], selected: saucha_selected_color -%}
         {% endcapture %}
         {% capture class %}
-          {{ product_media_container_class }} product-media-container--{{ media.media_type }}{% if block_settings.zoom %} product-media-container--zoomable{% endif %}{% if forloop.index0 == lowest_aspect_ratio_index and block_settings.aspect_ratio == 'adapt' %} product-media-container--tallest{% endif %}
+          {{ product_media_container_class }} product-media-container--{{ media.media_type }}{% if block_settings.zoom %} product-media-container--zoomable{% endif %}{% if forloop.index0 == lowest_aspect_ratio_index and block_settings.aspect_ratio == 'adapt' %} product-media-container--tallest{% endif %}{% if saucha_colors[forloop.index0] != blank and saucha_colors[forloop.index0] != saucha_selected_color %} product-media-container--other-color{% endif %}
         {% endcapture %}
         {% if block_settings.aspect_ratio == 'adapt' %}
           {% capture style %}
@@ -496,8 +505,8 @@
         {% for media in sorted_media %}
           <li
             ref="media[]"
-            class="{{ product_media_container_class }} product-media-container--{{ media.media_type }} {% unless block_settings.aspect_ratio == 'adapt' %}product-media-container--force-aspect{% endunless %}"
-            style="{% if block_settings.aspect_ratio == 'adapt' %} --media-preview-ratio: {{ media.preview_image.aspect_ratio | default: 1.0 }};{% endif %} --media-radius: {{ block_settings.media_radius }}px;"
+            class="{{ product_media_container_class }} product-media-container--{{ media.media_type }} {% unless block_settings.aspect_ratio == 'adapt' %}product-media-container--force-aspect{% endunless %}{% if saucha_colors[forloop.index0] != blank and saucha_colors[forloop.index0] != saucha_selected_color %} product-media-container--other-color{% endif %}"
+            style="{% if block_settings.aspect_ratio == 'adapt' %} --media-preview-ratio: {{ media.preview_image.aspect_ratio | default: 1.0 }};{% endif %} --media-radius: {{ block_settings.media_radius }}px; --s-i: {{ forloop.index0 }};"
             {% if settings.transition_to_main_product and forloop.first %}
               data-view-transition-type="product-image-transition"
             {% endif %}
@@ -530,6 +539,7 @@
             {% else %}
               {%- render 'product-media', media: media, sizes: media_sizes, is_main_product_media: forloop.first -%}
             {% endif %}
+            {%- render 'saucha-media-color-tag', color: saucha_colors[forloop.index0], selected: saucha_selected_color -%}
           </li>
         {% endfor %}
       </ul>

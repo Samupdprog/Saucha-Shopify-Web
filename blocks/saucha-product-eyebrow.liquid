@@ -1,0 +1,121 @@
+{%- doc -%}
+  Saucha · antetítulo de la ficha: categoría del producto (enlazada) y etiqueta
+  «Nuevo» o «Rebaja». Va encima del título.
+
+  Categoría: la colección desde la que se llegó a la ficha o, si no, la primera
+  colección del producto que no sea la portada ni «Todos».
+  «Nuevo»: etiqueta de producto `nuevo`/`new` o publicado hace menos de N días.
+  «Rebaja» manda sobre «Nuevo» (misma regla que las tarjetas).
+{%- enddoc -%}
+
+{%- liquid
+  assign pdp_product = closest.product
+  assign eyebrow_collection = blank
+
+  if block.settings.show_collection
+    if collection != blank and collection.handle != 'all' and collection.handle != 'frontpage'
+      assign eyebrow_collection = collection
+    else
+      for product_collection in pdp_product.collections
+        if product_collection.handle != 'all' and product_collection.handle != 'frontpage'
+          assign eyebrow_collection = product_collection
+          break
+        endif
+      endfor
+    endif
+  endif
+
+  assign flag = blank
+  assign variant = pdp_product.selected_or_first_available_variant
+  if block.settings.show_sale and variant.compare_at_price > variant.price
+    assign flag = block.settings.sale_label
+    assign flag_kind = 'sale'
+  elsif block.settings.show_new
+    assign tags = pdp_product.tags | join: ',' | downcase | prepend: ',' | append: ','
+    assign is_new = false
+    if tags contains ',nuevo,' or tags contains ',new,'
+      assign is_new = true
+    elsif pdp_product.published_at != blank
+      assign now_s = 'now' | date: '%s' | plus: 0
+      assign published_s = pdp_product.published_at | date: '%s' | plus: 0
+      assign age_days = now_s | minus: published_s | divided_by: 86400
+      if age_days < block.settings.new_days
+        assign is_new = true
+      endif
+    endif
+    if is_new
+      assign flag = block.settings.new_label
+      assign flag_kind = 'new'
+    endif
+  endif
+-%}
+
+{%- if eyebrow_collection != blank or flag != blank -%}
+  <div class="s-pdp-eyebrow" {{ block.shopify_attributes }}>
+    {%- if eyebrow_collection != blank -%}
+      <a class="s-eyebrow s-pdp-eyebrow__link" href="{{ eyebrow_collection.url }}">{{ eyebrow_collection.title | escape }}</a>
+    {%- endif -%}
+    {%- if flag != blank -%}
+      <span class="s-pdp-flag s-pdp-flag--{{ flag_kind }}">{{ flag | escape }}</span>
+    {%- endif -%}
+  </div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Antetítulo Saucha",
+  "tag": null,
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Categoría del producto y etiqueta de estado sobre el título."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_collection",
+      "label": "Mostrar categoría",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_sale",
+      "label": "Mostrar etiqueta de rebaja",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "sale_label",
+      "label": "Texto de rebaja",
+      "default": "Rebaja"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_new",
+      "label": "Mostrar etiqueta de novedad",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "new_label",
+      "label": "Texto de novedad",
+      "default": "Nuevo"
+    },
+    {
+      "type": "range",
+      "id": "new_days",
+      "label": "Días como novedad",
+      "min": 7,
+      "max": 90,
+      "step": 1,
+      "unit": "d",
+      "default": 30
+    }
+  ],
+  "presets": [
+    {
+      "name": "Antetítulo Saucha",
+      "category": "t:categories.product"
+    }
+  ]
+}
+{% endschema %}

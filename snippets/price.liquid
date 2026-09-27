@@ -120,6 +120,11 @@
     {% else %}
       <span class="price">{{ price | default: '&nbsp;' }}</span>
     {% endif %}
+    {%- comment -%} Saucha · ahorro en la ficha (oculto en tarjetas y en la barra fija) {%- endcomment -%}
+    {%- if show_compare_price and is_product_card == false -%}
+      {%- assign saucha_saving = selected_variant.compare_at_price | minus: selected_variant.price -%}
+      <span class="s-price-saving">Ahorras {% if use_currency %}{{ saucha_saving | money_with_currency }}{% else %}{{ saucha_saving | money }}{% endif %}</span>
+    {%- endif -%}
   {% endif %}
   {%- if selected_variant.unit_price and show_unit_price %}
     {%- liquid

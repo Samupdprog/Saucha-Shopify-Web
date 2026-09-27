@@ -1,0 +1,35 @@
+{% doc %}
+  Saucha · etiqueta de color sobre una foto de la galería que no es del color elegido.
+  Al pulsarla selecciona ese color (assets/saucha-product.js), así la galería sirve
+  también para explorar el resto de colores.
+
+  @param {string} [color] - Nombre del color de la foto («Plateado»). Vacío = foto neutra, sin etiqueta
+  @param {string} [selected] - Color elegido ahora; sus fotos no llevan etiqueta
+
+  @example
+  {% render 'saucha-media-color-tag', color: 'Plateado', selected: 'Negro' %}
+{% enddoc %}
+
+{%- if color != blank and color != selected -%}
+{%- capture swatch_bg -%}{%- render 'saucha-swatch-color', name: color -%}{%- endcapture -%}
+{%- assign swatch_bg = swatch_bg | strip -%}
+<button
+  type="button"
+  class="s-pdp-media-tag"
+  data-saucha-select-color="{{ color | escape }}"
+  aria-label="Elegir el color {{ color | escape }}"
+>
+  <span
+    class="s-pdp-media-tag__dot"
+    aria-hidden="true"
+    {% if swatch_bg != blank %}
+      style="--s-swatch: {{ swatch_bg }};"
+    {% endif %}
+  ></span>
+  <span class="s-pdp-media-tag__name">{{ color | escape }}</span>
+  <span class="s-pdp-media-tag__cta" aria-hidden="true">
+    Elegir
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 8h11M9 4l4 4-4 4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </span>
+</button>
+{%- endif -%}

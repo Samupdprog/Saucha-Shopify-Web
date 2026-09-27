@@ -2,28 +2,321 @@
   SAUCHA · FICHA DE PRODUCTO
   ---------------------------------------------------------------
   Capa sobre la sección «Información del producto» de Horizon.
-  Solo tipografía, color y ritmo: la estructura y el JS siguen siendo
+  Solo presentación: estructura, variantes, precio, stock y carrito siguen siendo
   los de Horizon, así que todos los bloques se editan en el personalizador.
+  Microinteracciones en assets/saucha-product.js. Solo tokens --s-* (saucha-base.css).
 
-  Columna de detalles ... ancho de lectura y ritmo vertical
-  Cabecera .............. título serif · precio · etiqueta de descuento
-  Selector .............. etiquetas en versalitas, muestras, tallas
-  Stock ................. punto de estado + texto
-  Compra ................ botón principal · «Comprar ahora» secundario
-  Garantías ............. blocks/saucha-product-benefits.liquid
-  Acordeones ............ Descripción · Envíos y devoluciones
+   1 · Composición ......... dos columnas, aire, columna de detalles de lectura
+   2 · Galería ............. radios, hover, etiqueta de color, cambio de color, móvil
+   3 · Cabecera ............ antetítulo · título serif · precio · descuento · ahorro
+   4 · Selector ............ leyendas, muestras de color, tallas
+   5 · Stock ............... punto de estado con pulso
+   6 · Compra .............. cantidad · añadir · comprar ahora · feedback
+   7 · Garantías ........... blocks/saucha-product-benefits.liquid
+   8 · Acordeones .......... cabecera en versalitas, icono + que se vuelve −
+   9 · Entrada ............. coreografía al cargar y al cambiar valores
+  10 · Barra fija .......... añadir al carrito fijo (móvil y escritorio)
+  11 · Relacionados Horizon  (si se usa la sección nativa)
+  12 · Móvil
+  13 · Menos movimiento
 */
 
-/* ---------- Columna de detalles ---------- */
+/* =========================================================
+   1 · COMPOSICIÓN
+   ========================================================= */
 
-.product-information .product-details > .group-block-content,
-.product-information .product-details .details-content {
-  max-width: 460px;
+.product-information {
+  --s-pdp-details-max: 440px;
+  --s-pdp-block-gap: var(--s-space-8);
 }
 
-/* ---------- Cabecera: título y precio ---------- */
+@media screen and (min-width: 750px) {
+  .product-information {
+    padding-block-start: var(--s-space-6);
+  }
+
+  /* La columna de detalles respira respecto a la galería y lee en un ancho cómodo */
+  .product-information .product-details {
+    padding-inline-start: clamp(var(--s-space-8), 3.2vw, var(--s-space-16)) !important;
+  }
+
+  .product-information .product-details > .group-block,
+  .product-information .product-details > .group-block > .group-block-content {
+    max-width: var(--s-pdp-details-max);
+  }
+}
+
+@media screen and (min-width: 1200px) {
+  .product-information {
+    --s-pdp-details-max: 460px;
+  }
+}
+
+/* Ritmo vertical entre bloques: separaciones generosas y constantes */
+.product-information .product-details > .group-block > .group-block-content {
+  gap: var(--s-pdp-block-gap);
+}
+
+/* El título de enlace de Horizon (vista rápida) no se usa en la ficha */
+.product-information .view-product-title {
+  display: none;
+}
+
+/* Divisor de Horizon: hairline de marca */
+.product-information .product-details .divider,
+.product-information .product-details hr {
+  border-color: var(--s-color-line);
+  opacity: 1;
+}
+
+/* =========================================================
+   2 · GALERÍA
+   ========================================================= */
+
+.product-information media-gallery {
+  scroll-margin-top: calc(var(--header-height, 64px) + var(--s-space-4));
+}
+
+.product-information .product-media-container {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--s-radius-media);
+  background-color: var(--s-color-cream);
+}
+
+.product-information .product-media-container img,
+.product-information .product-media-container video,
+.product-information .product-media-container model-viewer {
+  border-radius: inherit;
+}
+
+.product-information .media-gallery__grid {
+  gap: var(--s-space-2);
+}
+
+/* Hover: la foto se acerca muy despacio; el cursor anuncia el zoom */
+@media (hover: hover) and (min-width: 750px) {
+  .product-information .media-gallery__grid .product-media-container img {
+    transition: transform calc(var(--s-dur-settle) * 1.1) var(--s-ease);
+  }
+
+  .product-information .media-gallery__grid .product-media-container:hover img {
+    transform: scale(1.025);
+  }
+
+  .product-information .media-gallery__grid .product-media-container__zoom-button {
+    cursor: zoom-in;
+  }
+}
+
+/* Etiqueta de color (snippets/saucha-media-color-tag.liquid) */
+.s-pdp-media-tag {
+  position: absolute;
+  z-index: 3;
+  inset-block-end: var(--s-space-3);
+  inset-inline-start: var(--s-space-3);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-space-2);
+  max-width: calc(100% - var(--s-space-6));
+  min-height: 32px;
+  margin: 0;
+  padding: 6px 12px 6px 8px;
+  border: 0;
+  border-radius: var(--s-radius-pill);
+  background: rgb(var(--s-color-surface-rgb) / 0.86);
+  color: var(--s-color-ink);
+  font-family: var(--s-font-sans);
+  font-size: var(--s-type-eyebrow);
+  font-weight: 500;
+  letter-spacing: var(--s-tracking-eyebrow);
+  line-height: 1;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+  backdrop-filter: blur(10px) saturate(140%);
+  box-shadow: 0 1px 0 rgb(var(--s-color-ink-rgb) / 0.04);
+  transition:
+    background-color var(--s-dur-micro) var(--s-ease),
+    color var(--s-dur-micro) var(--s-ease),
+    transform var(--s-dur-micro) var(--s-ease);
+}
+
+.s-pdp-media-tag__dot {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--s-swatch, var(--s-color-line));
+  box-shadow: inset 0 0 0 1px rgb(var(--s-color-ink-rgb) / 0.14);
+}
+
+.s-pdp-media-tag__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* «Elegir →» se despliega al pasar por la foto */
+.s-pdp-media-tag__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition:
+    max-width var(--s-dur-image) var(--s-ease),
+    opacity var(--s-dur-micro) var(--s-ease),
+    margin var(--s-dur-image) var(--s-ease);
+}
+
+.s-pdp-media-tag__cta svg {
+  width: 12px;
+  height: 12px;
+}
+
+@media (hover: hover) {
+  .product-media-container:hover .s-pdp-media-tag__cta,
+  .s-pdp-media-tag:focus-visible .s-pdp-media-tag__cta {
+    max-width: 80px;
+    margin-inline-start: 2px;
+    opacity: 1;
+  }
+
+  .s-pdp-media-tag:hover {
+    background: var(--s-color-ink);
+    color: var(--s-color-surface);
+  }
+}
+
+.s-pdp-media-tag:active,
+.s-pdp-media-tag.is-pressed {
+  transform: scale(0.97);
+}
+
+/* Cambio de color (assets/media-gallery.js):
+   salida corta → la nueva galería entra y cada foto se asienta con un leve escalonado */
+.product-information media-gallery .media-gallery__grid > li,
+.product-information media-gallery slideshow-component {
+  transition:
+    opacity var(--s-dur-exit) var(--s-ease-exit),
+    transform var(--s-dur-exit) var(--s-ease-exit);
+}
+
+/* html.s-motion añade una animación de entrada con relleno: se retira para que la salida pueda verse */
+html .product-information media-gallery.is-leaving .media-gallery__grid > li,
+html .product-information media-gallery.is-leaving slideshow-component {
+  animation: none;
+  opacity: 0;
+  transform: scale(0.992);
+}
+
+.product-information media-gallery.is-leaving .s-pdp-media-tag {
+  opacity: 0;
+}
+
+html .product-information media-gallery.is-arriving .media-gallery__grid > li,
+html .product-information media-gallery.is-arriving slideshow-component {
+  animation: none;
+  transition:
+    opacity var(--s-dur-enter) var(--s-ease) calc(min(var(--s-i, 0), 5) * var(--s-stagger)),
+    transform var(--s-dur-enter) var(--s-ease) calc(min(var(--s-i, 0), 5) * var(--s-stagger));
+}
+
+html .product-information media-gallery.is-entering .media-gallery__grid > li,
+html .product-information media-gallery.is-entering slideshow-component {
+  opacity: 0;
+  transform: translate3d(0, 12px, 0);
+}
+
+.product-information media-gallery.is-arriving .product-media-container img {
+  animation: s-pdp-settle var(--s-dur-settle) var(--s-ease) both;
+}
+
+@keyframes s-pdp-settle {
+  from { transform: scale(1.035); }
+  to { transform: none; }
+}
+
+/* Carrusel (móvil): paginación en trazos finos en lugar de puntos */
+.product-information .slideshow-controls__dots {
+  gap: 6px;
+}
+
+.product-information .slideshow-controls__dots button {
+  --size: 2px;
+
+  width: 22px;
+  height: 20px;
+  margin: 0;
+}
+
+.product-information .slideshow-controls__dots button::after {
+  width: 16px;
+  height: 2px;
+  border-radius: 2px;
+  box-shadow: none;
+  transition: width var(--s-dur-image) var(--s-ease), background-color var(--s-dur-micro) var(--s-ease);
+}
+
+.product-information .slideshow-controls__dots button[aria-selected='true']::after {
+  width: 22px;
+}
+
+/* =========================================================
+   3 · CABECERA · antetítulo, título, precio
+   ========================================================= */
+
+.s-pdp-eyebrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-space-3);
+  margin-block-end: calc(var(--s-space-1) * -1);
+}
+
+.s-pdp-eyebrow__link {
+  color: var(--s-color-cacao);
+  text-decoration: none;
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-position: 100% 100%;
+  background-size: 0% 1px;
+  padding-block: 3px;
+  transition: background-size var(--s-dur-image) var(--s-ease-inout);
+}
+
+.s-pdp-eyebrow__link:hover {
+  background-position: 0 100%;
+  background-size: 100% 1px;
+}
+
+.s-pdp-flag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 9px;
+  border-radius: var(--s-radius-pill);
+  font-family: var(--s-font-sans);
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: var(--s-tracking-eyebrow);
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.s-pdp-flag--new {
+  background: var(--s-color-blush);
+  color: var(--s-color-ink);
+}
+
+.s-pdp-flag--sale {
+  background: var(--s-color-salmon);
+  color: var(--s-color-ink);
+}
 
 .product-information .product-details h1 {
+  margin: 0;
   font-family: var(--s-font-serif);
   font-weight: var(--s-font-serif-weight);
   font-size: var(--s-type-h2);
@@ -41,35 +334,87 @@
 
 .product-information product-price .price {
   font-family: var(--s-font-sans);
-  font-size: 1.0625rem;
+  font-size: 1.125rem;
+  font-weight: 500;
   letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
   color: var(--s-color-ink);
+}
+
+/* En rebaja, el precio actual toma el tono cacao; el anterior queda tachado y en segundo plano */
+.product-information product-price [ref='priceContainer']:has(.compare-at-price) .price {
+  color: var(--s-color-cacao);
 }
 
 .product-information product-price .compare-at-price {
   font-size: var(--s-type-body);
+  font-variant-numeric: tabular-nums;
   color: var(--s-color-muted);
   text-decoration-thickness: 1px;
 }
 
-.product-information product-price .tax-note {
-  margin-block-start: var(--s-space-1);
+.product-information product-price .s-price-badge {
+  align-self: center;
+}
+
+.s-price-saving {
+  flex-basis: 100%;
+  font-family: var(--s-font-sans);
+  font-size: var(--s-type-body-sm);
+  color: var(--s-color-cacao);
+}
+
+.product-information product-price .tax-note,
+.product-information product-price .volume-pricing-note {
+  display: block;
+  margin-block-start: var(--s-space-2);
   font-size: var(--s-type-body-sm);
   color: var(--s-color-muted);
 }
 
-/* ---------- Selector de variantes ---------- */
+.product-information product-price .tax-note a {
+  color: inherit;
+  text-underline-offset: 3px;
+}
+
+/* =========================================================
+   4 · SELECTOR DE VARIANTES
+   ========================================================= */
+
+.product-information variant-picker {
+  --color-variant-background: transparent;
+  --color-variant-text: var(--s-color-ink);
+  --color-variant-border: var(--s-color-line);
+  --color-variant-hover-background: transparent;
+  --color-variant-hover-text: var(--s-color-ink);
+  --color-variant-hover-border: var(--s-color-ink);
+  --color-selected-variant-background: var(--s-color-ink);
+  --color-selected-variant-text: var(--s-color-surface);
+  --color-selected-variant-border: var(--s-color-ink);
+  --color-selected-variant-hover-background: var(--s-color-ink);
+  --color-selected-variant-hover-text: var(--s-color-surface);
+  --color-selected-variant-hover-border: var(--s-color-ink);
+}
 
 .product-information .variant-picker__form {
-  gap: var(--s-space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-space-8);
+}
+
+.product-information .variant-option + .variant-option {
+  margin-top: 0;
 }
 
 .product-information .variant-option legend,
-.product-information .variant-option--dropdowns > label {
+.product-information .variant-option--dropdowns > label,
+.product-information .variant-option[data-testid='variant-option-single'] {
   display: flex;
   align-items: baseline;
   gap: var(--s-space-2);
-  margin-block-end: var(--s-space-3);
+  width: 100%;
+  margin-block-end: var(--s-space-4);
+  font-family: var(--s-font-sans);
   font-size: var(--s-type-eyebrow);
   font-weight: 500;
   letter-spacing: var(--s-tracking-eyebrow);
@@ -77,44 +422,112 @@
   color: var(--s-color-ink);
 }
 
+/* Valor elegido junto a la leyenda: en sans, sin versalitas y en tono secundario */
 .product-information .variant-option__swatch-value {
+  display: inline-block;
   padding: 0;
   font-size: var(--s-type-body-sm);
   font-weight: 400;
   letter-spacing: 0;
   text-transform: none;
   color: var(--s-color-muted);
+  transition: color var(--s-dur-micro) var(--s-ease);
 }
 
 .product-information .variant-option__swatch-value::before {
   content: '·';
   margin-inline-end: var(--s-space-2);
+  color: var(--s-color-line);
 }
 
-/* Muestras: aro fino al seleccionar, separado del color */
+/* Vista previa al pasar por una muestra (saucha-product.js) */
+.product-information .variant-option__swatch-value.is-previewing {
+  color: var(--s-color-ink);
+  font-style: italic;
+}
+
+/* ---- Muestras de color: aro fino separado del color, crece al pasar ---- */
 .product-information .variant-option--swatches {
-  --variant-picker-swatch-width: 30px;
-  --variant-picker-swatch-height: 30px;
+  --variant-picker-swatch-width: 32px;
+  --variant-picker-swatch-height: 32px;
+
   gap: var(--s-space-3);
 }
 
-.product-information .variant-option__button-label--has-swatch .swatch {
-  box-shadow: inset 0 0 0 1px rgb(var(--s-color-ink-rgb) / 0.12);
+.product-information .variant-option__button-label--has-swatch {
+  padding: 3px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  box-shadow: 0 0 0 1px transparent;
+  transition:
+    box-shadow var(--s-dur-micro) var(--s-ease),
+    transform var(--s-dur-micro) var(--s-ease);
 }
 
-/* Tallas: botones compactos y tranquilos */
-.product-information .variant-option--equal-width-buttons {
+.product-information .variant-option__button-label--has-swatch .swatch {
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgb(var(--s-color-ink-rgb) / 0.12);
+  transition: transform var(--s-dur-image) var(--s-ease);
+}
+
+@media (hover: hover) {
+  .product-information .variant-option__button-label--has-swatch:hover {
+    box-shadow: 0 0 0 1px rgb(var(--s-color-ink-rgb) / 0.28);
+  }
+
+  .product-information .variant-option__button-label--has-swatch:hover .swatch {
+    transform: scale(0.92);
+  }
+}
+
+.product-information .variant-option__button-label--has-swatch:has(:checked) {
+  box-shadow: 0 0 0 1px var(--s-color-ink);
+}
+
+.product-information .variant-option__button-label--has-swatch:has(:checked) .swatch {
+  transform: scale(0.86);
+}
+
+.product-information .variant-option__button-label--has-swatch:has(:focus-visible) {
+  outline: 2px solid var(--s-color-ink);
+  outline-offset: 3px;
+}
+
+/* Color agotado: más tenue, con la diagonal de Horizon */
+.product-information .variant-option__button-label--has-swatch:has([data-option-available='false']) .swatch {
+  opacity: 0.45;
+}
+
+/* ---- Tallas: píldoras tranquilas con el deslizamiento de selección de Horizon ---- */
+.product-information .variant-option--equal-width-buttons,
+.product-information .variant-option--buttons:not(.variant-option--swatches) {
   gap: var(--s-space-2);
 }
 
 .product-information .variant-option__button-label:not(.variant-option__button-label--has-swatch) {
-  min-height: 44px;
+  min-width: 56px;
+  min-height: 48px;
+  padding-inline: var(--s-space-4);
+  font-family: var(--s-font-sans);
   font-size: var(--s-type-body-sm);
-  letter-spacing: 0.04em;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
 }
 
+.product-information .variant-option__button-label:not(.variant-option__button-label--has-swatch):active {
+  transform: scale(0.97);
+}
+
+.product-information .variant-option__button-label:not(.variant-option__button-label--has-swatch) .variant-option__button-label__text {
+  position: relative;
+  z-index: 1;
+}
+
+/* Talla agotada: texto tenue y diagonal fina */
 .product-information .variant-option__button-label:has([data-option-available='false']) {
-  color: rgb(var(--s-color-ink-rgb) / 0.4);
+  color: rgb(var(--s-color-ink-rgb) / 0.38);
 }
 
 /* Talla agotada seleccionada: contorno en tinta, sin relleno, para que no parezca elegida y disponible */
@@ -125,24 +538,121 @@
   color: rgb(var(--s-color-ink-rgb) / 0.55);
 }
 
-/* ---------- Stock ---------- */
+/* Desplegable (si se elige ese estilo en el editor) */
+.product-information .variant-option__select-wrapper {
+  border-color: var(--s-color-line);
+  border-radius: var(--s-radius-pill);
+  transition: border-color var(--s-dur-micro) var(--s-ease);
+}
+
+.product-information .variant-option__select-wrapper:hover {
+  border-color: var(--s-color-ink);
+}
+
+/* =========================================================
+   5 · STOCK
+   ========================================================= */
 
 .product-information .product-inventory__status {
-  gap: var(--s-space-2);
+  gap: var(--s-space-3);
+  font-family: var(--s-font-sans);
   font-size: var(--s-type-body-sm);
+  line-height: 1.4;
   color: var(--s-color-ink);
 }
 
-.product-information .product-inventory__icon,
-.product-information .product-inventory__icon svg {
-  width: 14px;
-  height: 14px;
+/* El icono de Horizon se sustituye por un punto de estado con pulso suave */
+.product-information .product-inventory__icon {
+  position: relative;
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
 }
 
-/* ---------- Compra ---------- */
+.product-information .product-inventory__icon svg {
+  display: none;
+}
+
+.product-information .product-inventory__icon::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0;
+}
+
+.product-information .product-inventory__icon-in_stock {
+  color: var(--s-color-sage);
+  background: color-mix(in srgb, var(--s-color-sage) 70%, var(--s-color-ink));
+}
+
+.product-information .product-inventory__icon-low {
+  color: var(--s-color-salmon);
+  background: color-mix(in srgb, var(--s-color-salmon) 80%, var(--s-color-cacao));
+}
+
+.product-information .product-inventory__icon-out_of_stock {
+  color: var(--s-color-muted);
+  background: var(--s-color-muted);
+}
+
+.product-information .product-inventory__icon-in_stock::after,
+.product-information .product-inventory__icon-low::after {
+  animation: s-pdp-pulse 2.4s var(--s-ease) infinite;
+}
+
+.product-information .product-inventory__icon-low::after {
+  animation-duration: 1.6s;
+}
+
+@keyframes s-pdp-pulse {
+  0% { transform: scale(0.6); opacity: 0.45; }
+  70%, 100% { transform: scale(1.6); opacity: 0; }
+}
+
+.product-information product-inventory:has(.product-inventory__icon-low) .product-inventory__text {
+  color: var(--s-color-cacao);
+}
+
+.product-information product-inventory:has(.product-inventory__icon-out_of_stock) .product-inventory__text {
+  color: var(--s-color-muted);
+}
+
+/* =========================================================
+   6 · COMPRA
+   ========================================================= */
+
+.product-information .buy-buttons-block {
+  margin-block-start: calc(var(--s-space-2) * -1);
+}
 
 .product-information .product-form-buttons {
   gap: var(--s-space-3);
+}
+
+/* Cantidad: píldora con contorno de línea, números tabulares */
+.product-information .quantity-selector {
+  min-height: 52px;
+  border-color: var(--s-color-line);
+  border-radius: var(--style-border-radius-buttons-primary, var(--s-radius-pill));
+  font-variant-numeric: tabular-nums;
+  transition: border-color var(--s-dur-micro) var(--s-ease);
+}
+
+.product-information .quantity-selector:hover,
+.product-information .quantity-selector:focus-within {
+  border-color: var(--s-color-ink);
+}
+
+.product-information .quantity-selector button {
+  transition: opacity var(--s-dur-micro) var(--s-ease), transform var(--s-dur-micro) var(--s-ease);
+}
+
+.product-information .quantity-selector button:active {
+  transform: scale(0.88);
 }
 
 .product-information .add-to-cart-button,
@@ -151,7 +661,11 @@
 }
 
 .product-information .add-to-cart-button {
+  isolation: isolate;
+  overflow: hidden;
+  font-family: var(--s-font-sans);
   font-size: var(--s-type-button);
+  font-weight: 500;
   letter-spacing: var(--s-tracking-button);
   text-transform: uppercase;
 }
@@ -160,13 +674,53 @@
   display: none;
 }
 
+/* Brillo muy sutil que cruza el botón al pasar */
+.product-information .add-to-cart-button:not([disabled])::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    rgb(var(--s-color-surface-rgb) / 0.14) 50%,
+    transparent 70%
+  );
+  transform: translateX(-110%);
+  pointer-events: none;
+}
+
+@media (hover: hover) {
+  .product-information .add-to-cart-button:not([disabled]):hover::before {
+    transform: translateX(110%);
+    transition: transform calc(var(--s-dur-settle) * 0.7) var(--s-ease);
+  }
+}
+
+/* Feedback al añadir: el botón vira a cacao mientras suena la marca de Horizon */
+.product-information .add-to-cart-button[data-added='true'] {
+  --button-background-color: var(--s-color-cacao);
+  --button-border-color: var(--s-color-cacao);
+
+  background-color: var(--s-color-cacao);
+  border-color: var(--s-color-cacao);
+}
+
+.product-information .add-to-cart-button[disabled] {
+  opacity: 1;
+  background-color: transparent;
+  color: var(--s-color-muted);
+  box-shadow: inset 0 0 0 1px var(--s-color-line);
+  cursor: not-allowed;
+}
+
 /* «Comprar ahora» sin marca: secundario, contorno fino */
 .product-information .shopify-payment-button__button--unbranded,
 .product-information .shopify-payment-button__button--unbranded:hover:not([disabled]) {
   background: transparent;
   color: var(--s-color-ink);
   box-shadow: inset 0 0 0 1px var(--s-color-ink);
-  border-radius: var(--style-border-radius-buttons-primary, 100px);
+  border-radius: var(--style-border-radius-buttons-primary, var(--s-radius-pill));
   font-family: var(--s-font-sans);
   font-size: var(--s-type-button);
   font-weight: 500;
@@ -183,15 +737,18 @@
 .product-information .shopify-payment-button__more-options {
   font-size: var(--s-type-body-sm);
   color: var(--s-color-muted);
+  text-underline-offset: 3px;
 }
 
-/* ---------- Garantías ---------- */
+/* =========================================================
+   7 · GARANTÍAS
+   ========================================================= */
 
 .s-pdp-benefits {
   display: grid;
   gap: var(--s-space-3);
   margin: 0;
-  padding: var(--s-space-5) 0 0;
+  padding: var(--s-space-6) 0 0;
   list-style: none;
   border-top: 1px solid var(--s-color-line);
 }
@@ -200,6 +757,7 @@
   display: flex;
   align-items: center;
   gap: var(--s-space-3);
+  font-family: var(--s-font-sans);
   font-size: var(--s-type-body-sm);
   line-height: 1.4;
   color: var(--s-color-ink);
@@ -216,7 +774,17 @@
   fill: var(--s-color-surface);
 }
 
-/* ---------- Acordeones ---------- */
+/* =========================================================
+   8 · ACORDEONES
+   ========================================================= */
+
+.product-information .accordion {
+  border-top: 1px solid var(--s-color-line);
+}
+
+.product-information .accordion .details {
+  border-color: var(--s-color-line);
+}
 
 .product-information .accordion .details__header {
   padding-block: var(--s-space-5);
@@ -225,29 +793,306 @@
   font-weight: 500;
   letter-spacing: var(--s-tracking-eyebrow);
   text-transform: uppercase;
+  color: var(--s-color-ink);
+  transition: color var(--s-dur-micro) var(--s-ease);
 }
 
+@media (hover: hover) {
+  .product-information .accordion .details__header:hover {
+    color: var(--s-color-cacao);
+  }
+}
+
+/* Icono +: la barra vertical se recoge y queda un − */
+.product-information .accordion .icon-plus svg {
+  width: 12px;
+  height: 12px;
+}
+
+.product-information .accordion .icon-plus svg path,
+.product-information .accordion .icon-plus svg line {
+  transform-origin: center;
+  transform-box: fill-box;
+  transition: transform var(--s-dur-image) var(--s-ease), opacity var(--s-dur-micro) var(--s-ease);
+}
+
+.product-information .accordion .details .icon-plus {
+  transition: transform var(--s-dur-image) var(--s-ease);
+}
+
+.product-information .accordion .details[open] .icon-plus {
+  transform: rotate(180deg);
+}
+
+.product-information .accordion .details[open] .icon-plus svg :is(path, line):last-child {
+  transform: scaleY(0);
+  opacity: 0;
+}
+
+/* El contenido entra con un leve desplazamiento además del despliegue de Horizon */
 .product-information .accordion .details-content {
   padding-block-end: var(--s-space-6);
+  font-family: var(--s-font-sans);
   font-size: var(--s-type-body);
   line-height: var(--s-leading-body);
+  color: var(--s-color-muted);
+}
+
+.product-information .accordion .details[open] .details-content > * {
+  animation: s-pdp-rise var(--s-dur-enter) var(--s-ease) both;
+}
+
+.product-information .accordion .details-content :is(p, ul, ol) {
+  margin: 0;
+}
+
+.product-information .accordion .details-content :is(p, ul, ol) + :is(p, ul, ol) {
+  margin-top: 0.75em;
+}
+
+.product-information .accordion .details-content strong {
+  font-weight: 500;
   color: var(--s-color-ink);
 }
 
 .product-information .accordion .details-content a {
+  color: var(--s-color-ink);
   text-decoration: underline;
   text-underline-offset: 3px;
   text-decoration-thickness: 1px;
 }
 
-/* ---------- Móvil ---------- */
+/* =========================================================
+   9 · ENTRADA
+   ========================================================= */
+
+@keyframes s-pdp-rise {
+  from { opacity: 0; transform: translate3d(0, 10px, 0); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes s-pdp-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Al cargar: primero las fotos, después la columna de información bloque a bloque */
+html.s-motion .product-information .media-gallery__grid > li {
+  animation: s-pdp-rise var(--s-dur-enter) var(--s-ease) both;
+  animation-delay: calc(min(var(--s-i, 0), 3) * 90ms);
+}
+
+html.s-motion .product-information slideshow-component {
+  animation: s-pdp-fade var(--s-dur-enter) var(--s-ease) both;
+}
+
+html.s-motion .product-information .product-details > .group-block > .group-block-content > * {
+  animation: s-pdp-rise var(--s-dur-enter) var(--s-ease) both;
+}
+
+html.s-motion .product-information .product-details > .group-block > .group-block-content > :nth-child(2) { animation-delay: 60ms; }
+html.s-motion .product-information .product-details > .group-block > .group-block-content > :nth-child(3) { animation-delay: 120ms; }
+html.s-motion .product-information .product-details > .group-block > .group-block-content > :nth-child(4) { animation-delay: 180ms; }
+html.s-motion .product-information .product-details > .group-block > .group-block-content > :nth-child(5) { animation-delay: 240ms; }
+html.s-motion .product-information .product-details > .group-block > .group-block-content > :nth-child(n + 6) { animation-delay: 300ms; }
+
+/* Cambios de variante: el valor nuevo entra en lugar de aparecer de golpe (saucha-product.js) */
+.s-flash {
+  animation: s-flash var(--s-dur-image) var(--s-ease) both;
+}
+
+@keyframes s-flash {
+  from { opacity: 0.2; transform: translate3d(0, 4px, 0); }
+  to { opacity: 1; transform: none; }
+}
+
+/* =========================================================
+   10 · BARRA FIJA DE COMPRA
+   ========================================================= */
+
+.sticky-add-to-cart__bar {
+  border-radius: var(--s-radius-pill);
+  box-shadow: var(--s-shadow-float);
+}
+
+.sticky-add-to-cart__bar::before {
+  background:
+    linear-gradient(rgb(var(--s-color-surface-rgb) / 0.92) 0 100%),
+    linear-gradient(rgb(var(--s-color-ink-rgb) / 0.08) 0 100%);
+  background-clip: content-box, border-box;
+}
+
+.sticky-add-to-cart__image {
+  border-radius: 50%;
+  background: var(--s-color-cream);
+}
+
+.sticky-add-to-cart__title {
+  font-family: var(--s-font-serif);
+  font-weight: var(--s-font-serif-weight);
+  font-size: 1rem;
+  letter-spacing: 0;
+}
+
+.sticky-add-to-cart__variant {
+  font-family: var(--s-font-sans);
+  font-size: var(--s-type-body-sm);
+  color: var(--s-color-muted);
+}
+
+.sticky-add-to-cart__price {
+  font-family: var(--s-font-sans);
+  font-size: var(--s-type-price);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.sticky-add-to-cart__price .s-price-saving,
+.sticky-add-to-cart__price .s-price-badge,
+.sticky-add-to-cart__price .tax-note {
+  display: none;
+}
+
+.sticky-add-to-cart__button {
+  font-family: var(--s-font-sans);
+  font-size: var(--s-type-button);
+  font-weight: 500;
+  letter-spacing: var(--s-tracking-button);
+  text-transform: uppercase;
+}
+
+/* =========================================================
+   11 · RELACIONADOS (sección nativa de Horizon)
+   ========================================================= */
+
+.product-recommendations .section-resource-list__content h2 {
+  font-family: var(--s-font-serif);
+  font-weight: var(--s-font-serif-weight);
+  font-size: var(--s-type-h2);
+  line-height: var(--s-leading-title);
+  letter-spacing: var(--s-tracking-display);
+}
+
+.product-recommendations .resource-list__item .card-gallery {
+  border-radius: var(--s-radius-media);
+  overflow: hidden;
+}
+
+.product-recommendations .resource-list__item .card-gallery img {
+  border-radius: inherit;
+}
+
+/* =========================================================
+   12 · MÓVIL
+   ========================================================= */
 
 @media screen and (max-width: 749px) {
-  .product-information .product-details h1 {
-    font-size: var(--s-type-h3);
+  .product-information {
+    --s-pdp-block-gap: var(--s-space-6);
+  }
+
+  /* Galería a sangre: la foto manda */
+  .product-information .product-media-container {
+    border-radius: 0;
   }
 
   .product-information .product-details {
-    padding-block-start: var(--s-space-2);
+    padding-block-start: var(--s-space-6) !important;
+    padding-block-end: var(--s-space-10) !important;
+  }
+
+  .product-information .product-details h1 {
+    font-size: clamp(1.75rem, 1.45rem + 1.5vw, 2rem);
+  }
+
+  .product-information product-price .price {
+    font-size: 1.0625rem;
+  }
+
+  /* Etiqueta de color siempre visible y compacta */
+  .s-pdp-media-tag {
+    inset-block-end: var(--s-space-10);
+    inset-inline-start: var(--s-space-4);
+    min-height: 30px;
+    padding: 5px 11px 5px 7px;
+  }
+
+  /* Muestras y tallas con objetivos táctiles generosos */
+  .product-information .variant-option--swatches {
+    --variant-picker-swatch-width: 36px;
+    --variant-picker-swatch-height: 36px;
+  }
+
+  .product-information .variant-option--buttons:not(.variant-option--swatches) {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+  }
+
+  .product-information .variant-option--buttons:not(.variant-option--swatches) legend {
+    grid-column: 1 / -1;
+  }
+
+  .product-information .variant-option__button-label:not(.variant-option__button-label--has-swatch) {
+    min-width: 0;
+    min-height: 50px;
+  }
+
+  .product-information .add-to-cart-button,
+  .product-information .shopify-payment-button__button,
+  .product-information .quantity-selector {
+    min-height: 54px;
+  }
+
+  .s-pdp-benefits {
+    padding-block-start: var(--s-space-5);
+  }
+
+  /* Barra fija: panel flotante con margen, como los drawers de Saucha */
+  .sticky-add-to-cart__bar {
+    left: var(--s-drawer-inset);
+    right: var(--s-drawer-inset);
+    bottom: max(var(--s-drawer-inset), var(--safe-area-inset-bottom, 0px));
+    width: auto;
+    transform: translateY(calc(100% + 40px));
+    border-radius: var(--s-drawer-radius);
+    padding-block-end: var(--padding-sm);
+  }
+
+  .sticky-add-to-cart__bar[data-stuck='true'] {
+    transform: translateY(0);
+  }
+
+  sticky-add-to-cart:not([data-variant-available='true']) .sticky-add-to-cart__bar {
+    transform: translateY(calc(100% + 40px));
+  }
+
+  .sticky-add-to-cart__image {
+    border-radius: 12px;
+  }
+
+  .sticky-add-to-cart__button {
+    border-radius: 12px;
+  }
+
+  .product-recommendations .section-resource-list__content h2 {
+    font-size: var(--s-type-h3);
+  }
+}
+
+/* =========================================================
+   13 · MENOS MOVIMIENTO
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .product-information *,
+  .product-information *::before,
+  .product-information *::after,
+  .sticky-add-to-cart__bar {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .product-information .media-gallery__grid .product-media-container:hover img {
+    transform: none;
   }
 }

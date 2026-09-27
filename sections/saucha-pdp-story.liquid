@@ -1,0 +1,408 @@
+{% comment %}
+  Saucha · «El detalle»: bloque editorial bajo la ficha de producto.
+
+  Usa automáticamente las fotos del producto (en el mismo orden que la galería, así que
+  empieza por el color elegido) o las que se suban en la sección. Titular, texto y
+  detalles numerados; todos los textos admiten fuentes dinámicas (metacampos).
+  En móvil: texto → foto a sangre → detalles; la segunda foto se reserva al escritorio.
+{% endcomment %}
+
+{%- liquid
+  assign story_product = product
+  assign image_main = section.settings.image_main
+  assign image_second = section.settings.image_second
+
+  if story_product != blank and section.settings.use_product_images
+    capture order
+      render 'saucha-gallery-order', product: story_product
+    endcapture
+    assign order = order | strip
+
+    assign ordered_media = '' | split: ','
+    if order != blank
+      assign entries = order | split: '|'
+      for entry in entries
+        assign entry_id = entry | split: '~' | first
+        for media in story_product.media
+          assign media_id = media.id | append: ''
+          if media_id == entry_id and media.preview_image != blank
+            assign found = story_product.media | where: 'id', media.id
+            assign ordered_media = ordered_media | concat: found
+            break
+          endif
+        endfor
+      endfor
+    else
+      assign ordered_media = story_product.media | where: 'media_type', 'image'
+    endif
+
+    # Se evita repetir la primera foto (ya es la protagonista de la galería)
+    assign main_index = 1
+    assign second_index = 2
+    if ordered_media.size < 3
+      assign main_index = ordered_media.size | minus: 1
+      assign second_index = -1
+    endif
+
+    if image_main == blank and main_index >= 0
+      assign image_main = ordered_media[main_index].preview_image
+    endif
+    if image_second == blank and second_index >= 0
+      assign image_second = ordered_media[second_index].preview_image
+    endif
+  endif
+
+  assign story_title = section.settings.title
+  if story_product != blank
+    assign story_title = story_title | replace: '[producto]', story_product.title
+  endif
+-%}
+
+<section
+  class="s-section s-scheme-{{ section.settings.scheme }} s-pt-{{ section.settings.spacing_top }} s-pb-{{ section.settings.spacing_bottom }} s-pdp-story{% if image_second == blank %} s-pdp-story--single{% endif %}{% if image_main == blank %} s-pdp-story--text{% endif %}"
+>
+  <div class="s-container s-pdp-story__grid">
+    {%- if image_main != blank -%}
+      <div class="s-pdp-story__main">
+        <div class="s-media" data-s-reveal="media" style="--s-media-ratio: 4 / 5; --s-media-ratio-m: 4 / 5;">
+          {{
+            image_main
+            | image_url: width: 1800
+            | image_tag:
+              widths: '480, 720, 960, 1200, 1500, 1800',
+              sizes: '(min-width: 990px) 55vw, 100vw',
+              loading: 'lazy',
+              class: 's-media__img',
+              alt: image_main.alt
+          }}
+        </div>
+      </div>
+    {%- endif -%}
+
+    <div class="s-pdp-story__copy">
+      <div class="s-pdp-story__intro">
+        {%- if section.settings.eyebrow != blank -%}
+          <p class="s-eyebrow" data-s-reveal="fade">{{ section.settings.eyebrow | escape }}</p>
+        {%- endif -%}
+        {%- render 'saucha-title', text: story_title, size: 'h2', index: 1 -%}
+        {%- if section.settings.text != blank -%}
+          <div class="s-lead s-pdp-story__lead" data-s-reveal="up" style="--s-i: 2;">{{ section.settings.text }}</div>
+        {%- endif -%}
+      </div>
+
+      {%- if section.blocks.size > 0 -%}
+        <ol class="s-pdp-story__details" role="list">
+          {%- for block in section.blocks -%}
+            <li class="s-pdp-story__detail" data-s-reveal="up" style="--s-i: {{ forloop.index | plus: 2 }};" {{ block.shopify_attributes }}>
+              <span class="s-pdp-story__number" aria-hidden="true">{{ forloop.index | prepend: '0' | slice: -2, 2 }}</span>
+              <div class="s-pdp-story__detail-copy">
+                {%- if block.settings.title != blank -%}
+                  <h3 class="s-pdp-story__detail-title">{{ block.settings.title }}</h3>
+                {%- endif -%}
+                {%- if block.settings.text != blank -%}
+                  <p class="s-meta">{{ block.settings.text }}</p>
+                {%- endif -%}
+              </div>
+            </li>
+          {%- endfor -%}
+        </ol>
+      {%- endif -%}
+
+      {%- if image_second != blank -%}
+        <div class="s-pdp-story__second">
+          <div class="s-media" data-s-reveal="media" style="--s-media-ratio: 3 / 4; --s-media-ratio-m: 3 / 4; --s-i: 2;">
+            {{
+              image_second
+              | image_url: width: 1000
+              | image_tag:
+                widths: '360, 540, 720, 1000',
+                sizes: '(min-width: 990px) 18vw, 50vw',
+                loading: 'lazy',
+                class: 's-media__img',
+                alt: image_second.alt
+            }}
+          </div>
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% stylesheet %}
+  /* El detalle: foto protagonista + columna editorial con detalles numerados */
+
+  .s-pdp-story__grid {
+    display: grid;
+    gap: var(--s-space-10);
+  }
+
+  .s-pdp-story__copy {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-space-10);
+    min-width: 0;
+  }
+
+  .s-pdp-story__intro {
+    display: flex;
+    flex-direction: column;
+    gap: var(--s-space-4);
+  }
+
+  .s-pdp-story__lead {
+    max-width: 30em;
+    margin-top: var(--s-space-2);
+    color: var(--s-muted, var(--s-color-muted));
+  }
+
+  .s-pdp-story__lead > * {
+    margin: 0;
+  }
+
+  .s-pdp-story__details {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--s-line, var(--s-color-line));
+  }
+
+  .s-pdp-story__detail {
+    display: grid;
+    grid-template-columns: 3rem minmax(0, 1fr);
+    gap: var(--s-space-4);
+    padding-block: var(--s-space-5);
+    border-bottom: 1px solid var(--s-line, var(--s-color-line));
+  }
+
+  .s-pdp-story__number {
+    font-family: var(--s-font-serif);
+    font-size: var(--s-type-lead);
+    line-height: 1.1;
+    color: var(--s-accent, var(--s-color-cacao));
+    font-variant-numeric: lining-nums;
+  }
+
+  .s-pdp-story__detail-title {
+    margin: 0 0 var(--s-space-1);
+    font-family: var(--s-font-sans);
+    font-size: var(--s-type-eyebrow);
+    font-weight: 500;
+    letter-spacing: var(--s-tracking-eyebrow);
+    line-height: 1.4;
+    text-transform: uppercase;
+    color: var(--s-fg, var(--s-color-ink));
+  }
+
+  .s-pdp-story__detail-copy .s-meta {
+    margin: 0;
+    max-width: 34em;
+  }
+
+  /* Móvil: la foto va a sangre entre el texto y los detalles */
+  @media screen and (max-width: 989px) {
+    .s-pdp-story__grid {
+      gap: 0;
+    }
+
+    .s-pdp-story__main {
+      order: 2;
+      margin-inline: calc(var(--s-gutter) * -1);
+      margin-block: var(--s-space-8);
+    }
+
+    .s-pdp-story__main .s-media {
+      border-radius: 0;
+    }
+
+    .s-pdp-story__copy {
+      display: contents;
+    }
+
+    .s-pdp-story__intro {
+      order: 1;
+    }
+
+    .s-pdp-story__details {
+      order: 3;
+    }
+
+    .s-pdp-story__second {
+      display: none;
+    }
+
+    .s-pdp-story--text .s-pdp-story__details {
+      margin-top: var(--s-space-8);
+    }
+  }
+
+  @media screen and (min-width: 990px) {
+    .s-pdp-story__grid {
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      align-items: center;
+      column-gap: var(--s-space-6);
+    }
+
+    .s-pdp-story__main {
+      grid-column: 1 / span 6;
+    }
+
+    .s-pdp-story__copy {
+      grid-column: 8 / span 5;
+    }
+
+    .s-pdp-story--text .s-pdp-story__copy {
+      grid-column: 3 / span 8;
+    }
+
+    /* Segunda foto: pequeña, desplazada hacia dentro y con un leve paralaje al hacer scroll */
+    .s-pdp-story__second {
+      width: 56%;
+      margin-inline-start: auto;
+    }
+
+    @supports (animation-timeline: view()) {
+      @media (prefers-reduced-motion: no-preference) {
+        .s-pdp-story__second {
+          animation: s-pdp-story-drift linear both;
+          animation-timeline: view();
+          animation-range: entry 0% exit 100%;
+        }
+      }
+    }
+  }
+
+  @keyframes s-pdp-story-drift {
+    from { transform: translate3d(0, 40px, 0); }
+    to { transform: translate3d(0, -40px, 0); }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "El detalle · ficha",
+  "tag": "div",
+  "class": "s-pdp-story-section",
+  "enabled_on": {
+    "templates": ["product"]
+  },
+  "settings": [
+    {
+      "type": "header",
+      "content": "Contenido"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Antetítulo",
+      "default": "El detalle"
+    },
+    {
+      "type": "textarea",
+      "id": "title",
+      "label": "Título",
+      "info": "[producto] se sustituye por el nombre del producto. Cada salto de línea es una línea animada.",
+      "default": "Pensado para\nacompañarte"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Texto",
+      "default": "<p>Cada pieza Saucha nace de una idea sencilla: prendas bonitas, cómodas y hechas para durar más de una temporada.</p>"
+    },
+    {
+      "type": "header",
+      "content": "Imágenes"
+    },
+    {
+      "type": "checkbox",
+      "id": "use_product_images",
+      "label": "Usar las fotos del producto",
+      "info": "Toma la segunda y la tercera foto del color elegido. Una imagen subida abajo tiene prioridad.",
+      "default": true
+    },
+    {
+      "type": "image_picker",
+      "id": "image_main",
+      "label": "Foto principal"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_second",
+      "label": "Foto secundaria (escritorio)"
+    },
+    {
+      "type": "header",
+      "content": "Estilo"
+    },
+    {
+      "type": "select",
+      "id": "scheme",
+      "label": "Fondo",
+      "options": [
+        { "value": "surface", "label": "Marfil (principal)" },
+        { "value": "cream", "label": "Crema (alterno)" },
+        { "value": "blush", "label": "Blush nude" }
+      ],
+      "default": "cream"
+    },
+    {
+      "type": "select",
+      "id": "spacing_top",
+      "label": "Espacio superior",
+      "options": [
+        { "value": "none", "label": "Ninguno" },
+        { "value": "xs", "label": "Mínimo" },
+        { "value": "sm", "label": "Pequeño" },
+        { "value": "md", "label": "Medio" },
+        { "value": "lg", "label": "Grande" }
+      ],
+      "default": "md"
+    },
+    {
+      "type": "select",
+      "id": "spacing_bottom",
+      "label": "Espacio inferior",
+      "options": [
+        { "value": "none", "label": "Ninguno" },
+        { "value": "xs", "label": "Mínimo" },
+        { "value": "sm", "label": "Pequeño" },
+        { "value": "md", "label": "Medio" },
+        { "value": "lg", "label": "Grande" }
+      ],
+      "default": "md"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "detalle",
+      "name": "Detalle",
+      "limit": 4,
+      "settings": [
+        {
+          "type": "inline_richtext",
+          "id": "title",
+          "label": "Título",
+          "default": "Hecho para durar"
+        },
+        {
+          "type": "inline_richtext",
+          "id": "text",
+          "label": "Texto",
+          "default": "Tejidos y acabados elegidos para acompañarte muchas temporadas."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "El detalle · ficha",
+      "blocks": [
+        { "type": "detalle", "settings": { "title": "Hecho para durar", "text": "Tejidos y acabados elegidos para acompañarte muchas temporadas." } },
+        { "type": "detalle", "settings": { "title": "Un ajuste favorecedor", "text": "Patronaje pensado para sentar bien desde el primer día." } },
+        { "type": "detalle", "settings": { "title": "Cuidado sencillo", "text": "Sigue la etiqueta interior: la mayoría admiten lavado delicado." } }
+      ]
+    }
+  ]
+}
+{% endschema %}

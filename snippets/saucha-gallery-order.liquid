@@ -1,0 +1,100 @@
+{% doc %}
+  Saucha · orden de la galería de la ficha.
+
+  Devuelve (como texto) todas las imágenes del producto ordenadas por color:
+    1. las del color seleccionado
+    2. las del resto de colores, en el orden de la opción de color
+    3. las que no pertenecen a ningún color (detalles, bodegones…)
+  Si el color seleccionado no tiene imágenes propias, las neutras (3) pasan delante
+  para que la primera foto nunca sea de otro color.
+
+  Formato: «id~Color|id~Color|id~» (color vacío = imagen neutra).
+  La pertenencia de cada imagen a un color la decide snippets/saucha-color-media.
+  Si el producto no tiene opción de color o ningún color tiene imágenes propias,
+  no devuelve nada y la galería usa el orden de Horizon.
+
+  @param {product} product - Producto
+
+  @example
+  {% capture order %}{% render 'saucha-gallery-order', product: product %}{% endcapture %}
+{% enddoc %}
+
+{%- liquid
+  assign color_option = blank
+  assign color_index = -1
+  for option in product.options_with_values
+    assign option_name = option.name | downcase | strip
+    assign option_has_swatch = false
+    for option_value in option.values
+      if option_value.swatch != blank
+        assign option_has_swatch = true
+        break
+      endif
+    endfor
+    if option_has_swatch or option_name contains 'color' or option_name contains 'colour' or option_name contains 'couleur'
+      assign color_option = option
+      assign color_index = option.position | minus: 1
+      break
+    endif
+  endfor
+
+  if color_index >= 0
+    assign selected_color = product.selected_or_first_available_variant.options[color_index]
+
+    # Colores en orden: el seleccionado primero, después el resto tal como están en la opción
+    assign color_names = selected_color
+    for option_value in color_option.values
+      assign value_name = option_value.name | append: ''
+      if value_name != selected_color
+        assign color_names = color_names | append: '§§' | append: value_name
+      endif
+    endfor
+    assign color_list = color_names | split: '§§'
+
+    assign used = ','
+    assign selected_entries = ''
+    assign other_entries = ''
+
+    for color_name in color_list
+      capture color_ids
+        render 'saucha-color-media', product: product, color: color_name
+      endcapture
+      assign color_ids = color_ids | strip
+      if color_ids == blank
+        continue
+      endif
+
+      assign id_list = color_ids | split: ','
+      for mid in id_list
+        assign mid_token = ',' | append: mid | append: ','
+        if used contains mid_token
+          continue
+        endif
+        assign used = used | append: mid | append: ','
+        assign entry = mid | append: '~' | append: color_name | append: '|'
+        if forloop.parentloop.first
+          assign selected_entries = selected_entries | append: entry
+        else
+          assign other_entries = other_entries | append: entry
+        endif
+      endfor
+    endfor
+
+    if selected_entries != blank or other_entries != blank
+      assign neutral_entries = ''
+      for media in product.media
+        assign mid = media.id | append: ''
+        assign mid_token = ',' | append: mid | append: ','
+        unless used contains mid_token
+          assign neutral_entries = neutral_entries | append: mid | append: '~|'
+        endunless
+      endfor
+
+      if selected_entries == blank
+        echo neutral_entries | append: other_entries
+      else
+        echo selected_entries | append: other_entries | append: neutral_entries
+      endif
+    endif
+  endif
+-%}
