@@ -1,0 +1,239 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */{
+  "sections": {
+    "hero": {
+      "type": "banner-saucha",
+      "settings": {
+        "eyebrow": "",
+        "title": "Sobre Saucha",
+        "title_size": "display",
+        "text": "<p>Moda, accesorios y joyería en el centro de Las Palmas de Gran Canaria.</p>",
+        "button_label": "",
+        "button_link": "",
+        "button_style": "button",
+        "link_label": "",
+        "link_url": "",
+        "image_link": "",
+        "image_desktop": "shopify://shop_images/saucha-moda-mujer-bisuteria-tenerife-hero.png",
+        "focus_x": 50,
+        "focus_y": 45,
+        "focus_x_mobile": 26,
+        "focus_y_mobile": 40,
+        "text_tone": "light",
+        "overlay_opacity": 22,
+        "overlay_style": "solid",
+        "height": "90svh",
+        "content_position": "end-end",
+        "width": "full",
+        "height_mobile": "85svh",
+        "content_position_mobile": "end-start",
+        "scheme": "surface",
+        "spacing_top": "none",
+        "spacing_bottom": "none"
+      }
+    },
+    "intro": {
+      "type": "saucha-texto",
+      "settings": {
+        "title": "",
+        "statement": "<p>Saucha es una boutique pequeña de moda, accesorios y joyería. La abrimos con una idea sencilla: que encontrar algo bonito para ponerse sea <em>fácil y agradable</em>.</p>",
+        "statement_size": "large",
+        "text": "",
+        "link_label": "",
+        "link_url": "",
+        "alignment": "left",
+        "width": "medium",
+        "scheme": "surface",
+        "spacing_top": "lg",
+        "spacing_bottom": "md"
+      }
+    },
+    "seleccion": {
+      "type": "editorial-saucha",
+      "settings": {
+        "eyebrow": "",
+        "title": "Una selección hecha con calma",
+        "title_size": "h2",
+        "text": "<p>No trabajamos con grandes cantidades. Elegimos pocas piezas y pensamos en cómo se van a llevar: al trabajo, a una boda o a pasear por Triana un sábado por la mañana.</p><p>Si algo no nos convence, no llega a la tienda.</p>",
+        "show_divider": false,
+        "button_label": "",
+        "button_link": "",
+        "button_style": "link",
+        "image_ratio": "4 / 5",
+        "image_ratio_mobile": "4 / 5",
+        "focus_x": 50,
+        "focus_y": 50,
+        "focus_x_mobile": 50,
+        "focus_y_mobile": 50,
+        "image_side": "left",
+        "image_width": 55,
+        "vertical_alignment": "center",
+        "text_alignment": "left",
+        "text_alignment_mobile": "left",
+        "mobile_order": "image_first",
+        "scheme": "surface",
+        "spacing_top": "md",
+        "spacing_bottom": "md"
+      }
+    },
+    "fotos": {
+      "type": "saucha-fotos",
+      "blocks": {
+        "f1": {
+          "type": "foto",
+          "settings": {
+            "caption": ""
+          }
+        },
+        "f2": {
+          "type": "foto",
+          "settings": {
+            "caption": ""
+          }
+        }
+      },
+      "block_order": [
+        "f1",
+        "f2"
+      ],
+      "settings": {
+        "layout": "asimetrica",
+        "flip": false,
+        "height": 680,
+        "height_mobile": 460,
+        "scheme": "surface",
+        "spacing_top": "md",
+        "spacing_bottom": "md"
+      }
+    },
+    "joyeria": {
+      "type": "editorial-saucha",
+      "settings": {
+        "eyebrow": "",
+        "title": "La joyería, el detalle que lo cambia todo",
+        "title_size": "h2",
+        "text": "<p>Pendientes, collares y pulseras que acompañan a la ropa sin quitarle protagonismo. Un buen accesorio transforma un vestido sencillo, y nos gusta ayudarte a encontrar el tuyo.</p>",
+        "show_divider": false,
+        "button_label": "",
+        "button_link": "",
+        "button_style": "link",
+        "image_ratio": "3 / 4",
+        "image_ratio_mobile": "4 / 5",
+        "focus_x": 50,
+        "focus_y": 50,
+        "focus_x_mobile": 50,
+        "focus_y_mobile": 50,
+        "image_side": "right",
+        "image_width": 45,
+        "vertical_alignment": "center",
+        "text_alignment": "left",
+        "text_alignment_mobile": "left",
+        "mobile_order": "image_first",
+        "scheme": "surface",
+        "spacing_top": "md",
+        "spacing_bottom": "md"
+      }
+    },
+    "trato": {
+      "type": "saucha-texto",
+      "settings": {
+        "title": "",
+        "statement": "<p>En la tienda nos gusta dedicarte tiempo: probar tallas, buscar el conjunto para una ocasión especial o, simplemente, charlar un rato.</p>",
+        "statement_size": "medium",
+        "text": "<p>Esa misma cercanía es la que queremos que encuentres cuando compras online. Si tienes cualquier duda, escríbenos.</p>",
+        "link_label": "Escríbenos",
+        "link_url": "/pages/contact",
+        "alignment": "center",
+        "width": "narrow",
+        "scheme": "surface",
+        "spacing_top": "lg",
+        "spacing_bottom": "lg"
+      }
+    },
+    "tienda": {
+      "type": "editorial-saucha",
+      "settings": {
+        "eyebrow": "",
+        "title": "La tienda, en Triana",
+        "title_size": "h2",
+        "text": "<p>Nos encontrarás en la calle Escritor Benito Pérez Galdós, 32, en Las Palmas de Gran Canaria. Abrimos de lunes a viernes de 10:00 a 20:00 y los sábados de 10:00 a 14:00.</p>",
+        "show_divider": false,
+        "button_label": "Cómo llegar",
+        "button_link": "/pages/contact",
+        "button_style": "link",
+        "image_ratio": "4 / 5",
+        "image_ratio_mobile": "4 / 5",
+        "focus_x": 50,
+        "focus_y": 50,
+        "focus_x_mobile": 50,
+        "focus_y_mobile": 50,
+        "image_side": "left",
+        "image_width": 55,
+        "vertical_alignment": "center",
+        "text_alignment": "left",
+        "text_alignment_mobile": "left",
+        "mobile_order": "image_first",
+        "scheme": "surface",
+        "spacing_top": "md",
+        "spacing_bottom": "md"
+      }
+    },
+    "cierre": {
+      "type": "saucha-cierre",
+      "blocks": {
+        "l1": {
+          "type": "enlace",
+          "settings": {
+            "label": "Ver la tienda",
+            "url": "/collections/all",
+            "new_tab": false
+          }
+        },
+        "l2": {
+          "type": "enlace",
+          "settings": {
+            "label": "Todas las colecciones",
+            "url": "/collections",
+            "new_tab": false
+          }
+        },
+        "l3": {
+          "type": "enlace",
+          "settings": {
+            "label": "Visitar la boutique",
+            "url": "/pages/contact",
+            "new_tab": false
+          }
+        }
+      },
+      "block_order": [
+        "l1",
+        "l2",
+        "l3"
+      ],
+      "settings": {
+        "text": "<p>Te esperamos en la boutique o, estés donde estés, en la tienda online.</p>",
+        "scheme": "surface",
+        "spacing_top": "md",
+        "spacing_bottom": "lg"
+      }
+    }
+  },
+  "order": [
+    "hero",
+    "intro",
+    "seleccion",
+    "fotos",
+    "joyeria",
+    "trato",
+    "tienda",
+    "cierre"
+  ]
+}

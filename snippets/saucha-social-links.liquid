@@ -1,0 +1,46 @@
+{%- doc -%}
+  Saucha · enlaces a redes sociales con los iconos globales del tema.
+  Fuente única: Configuración del tema › Saucha › Redes sociales. Una red sin enlace no se muestra;
+  si no hay ninguna, no se pinta nada.
+
+  @param {string} [class] - Clase extra para la lista
+
+  @example
+  {% render 'saucha-social-links', class: 's-contact__social' %}
+{%- enddoc -%}
+
+{%- liquid
+  capture social_items
+    if settings.saucha_social_instagram != blank
+      echo 'instagram|Instagram|' | append: settings.saucha_social_instagram | append: '§'
+    endif
+    if settings.saucha_social_facebook != blank
+      echo 'facebook|Facebook|' | append: settings.saucha_social_facebook | append: '§'
+    endif
+    if settings.saucha_social_tiktok != blank
+      echo 'tiktok|TikTok|' | append: settings.saucha_social_tiktok | append: '§'
+    endif
+    if settings.saucha_social_pinterest != blank
+      echo 'pinterest|Pinterest|' | append: settings.saucha_social_pinterest | append: '§'
+    endif
+    if settings.saucha_social_youtube != blank
+      echo 'youtube|YouTube|' | append: settings.saucha_social_youtube | append: '§'
+    endif
+  endcapture
+  assign social_list = social_items | split: '§'
+-%}
+
+{%- if social_list.size > 0 -%}
+  <ul class="s-social{% if class != blank %} {{ class }}{% endif %}" role="list">
+    {%- for item in social_list -%}
+      {%- assign parts = item | split: '|' -%}
+      <li>
+        <a class="s-social__link" href="{{ parts[2] }}" target="_blank" rel="noopener" aria-label="{{ parts[1] }} de {{ shop.name | escape }}">
+          <svg class="s-social__icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+            {%- render 'icon', icon: parts[0] -%}
+          </svg>
+        </a>
+      </li>
+    {%- endfor -%}
+  </ul>
+{%- endif -%}

@@ -1212,6 +1212,36 @@
       },
       {
         "type": "header",
+        "content": "Redes sociales",
+        "info": "Enlaces completos a los perfiles de Saucha. Los usan la página de contacto y el pie de página. Vacío = no se muestra."
+      },
+      {
+        "type": "url",
+        "id": "saucha_social_instagram",
+        "label": "Instagram"
+      },
+      {
+        "type": "url",
+        "id": "saucha_social_facebook",
+        "label": "Facebook"
+      },
+      {
+        "type": "url",
+        "id": "saucha_social_tiktok",
+        "label": "TikTok"
+      },
+      {
+        "type": "url",
+        "id": "saucha_social_pinterest",
+        "label": "Pinterest"
+      },
+      {
+        "type": "url",
+        "id": "saucha_social_youtube",
+        "label": "YouTube"
+      },
+      {
+        "type": "header",
         "content": "Descuentos automáticos"
       },
       {

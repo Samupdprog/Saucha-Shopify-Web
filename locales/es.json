@@ -13,7 +13,7 @@
       "name": "Nombre",
       "email": "Correo electrónico",
       "phone": "Teléfono",
-      "comment": "Comentario",
+      "comment": "Mensaje",
       "post_success": "Gracias por contactarnos. Te responderemos lo antes posible.",
       "error_heading": "Realiza los ajustes siguientes:"
     },

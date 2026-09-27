@@ -1,0 +1,233 @@
+{%- comment -%}
+  Saucha · texto editorial: un párrafo protagonista (serif) con título y texto secundario opcionales.
+  Para contar algo sin imagen, con el ritmo de lectura de la home.
+{%- endcomment -%}
+
+<section
+  class="s-section s-scheme-{{ section.settings.scheme }} s-pt-{{ section.settings.spacing_top }} s-pb-{{ section.settings.spacing_bottom }} s-texto s-texto--{{ section.settings.alignment }} s-texto--{{ section.settings.width }}"
+>
+  <div class="s-container">
+    <div class="s-texto__inner">
+      {%- if section.settings.title != blank -%}
+        <h2 class="s-texto__title" data-s-reveal="up">{{ section.settings.title | escape }}</h2>
+      {%- endif -%}
+
+      {%- if section.settings.statement != blank -%}
+        <div class="s-texto__statement s-texto__statement--{{ section.settings.statement_size }}" data-s-reveal="up" style="--s-i: 1;">
+          {{ section.settings.statement }}
+        </div>
+      {%- endif -%}
+
+      {%- if section.settings.text != blank -%}
+        <div class="s-texto__text rte" data-s-reveal="fade" style="--s-i: 2;">{{ section.settings.text }}</div>
+      {%- endif -%}
+
+      {%- if section.settings.link_label != blank and section.settings.link_url != blank -%}
+        <a class="s-link s-texto__link" href="{{ section.settings.link_url }}" data-s-reveal="fade" style="--s-i: 3;">{{ section.settings.link_label | escape }}</a>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+
+{% stylesheet %}
+  .s-texto__inner {
+    display: grid;
+    gap: var(--s-space-6);
+    max-width: 58rem;
+  }
+
+  .s-texto--narrow .s-texto__inner { max-width: 44rem; }
+  .s-texto--wide .s-texto__inner { max-width: 68rem; }
+
+  .s-texto--center .s-texto__inner {
+    margin-inline: auto;
+    text-align: center;
+    justify-items: center;
+  }
+
+  /* A la izquierda, el texto arranca en la segunda columna de la rejilla: más editorial */
+  @media screen and (min-width: 990px) {
+    .s-texto--left .s-texto__inner {
+      margin-inline-start: calc(100% / 12 * 2);
+    }
+  }
+
+  .s-texto__title {
+    margin: 0;
+    font-family: var(--s-font-serif);
+    font-weight: var(--s-font-serif-weight);
+    font-size: var(--s-type-h2);
+    line-height: var(--s-leading-title);
+    letter-spacing: var(--s-tracking-display);
+  }
+
+  .s-texto__statement {
+    font-family: var(--s-font-serif);
+    font-weight: var(--s-font-serif-weight);
+    line-height: 1.28;
+    letter-spacing: -0.005em;
+    color: var(--s-color-ink);
+    text-wrap: pretty;
+  }
+
+  .s-texto__statement--medium { font-size: clamp(1.5rem, 1.25rem + 1vw, 2.125rem); }
+  .s-texto__statement--large { font-size: clamp(1.75rem, 1.35rem + 1.7vw, 2.75rem); }
+
+  .s-texto__statement p {
+    margin: 0;
+  }
+
+  .s-texto__statement p + p {
+    margin-top: 0.6em;
+  }
+
+  .s-texto__statement em {
+    color: var(--s-color-cacao);
+  }
+
+  .s-texto__text {
+    max-width: 38rem;
+    font-family: var(--s-font-sans);
+    font-size: var(--s-type-body);
+    line-height: var(--s-leading-body);
+    color: var(--s-color-muted);
+  }
+
+  .s-texto__text p {
+    margin: 0;
+  }
+
+  .s-texto__text p + p {
+    margin-top: 0.9em;
+  }
+
+  .s-texto__link {
+    justify-self: start;
+    margin-top: var(--s-space-2);
+  }
+
+  .s-texto--center .s-texto__link {
+    justify-self: center;
+  }
+
+  @media screen and (max-width: 749px) {
+    .s-texto__inner {
+      gap: var(--s-space-5);
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Texto Saucha",
+  "tag": "div",
+  "class": "saucha-texto-section",
+  "disabled_on": { "groups": ["header", "footer"] },
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Título",
+      "info": "Opcional."
+    },
+    {
+      "type": "richtext",
+      "id": "statement",
+      "label": "Texto principal",
+      "info": "En serif, protagonista. La cursiva se muestra en cacao.",
+      "default": "<p>Saucha es una boutique pequeña de moda, accesorios y joyería en Las Palmas de Gran Canaria.</p>"
+    },
+    {
+      "type": "select",
+      "id": "statement_size",
+      "label": "Tamaño del texto principal",
+      "options": [
+        { "value": "medium", "label": "Medio" },
+        { "value": "large", "label": "Grande" }
+      ],
+      "default": "large"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Texto secundario",
+      "info": "Opcional, en sans y tono secundario."
+    },
+    {
+      "type": "text",
+      "id": "link_label",
+      "label": "Texto del enlace"
+    },
+    {
+      "type": "url",
+      "id": "link_url",
+      "label": "Enlace"
+    },
+    {
+      "type": "header",
+      "content": "Composición"
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "Alineación",
+      "options": [
+        { "value": "left", "label": "Izquierda (desplazada)" },
+        { "value": "center", "label": "Centrada" }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "select",
+      "id": "width",
+      "label": "Ancho del texto",
+      "options": [
+        { "value": "narrow", "label": "Estrecho" },
+        { "value": "medium", "label": "Medio" },
+        { "value": "wide", "label": "Ancho" }
+      ],
+      "default": "medium"
+    },
+    {
+      "type": "select",
+      "id": "scheme",
+      "label": "Fondo",
+      "options": [
+        { "value": "surface", "label": "Base" },
+        { "value": "cream", "label": "Crema" },
+        { "value": "blush", "label": "Rosa" }
+      ],
+      "default": "surface"
+    },
+    {
+      "type": "select",
+      "id": "spacing_top",
+      "label": "Espacio superior",
+      "options": [
+        { "value": "none", "label": "Ninguno" },
+        { "value": "xs", "label": "Mínimo" },
+        { "value": "sm", "label": "Pequeño" },
+        { "value": "md", "label": "Medio" },
+        { "value": "lg", "label": "Grande" }
+      ],
+      "default": "lg"
+    },
+    {
+      "type": "select",
+      "id": "spacing_bottom",
+      "label": "Espacio inferior",
+      "options": [
+        { "value": "none", "label": "Ninguno" },
+        { "value": "xs", "label": "Mínimo" },
+        { "value": "sm", "label": "Pequeño" },
+        { "value": "md", "label": "Medio" },
+        { "value": "lg", "label": "Grande" }
+      ],
+      "default": "md"
+    }
+  ],
+  "presets": [
+    { "name": "Texto Saucha" }
+  ]
+}
+{% endschema %}

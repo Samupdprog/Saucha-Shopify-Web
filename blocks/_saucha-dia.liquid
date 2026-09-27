@@ -1,0 +1,60 @@
+{%- doc -%}
+  Saucha · un día del horario de la boutique (sections/saucha-contact.liquid).
+  «Abierto ahora» lo calcula la sección a partir de data-day y data-hours.
+{%- enddoc -%}
+
+<div
+  class="s-contact__day"
+  data-day="{{ block.settings.day }}"
+  data-hours="{{ block.settings.hours | escape }}"
+  {{ block.shopify_attributes }}
+>
+  <dt>
+    {%- case block.settings.day -%}
+      {%- when '1' -%}Lunes
+      {%- when '2' -%}Martes
+      {%- when '3' -%}Miércoles
+      {%- when '4' -%}Jueves
+      {%- when '5' -%}Viernes
+      {%- when '6' -%}Sábado
+      {%- when '7' -%}Domingo
+      {%- when 'festivos' -%}Festivos
+    {%- endcase -%}
+  </dt>
+  <dd>{{ block.settings.hours | default: 'Cerrado' | escape }}</dd>
+</div>
+
+{% schema %}
+{
+  "name": "Día",
+  "tag": null,
+  "settings": [
+    {
+      "type": "select",
+      "id": "day",
+      "label": "Día",
+      "options": [
+        { "value": "1", "label": "Lunes" },
+        { "value": "2", "label": "Martes" },
+        { "value": "3", "label": "Miércoles" },
+        { "value": "4", "label": "Jueves" },
+        { "value": "5", "label": "Viernes" },
+        { "value": "6", "label": "Sábado" },
+        { "value": "7", "label": "Domingo" },
+        { "value": "festivos", "label": "Festivos" }
+      ],
+      "default": "1"
+    },
+    {
+      "type": "text",
+      "id": "hours",
+      "label": "Horario",
+      "info": "Ej. «10:00 – 20:00», «10:00 – 14:00 · 17:00 – 20:00» o «Cerrado».",
+      "default": "10:00 – 20:00"
+    }
+  ],
+  "presets": [
+    { "name": "Día" }
+  ]
+}
+{% endschema %}

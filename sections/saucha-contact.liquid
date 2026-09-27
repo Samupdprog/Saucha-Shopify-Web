@@ -1,9 +1,12 @@
 {%- comment -%}
   Saucha · página de contacto.
 
-  Arriba: título, texto y datos de la boutique en líneas finas · formulario nativo de Shopify
-  (bloque «contact-form» de Horizon: envío, errores y confirmación son los de Shopify).
-  Debajo: la visita, con fotografía opcional de la boutique y el mapa de Google.
+  1 · Fotografía de la boutique + información (dirección, «Cómo llegar», teléfono, correo, redes)
+  2 · Horario (bloques «Día», reordenables; marca hoy y si está abierta ahora, hora de Canarias)
+      + formulario nativo de Shopify (bloque «contact-form» de Horizon)
+  3 · Mapa de Google, teñido con la paleta hasta que se usa
+
+  Redes: Configuración del tema › Saucha › Redes sociales (snippets/saucha-social-links).
   Una línea de datos vacía no se muestra.
 {%- endcomment -%}
 
@@ -31,7 +34,9 @@
   endif
 
   assign phone_href = section.settings.phone | remove: ' ' | remove: '-' | remove: '.' | remove: '(' | remove: ')'
-  assign whatsapp_number = section.settings.whatsapp | remove: ' ' | remove: '+' | remove: '-'
+  assign overlay_alpha = section.settings.overlay_opacity | divided_by: 100.0
+  # Los bloques de tema llegan como «@theme»: aquí solo se admiten días (el formulario es estático y no cuenta)
+  assign hour_count = section.blocks.size
 -%}
 
 <section
@@ -39,118 +44,193 @@
   aria-labelledby="SauchaContact-{{ section.id }}"
 >
   <div class="s-container">
-    <div class="s-contact__grid">
-      <div class="s-contact__intro">
+    {%- comment -%} 1 · Boutique {%- endcomment -%}
+    <div
+      class="
+        s-contact__lead
+        s-contact__lead--image-{{ section.settings.image_side }}
+        s-contact__lead--align-{{ section.settings.content_alignment }}
+        {% unless has_photo or request.design_mode %}s-contact__lead--no-photo{% endunless %}
+        {% if section.settings.mobile_image_first %}s-contact__lead--mobile-image-first{% endif %}
+      "
+    >
+      {%- if has_photo or request.design_mode -%}
+        <div
+          class="s-media s-contact__photo"
+          data-s-reveal="media"
+          style="
+            --s-media-h: {{ section.settings.height }}px;
+            --s-media-h-m: {{ section.settings.height_mobile }}px;
+            --s-fx: {{ section.settings.focus_x }}%; --s-fy: {{ section.settings.focus_y }}%;
+            --s-fx-m: {{ section.settings.focus_x_mobile }}%; --s-fy-m: {{ section.settings.focus_y_mobile }}%;
+          "
+        >
+          {% render 'saucha-media',
+            image: section.settings.image_desktop,
+            image_mobile: section.settings.image_mobile,
+            sizes: '(min-width: 990px) 55vw, 100vw',
+            loading: 'eager',
+            fetchpriority: 'high',
+            alt: shop.name,
+            placeholder: 'lifestyle-2'
+          %}
+          {%- if section.settings.overlay_opacity > 0 -%}
+            <span
+              class="s-contact__photo-overlay"
+              style="background: {{ section.settings.overlay_color }}; opacity: {{ overlay_alpha }};"
+              aria-hidden="true"
+            ></span>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+
+      <div class="s-contact__info">
         <h1 class="s-contact__title" id="SauchaContact-{{ section.id }}" data-s-reveal="headline">{{ page_title | escape }}</h1>
 
         {%- if intro != blank -%}
           <div class="s-contact__text rte" data-s-reveal="up" style="--s-i: 1;">{{ intro }}</div>
         {%- endif -%}
 
-        <dl class="s-contact__details" data-s-reveal="up" style="--s-i: 2;">
+        <div class="s-contact__facts" data-s-reveal="up" style="--s-i: 2;">
           {%- if section.settings.address != blank -%}
-            <div class="s-contact__row">
-              <dt>Boutique</dt>
-              <dd>{{ section.settings.address }}</dd>
-            </div>
-          {%- endif -%}
-          {%- if section.settings.hours != blank -%}
-            <div class="s-contact__row">
-              <dt>Horario</dt>
-              <dd>{{ section.settings.hours }}</dd>
-            </div>
-          {%- endif -%}
-          {%- if section.settings.phone != blank -%}
-            <div class="s-contact__row">
-              <dt>Teléfono</dt>
-              <dd><a class="s-contact__link" href="tel:{{ phone_href }}">{{ section.settings.phone | escape }}</a></dd>
-            </div>
-          {%- endif -%}
-          {%- if section.settings.whatsapp != blank -%}
-            <div class="s-contact__row">
-              <dt>WhatsApp</dt>
-              <dd><a class="s-contact__link" href="https://wa.me/{{ whatsapp_number }}" target="_blank" rel="noopener">{{ section.settings.whatsapp | escape }}</a></dd>
-            </div>
-          {%- endif -%}
-          {%- if section.settings.email != blank -%}
-            <div class="s-contact__row">
-              <dt>Correo</dt>
-              <dd><a class="s-contact__link" href="mailto:{{ section.settings.email | escape }}">{{ section.settings.email | escape }}</a></dd>
-            </div>
-          {%- endif -%}
-        </dl>
-      </div>
-
-      <div class="s-contact__form" data-s-reveal="up" style="--s-i: 2;">
-        {%- if section.settings.form_title != blank -%}
-          <h2 class="s-contact__form-title">{{ section.settings.form_title | escape }}</h2>
-        {%- endif -%}
-        {% content_for 'block', type: 'contact-form', id: 'contact-form' %}
-      </div>
-    </div>
-
-    {%- if map_src != blank or has_photo -%}
-      <div class="s-contact__visit{% if has_photo and map_src != blank %} s-contact__visit--split{% endif %}">
-        <div class="s-contact__visit-head" data-s-reveal="up">
-          {%- if section.settings.visit_title != blank -%}
-            <h2 class="s-contact__visit-title">{{ section.settings.visit_title | escape }}</h2>
-          {%- endif -%}
-          <div class="s-contact__visit-meta">
-            {%- if section.settings.visit_line != blank -%}
-              <p class="s-contact__visit-line">{{ section.settings.visit_line | escape }}</p>
-            {%- endif -%}
+            <address class="s-contact__address">
+              <span class="s-contact__store">{{ shop.name }}</span>
+              {{ section.settings.address }}
+            </address>
             {%- if section.settings.directions_url != blank -%}
               <a class="s-contact__directions" href="{{ section.settings.directions_url }}" target="_blank" rel="noopener">
                 {{ section.settings.directions_label | default: 'Cómo llegar' | escape }}
                 <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M5 11 11 5M6 5h5v5" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
               </a>
             {%- endif -%}
-          </div>
-        </div>
+          {%- endif -%}
 
-        <div
-          class="s-contact__visit-media"
-          style="
-            --s-visit-h: {{ section.settings.height }}px;
-            --s-visit-h-m: {{ section.settings.height_mobile }}px;
-          "
-        >
-          {%- if has_photo -%}
-            <div
-              class="s-media s-contact__photo"
-              data-s-reveal="media"
-              style="
-                --s-fx: {{ section.settings.focus_x }}%; --s-fy: {{ section.settings.focus_y }}%;
-                --s-fx-m: {{ section.settings.focus_x_mobile }}%; --s-fy-m: {{ section.settings.focus_y_mobile }}%;
-              "
-            >
-              {% render 'saucha-media',
-                image: section.settings.image_desktop,
-                image_mobile: section.settings.image_mobile,
-                sizes: '(min-width: 990px) 40vw, 100vw'
-              %}
-              {%- if section.settings.overlay_opacity > 0 -%}
-                <span class="s-media__overlay" style="--s-overlay: {{ section.settings.overlay_opacity | divided_by: 100.0 }};" aria-hidden="true"></span>
+          {%- if section.settings.phone != blank or section.settings.email != blank -%}
+            <p class="s-contact__lines">
+              {%- if section.settings.phone != blank -%}
+                <a class="s-contact__line" href="tel:{{ phone_href }}">{{ section.settings.phone | escape }}</a>
               {%- endif -%}
-            </div>
+              {%- if section.settings.email != blank -%}
+                <a class="s-contact__line" href="mailto:{{ section.settings.email | escape }}">{{ section.settings.email | escape }}</a>
+              {%- endif -%}
+            </p>
           {%- endif -%}
 
-          {%- if map_src != blank -%}
-            <div class="s-contact__map" data-s-reveal="media">
-              <iframe
-                src="{{ map_src }}"
-                title="Mapa: {{ section.settings.visit_title | default: shop.name | escape }}"
-                loading="lazy"
-                referrerpolicy="strict-origin-when-cross-origin"
-                allowfullscreen
-              ></iframe>
-            </div>
+          {% render 'saucha-social-links', class: 's-contact__social' %}
+        </div>
+      </div>
+    </div>
+
+    {%- comment -%} 2 · Horario + formulario {%- endcomment -%}
+    <div class="s-contact__middle">
+      {%- if hour_count > 0 -%}
+        <div class="s-contact__hours" data-saucha-hours data-timezone="{{ section.settings.timezone | default: 'Atlantic/Canary' }}" data-s-reveal="up">
+          <h2 class="s-contact__subtitle">{{ section.settings.hours_title | default: 'Horario' | escape }}</h2>
+          <p class="s-contact__status" data-hours-status hidden></p>
+          <dl class="s-contact__days">
+            {% content_for 'blocks' %}
+          </dl>
+          {%- if section.settings.hours_note != blank -%}
+            <div class="s-contact__note rte">{{ section.settings.hours_note }}</div>
           {%- endif -%}
         </div>
+      {%- endif -%}
+
+      <div class="s-contact__form" data-s-reveal="up" style="--s-i: 1;">
+        {%- if section.settings.form_title != blank -%}
+          <h2 class="s-contact__subtitle">{{ section.settings.form_title | escape }}</h2>
+        {%- endif -%}
+        {%- if section.settings.form_text != blank -%}
+          <div class="s-contact__form-text rte">{{ section.settings.form_text }}</div>
+        {%- endif -%}
+        {% content_for 'block', type: 'contact-form', id: 'contact-form' %}
+      </div>
+    </div>
+
+    {%- comment -%} 3 · Mapa {%- endcomment -%}
+    {%- if map_src != blank -%}
+      <div
+        class="s-contact__map"
+        data-s-reveal="fade"
+        style="--s-map-h: {{ section.settings.map_height }}px; --s-map-h-m: {{ section.settings.map_height_mobile }}px;"
+      >
+        <iframe
+          src="{{ map_src }}"
+          title="Mapa: {{ shop.name | escape }}{% if section.settings.address != blank %}, {{ section.settings.address | strip_html | strip | escape }}{% endif %}"
+          loading="lazy"
+          referrerpolicy="strict-origin-when-cross-origin"
+          allowfullscreen
+        ></iframe>
       </div>
     {%- endif -%}
   </div>
 </section>
+
+{%- if hour_count > 0 -%}
+  <script>
+    /* Saucha · horario: marca hoy y dice si la boutique está abierta, con la hora local de la tienda.
+       Entiende «10:00 – 20:00», «10:00-14:00 · 17:00-20:00» o «Cerrado». Si no entiende nada, no dice nada. */
+    (() => {
+      const run = () => {
+        document.querySelectorAll('[data-saucha-hours]:not([data-ready])').forEach((root) => {
+          root.dataset.ready = 'true';
+          const timeZone = root.dataset.timezone || 'Atlantic/Canary';
+          let parts;
+          try {
+            parts = new Intl.DateTimeFormat('en-GB', { timeZone, weekday: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(new Date());
+          } catch (e) {
+            return;
+          }
+          const get = (type) => parts.find((p) => p.type === type)?.value;
+          const today = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].indexOf(get('weekday')) + 1;
+          const now = Number(get('hour')) * 60 + Number(get('minute'));
+
+          const days = {};
+          root.querySelectorAll('[data-day]').forEach((row) => {
+            const ranges = [...(row.dataset.hours || '').matchAll(/(\d{1,2})[:.h](\d{2})\s*[–—-]\s*(\d{1,2})[:.h](\d{2})/g)].map((m) => [
+              Number(m[1]) * 60 + Number(m[2]),
+              Number(m[3]) * 60 + Number(m[4]),
+            ]);
+            days[row.dataset.day] = ranges;
+            if (row.dataset.day === String(today)) row.classList.add('is-today');
+          });
+          if (!Object.values(days).some((r) => r.length)) return;
+
+          const fmt = (m) => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`;
+          const names = ['', 'el lunes', 'el martes', 'el miércoles', 'el jueves', 'el viernes', 'el sábado', 'el domingo'];
+          const status = root.querySelector('[data-hours-status]');
+          const open = (days[today] || []).find(([a, b]) => now >= a && now < b);
+
+          let text = '';
+          if (open) {
+            text = `Abierto ahora · hasta las ${fmt(open[1])}`;
+            root.classList.add('is-open');
+          } else {
+            const later = (days[today] || []).find(([a]) => a > now);
+            if (later) {
+              text = `Cerrado ahora · abre hoy a las ${fmt(later[0])}`;
+            } else {
+              for (let i = 1; i <= 7; i++) {
+                const d = ((today - 1 + i) % 7) + 1;
+                if (days[d]?.length) {
+                  text = `Cerrado ahora · abre ${i === 1 ? 'mañana' : names[d]} a las ${fmt(days[d][0][0])}`;
+                  break;
+                }
+              }
+            }
+          }
+          if (status && text) {
+            status.textContent = text;
+            status.hidden = false;
+          }
+        });
+      };
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run);
+      else run();
+      document.addEventListener('shopify:section:load', run);
+    })();
+  </script>
+{%- endif -%}
 
 {% schema %}
 {
@@ -158,9 +238,8 @@
   "tag": "div",
   "class": "saucha-contact-section",
   "blocks": [
-    {
-      "type": "contact-form"
-    }
+    { "type": "contact-form" },
+    { "type": "_saucha-dia" }
   ],
   "settings": [
     {
@@ -178,81 +257,30 @@
       "type": "richtext",
       "id": "text",
       "label": "Texto",
-      "default": "<p>Escríbenos para cualquier duda sobre tallas, pedidos o disponibilidad y te responderemos lo antes posible.</p>"
+      "default": "<p>Ven a vernos a la boutique o escríbenos: te ayudamos con tallas, disponibilidad y pedidos.</p>"
     },
     {
       "type": "checkbox",
       "id": "use_page_content",
       "label": "Usar el contenido de la página",
       "info": "Si la página tiene texto en Tienda online › Páginas, sustituye al texto de arriba.",
-      "default": true
-    },
-    {
-      "type": "text",
-      "id": "form_title",
-      "label": "Título del formulario",
-      "default": "Escríbenos"
+      "default": false
     },
     {
       "type": "header",
       "content": "Datos de la boutique",
-      "info": "Una línea vacía no se muestra."
+      "info": "Una línea vacía no se muestra. Las redes se configuran en Configuración del tema › Saucha."
     },
     {
       "type": "richtext",
       "id": "address",
-      "label": "Dirección",
-      "default": "<p>Las Palmas de Gran Canaria</p>"
-    },
-    {
-      "type": "richtext",
-      "id": "hours",
-      "label": "Horario"
-    },
-    {
-      "type": "text",
-      "id": "phone",
-      "label": "Teléfono"
-    },
-    {
-      "type": "text",
-      "id": "whatsapp",
-      "label": "WhatsApp",
-      "info": "Con prefijo de país, p. ej. +34 600 000 000"
-    },
-    {
-      "type": "text",
-      "id": "email",
-      "label": "Correo"
-    },
-    {
-      "type": "header",
-      "content": "Visita y mapa"
-    },
-    {
-      "type": "text",
-      "id": "visit_title",
-      "label": "Título",
-      "default": "Visítanos en la boutique"
-    },
-    {
-      "type": "text",
-      "id": "visit_line",
-      "label": "Línea junto al título",
-      "default": "Las Palmas de Gran Canaria"
-    },
-    {
-      "type": "text",
-      "id": "map_url",
-      "label": "Mapa de Google (URL de inserción)",
-      "info": "En Google Maps: Compartir › Insertar un mapa › copia solo el enlace de src=\"…\". Debe empezar por https://www.google.com/maps/embed",
-      "default": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3349.7439076311434!2d-15.422270724838814!3d28.107092007747962!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xc409580c77acb83%3A0xfe948a8f48562d6d!2sSaucha!5e1!3m2!1ses!2ses!4v1790531208269!5m2!1ses!2ses"
+      "label": "Dirección"
     },
     {
       "type": "url",
       "id": "directions_url",
       "label": "Enlace «Cómo llegar»",
-      "info": "Enlace de Google Maps a la boutique. Vacío = no se muestra."
+      "info": "Enlace de Google Maps a la boutique."
     },
     {
       "type": "text",
@@ -261,9 +289,58 @@
       "default": "Cómo llegar"
     },
     {
+      "type": "text",
+      "id": "phone",
+      "label": "Teléfono"
+    },
+    {
+      "type": "text",
+      "id": "email",
+      "label": "Correo"
+    },
+    {
       "type": "header",
-      "content": "Fotografía de la boutique",
-      "info": "Opcional. Con foto, foto y mapa comparten la banda; sin foto, el mapa ocupa todo el ancho."
+      "content": "Horario",
+      "info": "Un bloque «Día» por fila; se reordenan arrastrando."
+    },
+    {
+      "type": "text",
+      "id": "hours_title",
+      "label": "Título",
+      "default": "Horario"
+    },
+    {
+      "type": "richtext",
+      "id": "hours_note",
+      "label": "Nota bajo el horario",
+      "info": "Opcional. Ej. cambios en festivos."
+    },
+    {
+      "type": "text",
+      "id": "timezone",
+      "label": "Zona horaria de la boutique",
+      "info": "Para «Abierto ahora». Canarias: Atlantic/Canary",
+      "default": "Atlantic/Canary"
+    },
+    {
+      "type": "header",
+      "content": "Formulario"
+    },
+    {
+      "type": "text",
+      "id": "form_title",
+      "label": "Título",
+      "default": "Escríbenos"
+    },
+    {
+      "type": "richtext",
+      "id": "form_text",
+      "label": "Texto",
+      "default": "<p>Respondemos por correo lo antes posible.</p>"
+    },
+    {
+      "type": "header",
+      "content": "Fotografía de la boutique"
     },
     {
       "type": "image_picker",
@@ -273,7 +350,35 @@
     {
       "type": "image_picker",
       "id": "image_mobile",
-      "label": "Imagen móvil"
+      "label": "Imagen móvil",
+      "info": "Opcional. Si falta, se usa la de escritorio."
+    },
+    {
+      "type": "select",
+      "id": "image_side",
+      "label": "Lado de la imagen · escritorio",
+      "options": [
+        { "value": "left", "label": "Izquierda" },
+        { "value": "right", "label": "Derecha" }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "select",
+      "id": "content_alignment",
+      "label": "Alineación vertical del texto",
+      "options": [
+        { "value": "start", "label": "Arriba" },
+        { "value": "center", "label": "Centro" },
+        { "value": "end", "label": "Abajo" }
+      ],
+      "default": "end"
+    },
+    {
+      "type": "checkbox",
+      "id": "mobile_image_first",
+      "label": "Imagen antes del texto en móvil",
+      "default": false
     },
     {
       "type": "range",
@@ -317,8 +422,34 @@
     },
     {
       "type": "range",
+      "id": "height",
+      "label": "Altura · escritorio",
+      "min": 400,
+      "max": 900,
+      "step": 20,
+      "unit": "px",
+      "default": 680
+    },
+    {
+      "type": "range",
+      "id": "height_mobile",
+      "label": "Altura · móvil",
+      "min": 260,
+      "max": 640,
+      "step": 20,
+      "unit": "px",
+      "default": 420
+    },
+    {
+      "type": "color",
+      "id": "overlay_color",
+      "label": "Color del velo",
+      "default": "#211b18"
+    },
+    {
+      "type": "range",
       "id": "overlay_opacity",
-      "label": "Oscurecer la foto",
+      "label": "Intensidad del velo",
       "min": 0,
       "max": 60,
       "step": 5,
@@ -326,24 +457,34 @@
       "default": 0
     },
     {
-      "type": "range",
-      "id": "height",
-      "label": "Altura · escritorio",
-      "min": 360,
-      "max": 760,
-      "step": 20,
-      "unit": "px",
-      "default": 520
+      "type": "header",
+      "content": "Mapa"
+    },
+    {
+      "type": "text",
+      "id": "map_url",
+      "label": "Mapa de Google (URL de inserción)",
+      "info": "En Google Maps: Compartir › Insertar un mapa › copia solo el enlace de src=\"…\". Debe empezar por https://www.google.com/maps/embed"
     },
     {
       "type": "range",
-      "id": "height_mobile",
+      "id": "map_height",
+      "label": "Altura · escritorio",
+      "min": 320,
+      "max": 720,
+      "step": 20,
+      "unit": "px",
+      "default": 480
+    },
+    {
+      "type": "range",
+      "id": "map_height_mobile",
       "label": "Altura · móvil",
-      "min": 260,
+      "min": 240,
       "max": 520,
       "step": 20,
       "unit": "px",
-      "default": 360
+      "default": 340
     },
     {
       "type": "header",
@@ -391,11 +532,16 @@
     {
       "name": "Contacto Saucha",
       "blocks": {
-        "contact-form": {
-          "type": "contact-form",
-          "static": true
-        }
-      }
+        "contact-form": { "type": "contact-form", "static": true },
+        "d1": { "type": "_saucha-dia", "settings": { "day": "1", "hours": "10:00 – 20:00" } },
+        "d2": { "type": "_saucha-dia", "settings": { "day": "2", "hours": "10:00 – 20:00" } },
+        "d3": { "type": "_saucha-dia", "settings": { "day": "3", "hours": "10:00 – 20:00" } },
+        "d4": { "type": "_saucha-dia", "settings": { "day": "4", "hours": "10:00 – 20:00" } },
+        "d5": { "type": "_saucha-dia", "settings": { "day": "5", "hours": "10:00 – 20:00" } },
+        "d6": { "type": "_saucha-dia", "settings": { "day": "6", "hours": "10:00 – 14:00" } },
+        "d7": { "type": "_saucha-dia", "settings": { "day": "7", "hours": "Cerrado" } }
+      },
+      "block_order": ["d1", "d2", "d3", "d4", "d5", "d6", "d7"]
     }
   ]
 }

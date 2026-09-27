@@ -1,0 +1,274 @@
+{%- comment -%}
+  Saucha · fotografías en composición (escaparate, interior, detalles, joyería…).
+  Cada foto es un bloque reordenable con imagen escritorio/móvil, encuadre y pie opcional.
+  Composiciones: asimétrica (una grande y otra menor desplazada) · pareja · trío · panorámica.
+{%- endcomment -%}
+
+<section
+  class="s-section s-scheme-{{ section.settings.scheme }} s-pt-{{ section.settings.spacing_top }} s-pb-{{ section.settings.spacing_bottom }} s-fotos s-fotos--{{ section.settings.layout }}{% if section.settings.flip %} s-fotos--flip{% endif %}"
+  style="
+    --s-fotos-h: {{ section.settings.height }}px;
+    --s-fotos-h-m: {{ section.settings.height_mobile }}px;
+  "
+>
+  <div class="s-container">
+    <div class="s-fotos__grid">
+      {%- for block in section.blocks -%}
+        {%- liquid
+          assign sizes = '(min-width: 990px) 50vw, 100vw'
+          if section.settings.layout == 'panoramica'
+            assign sizes = '100vw'
+          elsif section.settings.layout == 'trio'
+            assign sizes = '(min-width: 990px) 33vw, 100vw'
+          endif
+        -%}
+        <figure class="s-fotos__item" {{ block.shopify_attributes }}>
+          <div
+            class="s-media s-fotos__media"
+            data-s-reveal="media"
+            style="
+              --s-i: {{ forloop.index0 }};
+              --s-fx: {{ block.settings.focus_x }}%; --s-fy: {{ block.settings.focus_y }}%;
+              --s-fx-m: {{ block.settings.focus_x_mobile }}%; --s-fy-m: {{ block.settings.focus_y_mobile }}%;
+            "
+          >
+            {% render 'saucha-media',
+              image: block.settings.image_desktop,
+              image_mobile: block.settings.image_mobile,
+              sizes: sizes,
+              alt: block.settings.caption,
+              placeholder: 'lifestyle-1'
+            %}
+          </div>
+          {%- if block.settings.caption != blank -%}
+            <figcaption class="s-fotos__caption" data-s-reveal="fade" style="--s-i: {{ forloop.index0 | plus: 1 }};">{{ block.settings.caption | escape }}</figcaption>
+          {%- endif -%}
+        </figure>
+      {%- endfor -%}
+    </div>
+  </div>
+</section>
+
+{% stylesheet %}
+  .s-fotos__grid {
+    display: grid;
+    gap: var(--s-space-4);
+  }
+
+  .s-fotos__item {
+    margin: 0;
+    min-width: 0;
+  }
+
+  .s-fotos__media {
+    --s-media-h: var(--s-fotos-h);
+    --s-media-h-m: var(--s-fotos-h-m);
+    --s-media-radius: var(--s-radius-media);
+  }
+
+  .s-fotos__media .s-media__img {
+    transition: transform calc(var(--s-dur-settle) * 1.4) var(--s-ease);
+  }
+
+  @media (hover: hover) {
+    .s-fotos__item:hover .s-media__img {
+      transform: scale(1.02);
+    }
+  }
+
+  .s-fotos__caption {
+    margin-top: var(--s-space-3);
+    font-family: var(--s-font-sans);
+    font-size: var(--s-type-body-sm);
+    color: var(--s-color-muted);
+  }
+
+  /* ---------- Escritorio ---------- */
+  @media screen and (min-width: 750px) {
+    .s-fotos__grid {
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      column-gap: var(--s-space-5);
+      align-items: start;
+    }
+
+    /* Asimétrica: una grande (7 col.) y otra menor (4 col.) que baja; el aire entre ambas da ritmo */
+    .s-fotos--asimetrica .s-fotos__item:nth-child(odd) { grid-column: 1 / span 7; }
+    .s-fotos--asimetrica .s-fotos__item:nth-child(even) {
+      grid-column: 9 / span 4;
+      margin-top: calc(var(--s-fotos-h) * 0.32);
+    }
+
+    .s-fotos--asimetrica .s-fotos__item:nth-child(even) .s-fotos__media {
+      --s-media-h: calc(var(--s-fotos-h) * 0.7);
+    }
+
+    .s-fotos--asimetrica.s-fotos--flip .s-fotos__item:nth-child(odd) { grid-column: 6 / span 7; grid-row: 1; }
+    .s-fotos--asimetrica.s-fotos--flip .s-fotos__item:nth-child(even) { grid-column: 1 / span 4; grid-row: 1; }
+
+    .s-fotos--pareja .s-fotos__item { grid-column: span 6; }
+    .s-fotos--trio .s-fotos__item { grid-column: span 4; }
+
+    /* Trío: la del centro baja un poco, para que no sea una fila de tarjetas */
+    .s-fotos--trio .s-fotos__item:nth-child(3n + 2) { margin-top: var(--s-space-16); }
+
+    .s-fotos--panoramica .s-fotos__item { grid-column: 1 / -1; }
+  }
+
+  /* ---------- Móvil: nada de apilar sin más ---------- */
+  @media screen and (max-width: 749px) {
+    .s-fotos__grid {
+      gap: var(--s-space-3);
+    }
+
+    .s-fotos--asimetrica .s-fotos__grid,
+    .s-fotos--pareja .s-fotos__grid {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+
+    .s-fotos--asimetrica .s-fotos__item:nth-child(odd) { grid-column: 1 / -1; }
+    .s-fotos--asimetrica .s-fotos__item:nth-child(even) {
+      grid-column: 3 / -1;
+    }
+
+    .s-fotos--asimetrica .s-fotos__item:nth-child(even) .s-fotos__media {
+      --s-media-h-m: calc(var(--s-fotos-h-m) * 0.72);
+    }
+
+    .s-fotos--pareja .s-fotos__item { grid-column: span 3; }
+
+    .s-fotos--pareja .s-fotos__item .s-fotos__media {
+      --s-media-h-m: calc(var(--s-fotos-h-m) * 0.72);
+    }
+
+    /* Trío en carril deslizable con asomo */
+    .s-fotos--trio .s-fotos__grid {
+      grid-auto-flow: column;
+      grid-auto-columns: 74%;
+      margin-inline: calc(var(--s-gutter) * -1);
+      padding-inline: var(--s-gutter);
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+    }
+
+    .s-fotos--trio .s-fotos__grid::-webkit-scrollbar { display: none; }
+    .s-fotos--trio .s-fotos__item { scroll-snap-align: start; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .s-fotos__media .s-media__img { transition: none; }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Fotos Saucha",
+  "tag": "div",
+  "class": "saucha-fotos-section",
+  "disabled_on": { "groups": ["header", "footer"] },
+  "max_blocks": 6,
+  "blocks": [
+    {
+      "type": "foto",
+      "name": "Foto",
+      "settings": [
+        { "type": "image_picker", "id": "image_desktop", "label": "Imagen escritorio" },
+        { "type": "image_picker", "id": "image_mobile", "label": "Imagen móvil", "info": "Opcional. Si falta, se usa la de escritorio." },
+        { "type": "range", "id": "focus_x", "label": "Posición horizontal · escritorio", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+        { "type": "range", "id": "focus_y", "label": "Posición vertical · escritorio", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+        { "type": "range", "id": "focus_x_mobile", "label": "Posición horizontal · móvil", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+        { "type": "range", "id": "focus_y_mobile", "label": "Posición vertical · móvil", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
+        { "type": "text", "id": "caption", "label": "Pie de foto", "info": "Opcional. También se usa como texto alternativo." }
+      ]
+    }
+  ],
+  "settings": [
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Composición",
+      "options": [
+        { "value": "asimetrica", "label": "Asimétrica (una grande y otra menor)" },
+        { "value": "pareja", "label": "Pareja" },
+        { "value": "trio", "label": "Trío" },
+        { "value": "panoramica", "label": "Panorámica (una a todo el ancho)" }
+      ],
+      "default": "asimetrica"
+    },
+    {
+      "type": "checkbox",
+      "id": "flip",
+      "label": "Invertir (la grande a la derecha)",
+      "default": false,
+      "visible_if": "{{ section.settings.layout == 'asimetrica' }}"
+    },
+    {
+      "type": "range",
+      "id": "height",
+      "label": "Altura · escritorio",
+      "min": 320,
+      "max": 900,
+      "step": 20,
+      "unit": "px",
+      "default": 680
+    },
+    {
+      "type": "range",
+      "id": "height_mobile",
+      "label": "Altura · móvil",
+      "min": 220,
+      "max": 640,
+      "step": 20,
+      "unit": "px",
+      "default": 460
+    },
+    {
+      "type": "select",
+      "id": "scheme",
+      "label": "Fondo",
+      "options": [
+        { "value": "surface", "label": "Base" },
+        { "value": "cream", "label": "Crema" },
+        { "value": "blush", "label": "Rosa" }
+      ],
+      "default": "surface"
+    },
+    {
+      "type": "select",
+      "id": "spacing_top",
+      "label": "Espacio superior",
+      "options": [
+        { "value": "none", "label": "Ninguno" },
+        { "value": "xs", "label": "Mínimo" },
+        { "value": "sm", "label": "Pequeño" },
+        { "value": "md", "label": "Medio" },
+        { "value": "lg", "label": "Grande" }
+      ],
+      "default": "md"
+    },
+    {
+      "type": "select",
+      "id": "spacing_bottom",
+      "label": "Espacio inferior",
+      "options": [
+        { "value": "none", "label": "Ninguno" },
+        { "value": "xs", "label": "Mínimo" },
+        { "value": "sm", "label": "Pequeño" },
+        { "value": "md", "label": "Medio" },
+        { "value": "lg", "label": "Grande" }
+      ],
+      "default": "md"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Fotos Saucha",
+      "blocks": {
+        "f1": { "type": "foto" },
+        "f2": { "type": "foto" }
+      },
+      "block_order": ["f1", "f2"]
+    }
+  ]
+}
+{% endschema %}

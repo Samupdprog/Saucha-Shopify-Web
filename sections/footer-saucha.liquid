@@ -124,6 +124,13 @@
           {% endif %}
 
 
+          {%- liquid
+            # Saucha · las redes globales (Configuración del tema › Saucha › Redes sociales) mandan sobre las de esta sección
+            assign social_instagram = settings.saucha_social_instagram | default: section.settings.instagram_url
+            assign social_facebook = settings.saucha_social_facebook | default: section.settings.facebook_url
+            assign social_tiktok = settings.saucha_social_tiktok | default: section.settings.tiktok_url
+            assign social_youtube = settings.saucha_social_youtube | default: section.settings.youtube_url
+          -%}
           <div
             class="saucha-footer__social-list"
             aria-label="Redes sociales"
@@ -135,11 +142,11 @@
 
             {% if section.settings.show_instagram %}
 
-              {% if section.settings.instagram_url != blank %}
+              {% if social_instagram != blank %}
 
                 <a
                   class="saucha-footer__social-link"
-                  href="{{ section.settings.instagram_url }}"
+                  href="{{ social_instagram }}"
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Instagram"
@@ -166,7 +173,7 @@
                     {% render 'icon', icon: 'instagram' %}
                   </svg>
 
-              {% if section.settings.instagram_url != blank %}
+              {% if social_instagram != blank %}
 
                 </a>
 
@@ -185,11 +192,11 @@
 
             {% if section.settings.show_facebook %}
 
-              {% if section.settings.facebook_url != blank %}
+              {% if social_facebook != blank %}
 
                 <a
                   class="saucha-footer__social-link"
-                  href="{{ section.settings.facebook_url }}"
+                  href="{{ social_facebook }}"
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="Facebook"
@@ -216,7 +223,7 @@
                     {% render 'icon', icon: 'facebook' %}
                   </svg>
 
-              {% if section.settings.facebook_url != blank %}
+              {% if social_facebook != blank %}
 
                 </a>
 
@@ -235,11 +242,11 @@
 
             {% if section.settings.show_tiktok %}
 
-              {% if section.settings.tiktok_url != blank %}
+              {% if social_tiktok != blank %}
 
                 <a
                   class="saucha-footer__social-link"
-                  href="{{ section.settings.tiktok_url }}"
+                  href="{{ social_tiktok }}"
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="TikTok"
@@ -266,7 +273,7 @@
                     {% render 'icon', icon: 'tiktok' %}
                   </svg>
 
-              {% if section.settings.tiktok_url != blank %}
+              {% if social_tiktok != blank %}
 
                 </a>
 
@@ -335,11 +342,11 @@
 
             {% if section.settings.show_youtube %}
 
-              {% if section.settings.youtube_url != blank %}
+              {% if social_youtube != blank %}
 
                 <a
                   class="saucha-footer__social-link"
-                  href="{{ section.settings.youtube_url }}"
+                  href="{{ social_youtube }}"
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label="YouTube"
@@ -366,7 +373,7 @@
                     {% render 'icon', icon: 'youtube' %}
                   </svg>
 
-              {% if section.settings.youtube_url != blank %}
+              {% if social_youtube != blank %}
 
                 </a>
 
