@@ -128,7 +128,7 @@
     "localization_region_and_language": "Región e idioma",
     "no_results_found": "No se han encontrado resultados",
     "cart_total": "Total del carrito",
-    "your_cart_is_empty": "Tu carrito esta vacío",
+    "your_cart_is_empty": "Tu carrito está vacío",
     "product_image": "Imagen del producto",
     "product_information": "Información del producto",
     "quantity": "Cantidad",
@@ -286,16 +286,16 @@
   },
   "gift_cards": {
     "issued": {
-      "how_to_use_gift_card": "Usar el código de la tarjeta de regalo online o el código QR en la tienda",
+      "how_to_use_gift_card": "Úsala en la tienda online con el código o en la boutique enseñando el código QR.",
       "title": "Este es el saldo de tu tarjeta de regalo de {{ value }} para {{ shop }}.",
       "subtext": "Tu tarjeta de regalo",
-      "shop_link": "Visitar la tienda online",
-      "add_to_apple_wallet": "Agregar a Apple Wallet",
+      "shop_link": "Ir a la tienda",
+      "add_to_apple_wallet": "Añadir a Apple Wallet",
       "qr_image_alt": "Código QR — escanea para canjear la tarjeta de regalo",
-      "copy_code": "Copiar el código de la tarjeta de regalo",
+      "copy_code": "Copiar código",
       "expiration_date": "Caduca el {{ expires_on }}",
-      "copy_code_success": "El código se copió correctamente",
-      "expired": "Vencida"
+      "copy_code_success": "Código copiado",
+      "expired": "Caducada"
     }
   },
   "placeholders": {

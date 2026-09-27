@@ -242,7 +242,7 @@
                               <dt class="visually-hidden">{{ option.name }}:</dt>
                               <dd>
                                 {{- option.value -}}
-                                {%- if forloop.last != true %},&nbsp;{% endif -%}
+                                {%- if forloop.last != true %}<span class="cart-items__variant-sep" aria-hidden="true"> · </span>{% endif -%}
                               </dd>
                             </div>
                           {%- endfor -%}
@@ -283,20 +283,25 @@
                         <p>{{ item.selling_plan_allocation.selling_plan.name }}</p>
                       {%- endif -%}
 
-                      {%- if item.line_level_discount_allocations.size > 0 -%}
-                        <ul
-                          class="list-unstyled"
-                          role="list"
-                        >
-                          {%- for discount in item.line_level_discount_allocations -%}
-                            <li>{{ discount.discount_application.title | escape }}</li>
-                          {%- endfor -%}
-                        </ul>
-                      {%- endif -%}
+                    {%- endif -%}
+                    {%- comment -%} Saucha · descuentos reales de Shopify en la línea (automáticos o código), con su importe {%- endcomment -%}
+                    {%- if item.line_level_discount_allocations.size > 0 -%}
+                      <ul
+                        class="list-unstyled s-cart-discounts"
+                        role="list"
+                      >
+                        {%- for discount in item.line_level_discount_allocations -%}
+                          <li class="s-cart-discount">
+                            <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M2.5 2.5h5l6 6-5 5-6-6z" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><circle cx="5.5" cy="5.5" r="1" fill="currentColor"/></svg>
+                            <span class="s-cart-discount__title">{{ discount.discount_application.title | escape }}</span>
+                            <span class="s-cart-discount__amount">&minus;{{ discount.amount | money }}</span>
+                          </li>
+                        {%- endfor -%}
+                      </ul>
                     {%- endif -%}
                   </div>
 
-                  <div class="cart-items__unit-price-wrapper">
+                  <div class="cart-items__unit-price-wrapper{% if item.quantity < 2 %} cart-items__unit-price-wrapper--single{% endif %}">
                     <div>
                       {% if item.original_price != item.final_price %}
                         <span class="visually-hidden">{{ 'content.price_sale' | t }}</span>
@@ -362,7 +367,7 @@
                       {% endif %}
                     >
                       {{- 'icon-delete.svg' | inline_asset_content -}}
-                      <span class="visually-hidden">{{ 'accessibility.remove' | t }}</span>
+                      <span class="cart-items__remove-label">{{ 'accessibility.remove' | t }}</span>
                     </button>
                   </div>
                 </td>
@@ -400,6 +405,19 @@
                   headers="productTotal"
                 >
                   <text-component value="{{ price | strip_html }}">{{ price }}</text-component>
+                  {%- liquid
+                    # Saucha · referencia tachada: precio de comparación o precio antes del descuento
+                    assign line_reference = item.original_line_price
+                    if item.variant.compare_at_price > item.original_price
+                      assign line_reference = item.variant.compare_at_price | times: item.quantity
+                    endif
+                  -%}
+                  {%- if line_reference > item.final_line_price -%}
+                    <s class="cart-items__price-compare">
+                      <span class="visually-hidden">{{ 'content.price_regular' | t }}&nbsp;</span>
+                      {%- if settings.currency_code_enabled_cart_items -%}{{ line_reference | money_with_currency }}{%- else -%}{{ line_reference | money }}{%- endif -%}
+                    </s>
+                  {%- endif -%}
                   {%- if item.unit_price_measurement -%}
                     <div class="cart-items__price-unit cart-secondary-typography">
                       {% render 'unit-price', price: unit_price, measurement: item.unit_price_measurement %}

@@ -9,6 +9,7 @@
 -%}
 
 {%- if settings.cart_type == 'drawer' and template.name != 'cart' -%}
+  {{ 'saucha-cart.css' | asset_url | stylesheet_tag }}
   {% if render_wrapper %}
     <div
       id="shopify-section-cart-drawer-section"
@@ -42,6 +43,7 @@
 
   <theme-drawer
     id="cart-drawer"
+    data-always-modal
     data-skip-node-update
   >
     <dialog

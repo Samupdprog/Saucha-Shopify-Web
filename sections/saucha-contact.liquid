@@ -1,0 +1,402 @@
+{%- comment -%}
+  Saucha · página de contacto.
+
+  Arriba: título, texto y datos de la boutique en líneas finas · formulario nativo de Shopify
+  (bloque «contact-form» de Horizon: envío, errores y confirmación son los de Shopify).
+  Debajo: la visita, con fotografía opcional de la boutique y el mapa de Google.
+  Una línea de datos vacía no se muestra.
+{%- endcomment -%}
+
+{{ 'saucha-contact.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign page_title = section.settings.title
+  if page_title == blank and page != blank
+    assign page_title = page.title
+  endif
+
+  assign intro = section.settings.text
+  if section.settings.use_page_content and page.content != blank
+    assign intro = page.content
+  endif
+
+  assign map_src = section.settings.map_url | strip
+  unless map_src contains 'https://www.google.com/maps/embed'
+    assign map_src = ''
+  endunless
+
+  assign has_photo = false
+  if section.settings.image_desktop != blank or section.settings.image_mobile != blank
+    assign has_photo = true
+  endif
+
+  assign phone_href = section.settings.phone | remove: ' ' | remove: '-' | remove: '.' | remove: '(' | remove: ')'
+  assign whatsapp_number = section.settings.whatsapp | remove: ' ' | remove: '+' | remove: '-'
+-%}
+
+<section
+  class="s-section s-scheme-{{ section.settings.scheme }} s-pt-{{ section.settings.spacing_top }} s-pb-{{ section.settings.spacing_bottom }} s-contact"
+  aria-labelledby="SauchaContact-{{ section.id }}"
+>
+  <div class="s-container">
+    <div class="s-contact__grid">
+      <div class="s-contact__intro">
+        <h1 class="s-contact__title" id="SauchaContact-{{ section.id }}" data-s-reveal="headline">{{ page_title | escape }}</h1>
+
+        {%- if intro != blank -%}
+          <div class="s-contact__text rte" data-s-reveal="up" style="--s-i: 1;">{{ intro }}</div>
+        {%- endif -%}
+
+        <dl class="s-contact__details" data-s-reveal="up" style="--s-i: 2;">
+          {%- if section.settings.address != blank -%}
+            <div class="s-contact__row">
+              <dt>Boutique</dt>
+              <dd>{{ section.settings.address }}</dd>
+            </div>
+          {%- endif -%}
+          {%- if section.settings.hours != blank -%}
+            <div class="s-contact__row">
+              <dt>Horario</dt>
+              <dd>{{ section.settings.hours }}</dd>
+            </div>
+          {%- endif -%}
+          {%- if section.settings.phone != blank -%}
+            <div class="s-contact__row">
+              <dt>Teléfono</dt>
+              <dd><a class="s-contact__link" href="tel:{{ phone_href }}">{{ section.settings.phone | escape }}</a></dd>
+            </div>
+          {%- endif -%}
+          {%- if section.settings.whatsapp != blank -%}
+            <div class="s-contact__row">
+              <dt>WhatsApp</dt>
+              <dd><a class="s-contact__link" href="https://wa.me/{{ whatsapp_number }}" target="_blank" rel="noopener">{{ section.settings.whatsapp | escape }}</a></dd>
+            </div>
+          {%- endif -%}
+          {%- if section.settings.email != blank -%}
+            <div class="s-contact__row">
+              <dt>Correo</dt>
+              <dd><a class="s-contact__link" href="mailto:{{ section.settings.email | escape }}">{{ section.settings.email | escape }}</a></dd>
+            </div>
+          {%- endif -%}
+        </dl>
+      </div>
+
+      <div class="s-contact__form" data-s-reveal="up" style="--s-i: 2;">
+        {%- if section.settings.form_title != blank -%}
+          <h2 class="s-contact__form-title">{{ section.settings.form_title | escape }}</h2>
+        {%- endif -%}
+        {% content_for 'block', type: 'contact-form', id: 'contact-form' %}
+      </div>
+    </div>
+
+    {%- if map_src != blank or has_photo -%}
+      <div class="s-contact__visit{% if has_photo and map_src != blank %} s-contact__visit--split{% endif %}">
+        <div class="s-contact__visit-head" data-s-reveal="up">
+          {%- if section.settings.visit_title != blank -%}
+            <h2 class="s-contact__visit-title">{{ section.settings.visit_title | escape }}</h2>
+          {%- endif -%}
+          <div class="s-contact__visit-meta">
+            {%- if section.settings.visit_line != blank -%}
+              <p class="s-contact__visit-line">{{ section.settings.visit_line | escape }}</p>
+            {%- endif -%}
+            {%- if section.settings.directions_url != blank -%}
+              <a class="s-contact__directions" href="{{ section.settings.directions_url }}" target="_blank" rel="noopener">
+                {{ section.settings.directions_label | default: 'Cómo llegar' | escape }}
+                <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M5 11 11 5M6 5h5v5" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </a>
+            {%- endif -%}
+          </div>
+        </div>
+
+        <div
+          class="s-contact__visit-media"
+          style="
+            --s-visit-h: {{ section.settings.height }}px;
+            --s-visit-h-m: {{ section.settings.height_mobile }}px;
+          "
+        >
+          {%- if has_photo -%}
+            <div
+              class="s-media s-contact__photo"
+              data-s-reveal="media"
+              style="
+                --s-fx: {{ section.settings.focus_x }}%; --s-fy: {{ section.settings.focus_y }}%;
+                --s-fx-m: {{ section.settings.focus_x_mobile }}%; --s-fy-m: {{ section.settings.focus_y_mobile }}%;
+              "
+            >
+              {% render 'saucha-media',
+                image: section.settings.image_desktop,
+                image_mobile: section.settings.image_mobile,
+                sizes: '(min-width: 990px) 40vw, 100vw'
+              %}
+              {%- if section.settings.overlay_opacity > 0 -%}
+                <span class="s-media__overlay" style="--s-overlay: {{ section.settings.overlay_opacity | divided_by: 100.0 }};" aria-hidden="true"></span>
+              {%- endif -%}
+            </div>
+          {%- endif -%}
+
+          {%- if map_src != blank -%}
+            <div class="s-contact__map" data-s-reveal="media">
+              <iframe
+                src="{{ map_src }}"
+                title="Mapa: {{ section.settings.visit_title | default: shop.name | escape }}"
+                loading="lazy"
+                referrerpolicy="strict-origin-when-cross-origin"
+                allowfullscreen
+              ></iframe>
+            </div>
+          {%- endif -%}
+        </div>
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Contacto Saucha",
+  "tag": "div",
+  "class": "saucha-contact-section",
+  "blocks": [
+    {
+      "type": "contact-form"
+    }
+  ],
+  "settings": [
+    {
+      "type": "header",
+      "content": "Texto"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Título",
+      "info": "Vacío = título de la página.",
+      "default": "Contacto"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Texto",
+      "default": "<p>Escríbenos para cualquier duda sobre tallas, pedidos o disponibilidad y te responderemos lo antes posible.</p>"
+    },
+    {
+      "type": "checkbox",
+      "id": "use_page_content",
+      "label": "Usar el contenido de la página",
+      "info": "Si la página tiene texto en Tienda online › Páginas, sustituye al texto de arriba.",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "form_title",
+      "label": "Título del formulario",
+      "default": "Escríbenos"
+    },
+    {
+      "type": "header",
+      "content": "Datos de la boutique",
+      "info": "Una línea vacía no se muestra."
+    },
+    {
+      "type": "richtext",
+      "id": "address",
+      "label": "Dirección",
+      "default": "<p>Las Palmas de Gran Canaria</p>"
+    },
+    {
+      "type": "richtext",
+      "id": "hours",
+      "label": "Horario"
+    },
+    {
+      "type": "text",
+      "id": "phone",
+      "label": "Teléfono"
+    },
+    {
+      "type": "text",
+      "id": "whatsapp",
+      "label": "WhatsApp",
+      "info": "Con prefijo de país, p. ej. +34 600 000 000"
+    },
+    {
+      "type": "text",
+      "id": "email",
+      "label": "Correo"
+    },
+    {
+      "type": "header",
+      "content": "Visita y mapa"
+    },
+    {
+      "type": "text",
+      "id": "visit_title",
+      "label": "Título",
+      "default": "Visítanos en la boutique"
+    },
+    {
+      "type": "text",
+      "id": "visit_line",
+      "label": "Línea junto al título",
+      "default": "Las Palmas de Gran Canaria"
+    },
+    {
+      "type": "text",
+      "id": "map_url",
+      "label": "Mapa de Google (URL de inserción)",
+      "info": "En Google Maps: Compartir › Insertar un mapa › copia solo el enlace de src=\"…\". Debe empezar por https://www.google.com/maps/embed",
+      "default": "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3349.7439076311434!2d-15.422270724838814!3d28.107092007747962!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xc409580c77acb83%3A0xfe948a8f48562d6d!2sSaucha!5e1!3m2!1ses!2ses!4v1790531208269!5m2!1ses!2ses"
+    },
+    {
+      "type": "url",
+      "id": "directions_url",
+      "label": "Enlace «Cómo llegar»",
+      "info": "Enlace de Google Maps a la boutique. Vacío = no se muestra."
+    },
+    {
+      "type": "text",
+      "id": "directions_label",
+      "label": "Texto del enlace",
+      "default": "Cómo llegar"
+    },
+    {
+      "type": "header",
+      "content": "Fotografía de la boutique",
+      "info": "Opcional. Con foto, foto y mapa comparten la banda; sin foto, el mapa ocupa todo el ancho."
+    },
+    {
+      "type": "image_picker",
+      "id": "image_desktop",
+      "label": "Imagen escritorio"
+    },
+    {
+      "type": "image_picker",
+      "id": "image_mobile",
+      "label": "Imagen móvil"
+    },
+    {
+      "type": "range",
+      "id": "focus_x",
+      "label": "Posición horizontal · escritorio",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "focus_y",
+      "label": "Posición vertical · escritorio",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "focus_x_mobile",
+      "label": "Posición horizontal · móvil",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "focus_y_mobile",
+      "label": "Posición vertical · móvil",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "Oscurecer la foto",
+      "min": 0,
+      "max": 60,
+      "step": 5,
+      "unit": "%",
+      "default": 0
+    },
+    {
+      "type": "range",
+      "id": "height",
+      "label": "Altura · escritorio",
+      "min": 360,
+      "max": 760,
+      "step": 20,
+      "unit": "px",
+      "default": 520
+    },
+    {
+      "type": "range",
+      "id": "height_mobile",
+      "label": "Altura · móvil",
+      "min": 260,
+      "max": 520,
+      "step": 20,
+      "unit": "px",
+      "default": 360
+    },
+    {
+      "type": "header",
+      "content": "Sección"
+    },
+    {
+      "type": "select",
+      "id": "scheme",
+      "label": "Fondo",
+      "options": [
+        { "value": "surface", "label": "Base" },
+        { "value": "cream", "label": "Crema" },
+        { "value": "blush", "label": "Rosa" }
+      ],
+      "default": "surface"
+    },
+    {
+      "type": "select",
+      "id": "spacing_top",
+      "label": "Espacio superior",
+      "options": [
+        { "value": "none", "label": "Ninguno" },
+        { "value": "xs", "label": "Mínimo" },
+        { "value": "sm", "label": "Pequeño" },
+        { "value": "md", "label": "Medio" },
+        { "value": "lg", "label": "Grande" }
+      ],
+      "default": "sm"
+    },
+    {
+      "type": "select",
+      "id": "spacing_bottom",
+      "label": "Espacio inferior",
+      "options": [
+        { "value": "none", "label": "Ninguno" },
+        { "value": "xs", "label": "Mínimo" },
+        { "value": "sm", "label": "Pequeño" },
+        { "value": "md", "label": "Medio" },
+        { "value": "lg", "label": "Grande" }
+      ],
+      "default": "lg"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Contacto Saucha",
+      "blocks": {
+        "contact-form": {
+          "type": "contact-form",
+          "static": true
+        }
+      }
+    }
+  ]
+}
+{% endschema %}

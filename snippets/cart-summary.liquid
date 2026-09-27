@@ -39,6 +39,19 @@
         {%- endfor -%}
       </ul>
     {%- endif -%}
+    {%- liquid
+      # Saucha · ahorro de los descuentos aplicados a artículos (automáticos o por código), calculado por Shopify
+      assign saucha_line_savings = 0
+      for item in cart.items
+        assign saucha_line_savings = saucha_line_savings | plus: item.line_level_total_discount
+      endfor
+    -%}
+    {%- if saucha_line_savings > 0 -%}
+      <span class="cart-totals__item s-cart-savings">
+        <span class="s-cart-savings__label">Ahorras</span>
+        <span class="s-cart-savings__value cart-secondary-typography">&minus;{{ saucha_line_savings | money }}</span>
+      </span>
+    {%- endif -%}
   </div>
 
   {% if settings.show_cart_note or settings.show_add_discount_code %}

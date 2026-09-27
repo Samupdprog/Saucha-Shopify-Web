@@ -35,7 +35,8 @@
     var dialogs = [];
     for (var i = 0; i < drawerIds.length; i++) {
       var drawer = document.getElementById(drawerIds[i]);
-      if (!drawer) continue;
+      // SAUCHA: los paneles siempre modales (carrito) no se reabren al navegar
+      if (!drawer || drawer.hasAttribute('data-always-modal')) continue;
 
       drawer.setAttribute('open', '');
 
