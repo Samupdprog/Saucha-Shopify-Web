@@ -6,7 +6,8 @@
   los de Horizon, así que todos los bloques se editan en el personalizador.
   Microinteracciones en assets/saucha-product.js. Solo tokens --s-* (saucha-base.css).
 
-   1 · Composición ......... dos columnas, aire, columna de detalles de lectura
+   0 · Migas de pan ........ espacio superior bajo el header (snippets/saucha-breadcrumbs.liquid)
+   1 · Composición ......... galería ~63 % · detalles ~37 %, aire, columna de lectura
    2 · Galería ............. radios, hover, etiqueta de color, cambio de color, móvil
    3 · Cabecera ............ antetítulo · título serif · precio · descuento · ahorro
    4 · Selector ............ leyendas, muestras de color, tallas
@@ -17,27 +18,102 @@
    9 · Entrada ............. coreografía al cargar y al cambiar valores
   10 · Barra fija .......... añadir al carrito fijo (móvil y escritorio)
   11 · Relacionados Horizon  (si se usa la sección nativa)
+  14 · Información ......... accesos con icono, paneles laterales, compartir (blocks/saucha-product-info)
   12 · Móvil
   13 · Menos movimiento
 */
+
+/* =========================================================
+   0 · MIGAS DE PAN · el aire bajo el header
+   ========================================================= */
+
+.s-breadcrumbs {
+  padding-block: var(--s-space-6) var(--s-space-5);
+  margin-block-end: calc(var(--gap, 0px) * -1);
+}
+
+.s-breadcrumbs__list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-family: var(--s-font-sans);
+  font-size: var(--s-type-body-sm);
+  line-height: 1.4;
+  color: var(--s-color-muted);
+}
+
+.s-breadcrumbs__item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-space-2);
+  min-width: 0;
+}
+
+.s-breadcrumbs__item + .s-breadcrumbs__item::before {
+  content: '';
+  width: 4px;
+  height: 4px;
+  border-top: 1px solid currentColor;
+  border-right: 1px solid currentColor;
+  transform: rotate(45deg);
+  opacity: 0.6;
+}
+
+.s-breadcrumbs a {
+  color: inherit;
+  text-decoration: none;
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-position: 100% 100%;
+  background-size: 0% 1px;
+  transition: color var(--s-dur-micro) var(--s-ease), background-size var(--s-dur-image) var(--s-ease-inout);
+}
+
+.s-breadcrumbs a:hover {
+  color: var(--s-color-ink);
+  background-position: 0 100%;
+  background-size: 100% 1px;
+}
+
+.s-breadcrumbs [aria-current='page'] span {
+  display: block;
+  max-width: 32ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--s-color-ink);
+}
 
 /* =========================================================
    1 · COMPOSICIÓN
    ========================================================= */
 
 .product-information {
-  --s-pdp-details-max: 440px;
+  --s-pdp-details-max: 460px;
   --s-pdp-block-gap: var(--s-space-8);
 }
 
 @media screen and (min-width: 750px) {
   .product-information {
-    padding-block-start: var(--s-space-6);
+    padding-block-start: 0;
   }
 
-  /* La columna de detalles respira respecto a la galería y lee en un ancho cómodo */
+  /* Proporción de la referencia: galería ancha, detalles en columna de lectura y un hueco generoso entre ambas */
+  .product-information .product-information__grid.product-information--media-left:not(.product-information__grid--half) {
+    grid-template-columns: minmax(0, 1fr) clamp(360px, 33vw, 480px);
+  }
+
   .product-information .product-details {
-    padding-inline-start: clamp(var(--s-space-8), 3.2vw, var(--s-space-16)) !important;
+    padding-inline-start: clamp(var(--s-space-10), 5vw, 88px) !important;
+  }
+
+  /* Los detalles acompañan al scroll sin pegarse al header */
+  .product-information .product-details.sticky-content--desktop {
+    top: calc(var(--sticky-header-offset, 0px) + var(--s-space-6));
   }
 
   .product-information .product-details > .group-block,
@@ -77,11 +153,27 @@
   scroll-margin-top: calc(var(--header-height, 64px) + var(--s-space-4));
 }
 
+/* Horizon sube el contenido «sticky» por detrás del header cuando lo considera transparente.
+   En la ficha el header de Saucha es sólido (ver sections/header.liquid), así que eso escondía
+   la parte alta de las fotos: la galería empieza siempre bajo el header y las migas de pan. */
+.product-information media-gallery.sticky-content,
+.product-information .sticky-content {
+  /* !important: la regla de Horizon va bajo body:has(#header-component[transparent]) y gana por el id */
+  margin-top: 0 !important;
+}
+
 .product-information .product-media-container {
   position: relative;
   overflow: hidden;
-  border-radius: var(--s-radius-media);
+  border-radius: var(--s-radius-product, var(--s-radius-media));
   background-color: var(--s-color-cream);
+  /* Recorte real: evita que la foto asome por las esquinas durante el zoom del hover */
+  clip-path: inset(0 round var(--s-radius-product, var(--s-radius-media)));
+}
+
+/* Fotos de moda: encuadre alto por defecto (snippets/product-media.liquid) */
+.product-information .product-media-container .product-media__image {
+  object-position: var(--focal-point, 50% 22%);
 }
 
 .product-information .product-media-container img,
@@ -91,7 +183,7 @@
 }
 
 .product-information .media-gallery__grid {
-  gap: var(--s-space-2);
+  gap: 10px;
 }
 
 /* Hover: la foto se acerca muy despacio; el cursor anuncia el zoom */
@@ -292,27 +384,10 @@ html .product-information media-gallery.is-entering slideshow-component {
   background-size: 100% 1px;
 }
 
-.s-pdp-flag {
+.s-pdp-eyebrow__labels {
   display: inline-flex;
-  align-items: center;
-  padding: 4px 9px;
-  border-radius: var(--s-radius-pill);
-  font-family: var(--s-font-sans);
-  font-size: 0.625rem;
-  font-weight: 500;
-  letter-spacing: var(--s-tracking-eyebrow);
-  line-height: 1.1;
-  text-transform: uppercase;
-}
-
-.s-pdp-flag--new {
-  background: var(--s-color-blush);
-  color: var(--s-color-ink);
-}
-
-.s-pdp-flag--sale {
-  background: var(--s-color-salmon);
-  color: var(--s-color-ink);
+  flex-wrap: wrap;
+  gap: var(--s-space-2);
 }
 
 .product-information .product-details h1 {
@@ -411,7 +486,7 @@ html .product-information media-gallery.is-entering slideshow-component {
 .product-information .variant-option[data-testid='variant-option-single'] {
   display: flex;
   align-items: baseline;
-  gap: var(--s-space-2);
+  gap: 0;
   width: 100%;
   margin-block-end: var(--s-space-4);
   font-family: var(--s-font-sans);
@@ -434,10 +509,53 @@ html .product-information media-gallery.is-entering slideshow-component {
   transition: color var(--s-dur-micro) var(--s-ease);
 }
 
-.product-information .variant-option__swatch-value::before {
-  content: '·';
-  margin-inline-end: var(--s-space-2);
-  color: var(--s-color-line);
+.product-information .variant-option__name::after {
+  content: ':';
+  margin-inline-end: 0.5em;
+}
+
+.product-information .variant-option__swatch-value {
+  font-size: var(--s-type-body);
+  color: var(--s-color-ink);
+}
+
+/* Guía de tallas: a la derecha de la leyenda, abre el panel «Talla y ajuste» */
+.s-size-guide-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 0 auto;
+  padding: 2px 0;
+  border: 0;
+  background: none;
+  color: var(--s-color-ink);
+  font-family: var(--s-font-sans);
+  font-size: var(--s-type-body-sm);
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
+  cursor: pointer;
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 100% 1px;
+  transition: background-size var(--s-dur-image) var(--s-ease-inout), color var(--s-dur-micro) var(--s-ease);
+}
+
+.s-size-guide-link svg {
+  width: 18px;
+  height: 18px;
+}
+
+.s-size-guide-link:hover {
+  color: var(--s-color-cacao);
+  background-position: 100% 100%;
+  background-size: 0% 1px;
+}
+
+/* Sin panel de talla en la sección, el enlace no se muestra */
+.shopify-section:not(:has(dialog[data-saucha-drawer='talla'])) .s-size-guide-link {
+  display: none;
 }
 
 /* Vista previa al pasar por una muestra (saucha-product.js) */
@@ -448,10 +566,45 @@ html .product-information media-gallery.is-entering slideshow-component {
 
 /* ---- Muestras de color: aro fino separado del color, crece al pasar ---- */
 .product-information .variant-option--swatches {
-  --variant-picker-swatch-width: 32px;
-  --variant-picker-swatch-height: 32px;
+  --variant-picker-swatch-width: 36px;
+  --variant-picker-swatch-height: 36px;
 
   gap: var(--s-space-3);
+}
+
+/* Nombre del color al pasar (data-tooltip en snippets/variant-main-picker.liquid) */
+.product-information .variant-option__button-label--has-swatch[data-tooltip] {
+  position: relative;
+  overflow: visible;
+}
+
+.product-information .variant-option__button-label--has-swatch[data-tooltip]::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  z-index: 5;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  padding: 6px 10px;
+  border-radius: var(--s-radius-sm);
+  background: var(--s-color-ink);
+  color: var(--s-color-surface);
+  font-family: var(--s-font-sans);
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, 4px);
+  transition: opacity var(--s-dur-micro) var(--s-ease), transform var(--s-dur-micro) var(--s-ease);
+}
+
+@media (hover: hover) {
+  .product-information .variant-option__button-label--has-swatch[data-tooltip]:hover::after {
+    opacity: 1;
+    transform: translate(-50%, 0);
+    transition-delay: 120ms;
+  }
 }
 
 .product-information .variant-option__button-label--has-swatch {
@@ -505,10 +658,20 @@ html .product-information media-gallery.is-entering slideshow-component {
   gap: var(--s-space-2);
 }
 
+.product-information .variant-option--equal-width-buttons,
+.product-information .variant-option--buttons:not(.variant-option--swatches) {
+  display: flex;
+  flex-wrap: wrap;
+}
+
 .product-information .variant-option__button-label:not(.variant-option__button-label--has-swatch) {
-  min-width: 56px;
+  flex: 0 0 auto;
+  min-width: 48px;
+  width: auto;
+  height: 48px;
   min-height: 48px;
-  padding-inline: var(--s-space-4);
+  padding-inline: 14px;
+  border-radius: var(--s-radius-pill);
   font-family: var(--s-font-sans);
   font-size: var(--s-type-body-sm);
   font-weight: 500;
@@ -617,6 +780,35 @@ html .product-information media-gallery.is-entering slideshow-component {
   color: var(--s-color-cacao);
 }
 
+.product-information product-inventory {
+  display: grid;
+  gap: var(--s-space-3);
+}
+
+.s-stock-bar {
+  position: relative;
+  display: block;
+  height: 3px;
+  border-radius: 3px;
+  background: var(--s-color-line);
+  overflow: hidden;
+}
+
+.s-stock-bar span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: var(--s-stock, 30%);
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--s-color-salmon), var(--s-color-cacao));
+  transform-origin: left;
+  animation: s-stock-grow 900ms var(--s-ease) both;
+}
+
+@keyframes s-stock-grow {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
 .product-information product-inventory:has(.product-inventory__icon-out_of_stock) .product-inventory__text {
   color: var(--s-color-muted);
 }
@@ -645,6 +837,13 @@ html .product-information media-gallery.is-entering slideshow-component {
 .product-information .quantity-selector:hover,
 .product-information .quantity-selector:focus-within {
   border-color: var(--s-color-ink);
+}
+
+.product-information .quantity-selector input,
+.product-information .quantity-selector input:disabled {
+  color: var(--s-color-ink);
+  -webkit-text-fill-color: var(--s-color-ink);
+  opacity: 1;
 }
 
 .product-information .quantity-selector button {
@@ -983,6 +1182,571 @@ html.s-motion .product-information .product-details > .group-block > .group-bloc
 }
 
 /* =========================================================
+   14 · INFORMACIÓN · accesos, paneles laterales y compartir
+   ========================================================= */
+
+.s-pdp-info {
+  display: grid;
+  gap: var(--s-space-6);
+}
+
+/* Índice de paneles: filas a lo ancho con icono, nombre y flecha */
+.s-pdp-info__tabs {
+  display: grid;
+  border-top: 1px solid var(--s-color-line);
+}
+
+.s-pdp-info__tab {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--s-space-3);
+  width: 100%;
+  margin: 0;
+  padding: 18px 0;
+  border: 0;
+  border-bottom: 1px solid var(--s-color-line);
+  background: none;
+  color: var(--s-color-ink);
+  font-family: var(--s-font-sans);
+  font-size: var(--s-type-eyebrow);
+  font-weight: 500;
+  letter-spacing: var(--s-tracking-eyebrow);
+  text-align: left;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color var(--s-dur-micro) var(--s-ease), padding var(--s-dur-image) var(--s-ease);
+}
+
+.s-pdp-info__tab svg {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  color: var(--s-color-cacao);
+}
+
+.s-pdp-info__tab span {
+  flex: 1;
+}
+
+/* Flecha: se desplaza al pasar, como invitación a abrir */
+.s-pdp-info__tab::after {
+  content: '';
+  flex: none;
+  width: 7px;
+  height: 7px;
+  margin-inline-end: 4px;
+  border-top: 1.2px solid currentColor;
+  border-right: 1.2px solid currentColor;
+  transform: rotate(45deg);
+  opacity: 0.55;
+  transition: transform var(--s-dur-image) var(--s-ease), opacity var(--s-dur-micro) var(--s-ease);
+}
+
+@media (hover: hover) {
+  .s-pdp-info__tab:hover {
+    color: var(--s-color-cacao);
+    padding-inline-start: 4px;
+  }
+
+  .s-pdp-info__tab:hover::after {
+    opacity: 1;
+    transform: translateX(3px) rotate(45deg);
+  }
+}
+
+.s-pdp-info__tab:focus-visible {
+  outline: 2px solid var(--s-color-ink);
+  outline-offset: -2px;
+}
+
+/* ---- Compartir ---- */
+
+.s-pdp-share {
+  display: flex;
+  align-items: center;
+  gap: var(--s-space-2);
+}
+
+.s-pdp-share__label {
+  margin-inline-end: var(--s-space-2);
+  font-family: var(--s-font-sans);
+  font-size: var(--s-type-body-sm);
+  color: var(--s-color-muted);
+}
+
+.s-pdp-share__button {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--s-color-cream);
+  color: var(--s-color-ink);
+  cursor: pointer;
+  transition:
+    background-color var(--s-dur-micro) var(--s-ease),
+    color var(--s-dur-micro) var(--s-ease),
+    transform var(--s-dur-micro) var(--s-ease);
+}
+
+.s-pdp-share__button svg {
+  width: 17px;
+  height: 17px;
+}
+
+.s-pdp-share__button:hover {
+  background: var(--s-color-ink);
+  color: var(--s-color-surface);
+}
+
+.s-pdp-share__button:active {
+  transform: scale(0.94);
+}
+
+.s-pdp-share__copied {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  padding: 5px 9px;
+  border-radius: var(--s-radius-sm);
+  background: var(--s-color-ink);
+  color: var(--s-color-surface);
+  font-family: var(--s-font-sans);
+  font-size: 0.75rem;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, 4px);
+  transition: opacity var(--s-dur-micro) var(--s-ease), transform var(--s-dur-micro) var(--s-ease);
+}
+
+.s-pdp-share__button.is-copied {
+  background: var(--s-color-cacao);
+  color: var(--s-color-surface);
+}
+
+.s-pdp-share__button.is-copied .s-pdp-share__copied {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* ---- Paneles laterales (mismo lenguaje que los drawers de Saucha) ---- */
+
+html.s-drawer-lock,
+html.s-drawer-lock body,
+html.s-drawer-lock .page-wrapper {
+  overflow: hidden;
+}
+
+.s-pdp-drawer {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  margin: 0;
+  padding: var(--s-drawer-inset, 12px);
+  border: 0;
+  background: transparent;
+  color: var(--s-color-ink);
+  overflow: hidden;
+}
+
+.s-pdp-drawer:not([open]) {
+  display: none;
+}
+
+.s-pdp-drawer::backdrop {
+  background: rgb(var(--s-color-overlay-rgb) / 0);
+  -webkit-backdrop-filter: blur(0);
+  backdrop-filter: blur(0);
+  transition: background-color 360ms var(--s-ease), backdrop-filter 360ms var(--s-ease);
+}
+
+.s-pdp-drawer.is-open::backdrop {
+  background: rgb(var(--s-color-overlay-rgb) / 0.32);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}
+
+.s-pdp-drawer__panel {
+  display: flex;
+  flex-direction: column;
+  width: min(480px, 100%);
+  height: 100%;
+  margin-inline-start: auto;
+  border-radius: var(--s-drawer-radius, 18px);
+  background: var(--s-color-surface);
+  box-shadow: 0 24px 80px rgb(var(--s-color-overlay-rgb) / 0.18);
+  overflow: hidden;
+  opacity: 0;
+  transform: translate3d(32px, 0, 0);
+  transition:
+    opacity 280ms var(--s-ease-exit),
+    transform 320ms var(--s-ease-exit);
+}
+
+.s-pdp-drawer--wide .s-pdp-drawer__panel {
+  width: min(620px, 100%);
+}
+
+.s-pdp-drawer.is-open .s-pdp-drawer__panel {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 360ms var(--s-ease),
+    transform 520ms var(--s-ease);
+}
+
+.s-pdp-drawer__header {
+  position: relative;
+  display: grid;
+  gap: var(--s-space-1);
+  padding: var(--s-space-8) var(--s-space-8) var(--s-space-6);
+  border-bottom: 1px solid var(--s-color-line);
+}
+
+.s-pdp-drawer__eyebrow {
+  margin: 0;
+  padding-inline-end: 48px;
+  font-family: var(--s-font-sans);
+  font-size: var(--s-type-eyebrow);
+  font-weight: 500;
+  letter-spacing: var(--s-tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--s-color-muted);
+}
+
+.s-pdp-drawer__title {
+  margin: 0;
+  outline: none;
+  font-family: var(--s-font-serif);
+  font-weight: var(--s-font-serif-weight);
+  font-size: var(--s-type-h3);
+  line-height: var(--s-leading-title);
+  letter-spacing: var(--s-tracking-display);
+}
+
+.s-pdp-drawer__close {
+  position: absolute;
+  top: var(--s-space-6);
+  right: var(--s-space-6);
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--s-color-cream);
+  color: var(--s-color-ink);
+  cursor: pointer;
+  transition:
+    background-color var(--s-dur-micro) var(--s-ease),
+    color var(--s-dur-micro) var(--s-ease),
+    transform var(--s-dur-image) var(--s-ease);
+}
+
+.s-pdp-drawer__close svg {
+  width: 18px;
+  height: 18px;
+}
+
+.s-pdp-drawer__close:hover {
+  background: var(--s-color-ink);
+  color: var(--s-color-surface);
+  transform: rotate(90deg);
+}
+
+.s-pdp-drawer__body {
+  flex: 1;
+  padding: var(--s-space-6) var(--s-space-8) var(--s-space-10);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  font-family: var(--s-font-sans);
+  font-size: var(--s-type-body);
+  line-height: var(--s-leading-body);
+  color: var(--s-color-ink);
+}
+
+.s-pdp-drawer.is-open .s-pdp-drawer__body > * {
+  animation: s-pdp-rise var(--s-dur-enter) var(--s-ease) 120ms both;
+}
+
+.s-pdp-drawer__body :is(p, ul, ol) {
+  margin: 0 0 0.9em;
+}
+
+.s-pdp-drawer__body a {
+  color: var(--s-color-ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+
+.s-pdp-drawer__note {
+  margin-top: var(--s-space-6);
+  padding: var(--s-space-4) var(--s-space-5);
+  border-radius: var(--s-radius-md);
+  background: var(--s-color-cream);
+  font-size: var(--s-type-body-sm);
+  color: var(--s-color-muted);
+}
+
+.s-pdp-drawer__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-space-2) var(--s-space-6);
+  margin-top: var(--s-space-6);
+  padding-top: var(--s-space-5);
+  border-top: 1px solid var(--s-color-line);
+  font-size: var(--s-type-body-sm);
+}
+
+/* Detalles: ficha técnica en dos columnas */
+.s-pdp-specs {
+  display: grid;
+  margin: 0;
+}
+
+.s-pdp-spec {
+  display: grid;
+  grid-template-columns: minmax(110px, 38%) 1fr;
+  gap: var(--s-space-4);
+  padding-block: var(--s-space-4);
+  border-bottom: 1px solid var(--s-color-line);
+}
+
+.s-pdp-spec:first-child {
+  padding-top: 0;
+}
+
+.s-pdp-spec dt {
+  padding-top: 3px;
+  font-size: var(--s-type-eyebrow);
+  font-weight: 500;
+  letter-spacing: var(--s-tracking-eyebrow);
+  text-transform: uppercase;
+  color: var(--s-color-muted);
+}
+
+.s-pdp-spec dd {
+  margin: 0;
+}
+
+/* Talla y ajuste */
+.s-pdp-fit {
+  display: grid;
+  gap: var(--s-space-2);
+  margin-bottom: var(--s-space-8);
+}
+
+.s-pdp-fit__lead {
+  margin: 0;
+  font-family: var(--s-font-serif);
+  font-size: var(--s-type-lead);
+  line-height: 1.35;
+}
+
+.s-pdp-fit__model {
+  margin: 0;
+  color: var(--s-color-muted);
+}
+
+.s-pdp-guide__title {
+  margin: 0 0 var(--s-space-4);
+  font-family: var(--s-font-sans);
+  font-size: var(--s-type-eyebrow);
+  font-weight: 500;
+  letter-spacing: var(--s-tracking-eyebrow);
+  text-transform: uppercase;
+}
+
+.s-pdp-guide__scroll {
+  overflow-x: auto;
+  border: 1px solid var(--s-color-line);
+  border-radius: var(--s-radius-md);
+}
+
+.s-pdp-guide__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--s-type-body-sm);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.s-pdp-guide__table :is(th, td) {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--s-color-line);
+  white-space: nowrap;
+}
+
+.s-pdp-guide__table thead th {
+  background: var(--s-color-cream);
+  font-size: var(--s-type-eyebrow);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.s-pdp-guide__table tbody th,
+.s-pdp-guide__table thead th:first-child {
+  font-weight: 500;
+  text-align: left;
+}
+
+.s-pdp-guide__table tbody tr:last-child :is(th, td) {
+  border-bottom: 0;
+}
+
+.s-pdp-guide__table tbody tr:hover {
+  background: rgb(var(--s-color-ink-rgb) / 0.03);
+}
+
+/* Preguntar */
+.s-pdp-ask {
+  display: grid;
+  gap: var(--s-space-4);
+}
+
+.s-pdp-ask__intro {
+  color: var(--s-color-muted);
+}
+
+.s-pdp-ask__field {
+  display: grid;
+  gap: 6px;
+}
+
+.s-pdp-ask__field label {
+  font-size: var(--s-type-eyebrow);
+  font-weight: 500;
+  letter-spacing: var(--s-tracking-eyebrow);
+  text-transform: uppercase;
+}
+
+.s-pdp-ask__field :is(input, textarea) {
+  width: 100%;
+  padding: 13px 16px;
+  border: 1px solid var(--s-color-line);
+  border-radius: var(--s-radius-md);
+  background: var(--s-color-surface);
+  color: var(--s-color-ink);
+  font: inherit;
+  transition: border-color var(--s-dur-micro) var(--s-ease), box-shadow var(--s-dur-micro) var(--s-ease);
+}
+
+.s-pdp-ask__field :is(input, textarea):focus {
+  outline: none;
+  border-color: var(--s-color-ink);
+  box-shadow: 0 0 0 3px rgb(var(--s-color-ink-rgb) / 0.06);
+}
+
+.s-pdp-ask__field textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+.s-pdp-ask__submit {
+  justify-self: start;
+  min-height: 50px;
+  padding-inline: var(--s-space-8);
+}
+
+.s-pdp-ask__status {
+  margin: 0;
+  padding: var(--s-space-4) var(--s-space-5);
+  border-radius: var(--s-radius-md);
+  font-size: var(--s-type-body-sm);
+}
+
+.s-pdp-ask__status--ok {
+  background: color-mix(in srgb, var(--s-color-sage) 35%, var(--s-color-surface));
+}
+
+.s-pdp-ask__status--error {
+  background: color-mix(in srgb, var(--s-color-salmon) 30%, var(--s-color-surface));
+}
+
+/* ---- Tarjeta flotante de compra (escritorio) ---- */
+
+@media screen and (min-width: 750px) {
+  .sticky-add-to-cart__bar {
+    left: auto;
+    right: var(--s-space-6);
+    bottom: var(--s-space-6);
+    width: 400px;
+    padding: 10px;
+    border-radius: var(--s-drawer-radius, 18px);
+    transform: translateY(calc(100% + 40px));
+  }
+
+  .sticky-add-to-cart__bar[data-stuck='true'] {
+    transform: translateY(0);
+  }
+
+  sticky-add-to-cart:not([data-variant-available='true']) .sticky-add-to-cart__bar {
+    transform: translateY(calc(100% + 40px));
+  }
+
+  .sticky-add-to-cart__image {
+    width: 64px;
+    height: 80px;
+    aspect-ratio: auto;
+    border-radius: 10px;
+  }
+
+  .sticky-add-to-cart__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .sticky-add-to-cart__info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .sticky-add-to-cart__title {
+    overflow: hidden;
+    font-size: 1.125rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* El botón pasa a ser un círculo con el icono de la bolsa */
+  .sticky-add-to-cart__button {
+    flex: none;
+    width: 52px;
+    height: 52px;
+    min-width: 0;
+    padding: 0;
+    border-radius: 50%;
+  }
+
+  .sticky-add-to-cart__button .add-to-cart-text__content {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .sticky-add-to-cart__button .add-to-cart-text {
+    gap: 0;
+  }
+}
+
+/* =========================================================
    12 · MÓVIL
    ========================================================= */
 
@@ -991,9 +1755,18 @@ html.s-motion .product-information .product-details > .group-block > .group-bloc
     --s-pdp-block-gap: var(--s-space-6);
   }
 
-  /* Galería a sangre: la foto manda */
-  .product-information .product-media-container {
-    border-radius: 0;
+  /* Galería: carrusel con margen lateral y el radio de producto, como en escritorio */
+  .product-information .product-information__media {
+    padding-inline: var(--s-gutter, 16px);
+  }
+
+  .s-breadcrumbs {
+    padding-block: var(--s-space-3);
+    margin-block-end: calc(var(--gap, 0px) * -1 + var(--s-space-1));
+  }
+
+  .s-breadcrumbs [aria-current='page'] span {
+    max-width: 22ch;
   }
 
   .product-information .product-details {
@@ -1023,18 +1796,40 @@ html.s-motion .product-information .product-details > .group-block > .group-bloc
     --variant-picker-swatch-height: 36px;
   }
 
-  .product-information .variant-option--buttons:not(.variant-option--swatches) {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
-  }
-
-  .product-information .variant-option--buttons:not(.variant-option--swatches) legend {
-    grid-column: 1 / -1;
-  }
-
   .product-information .variant-option__button-label:not(.variant-option__button-label--has-swatch) {
-    min-width: 0;
+    min-width: 50px;
+    height: 50px;
     min-height: 50px;
+  }
+
+  /* Paneles: suben desde abajo como hoja */
+  .s-pdp-drawer {
+    padding: 10vh 0 0;
+  }
+
+  .s-pdp-drawer__panel,
+  .s-pdp-drawer--wide .s-pdp-drawer__panel {
+    width: 100%;
+    border-radius: var(--s-drawer-radius, 18px) var(--s-drawer-radius, 18px) 0 0;
+    transform: translate3d(0, 40px, 0);
+  }
+
+  .s-pdp-drawer__header {
+    padding: var(--s-space-6) var(--s-space-5) var(--s-space-5);
+  }
+
+  .s-pdp-drawer__close {
+    top: var(--s-space-4);
+    right: var(--s-space-4);
+  }
+
+  .s-pdp-drawer__body {
+    padding: var(--s-space-5) var(--s-space-5) calc(var(--s-space-10) + env(safe-area-inset-bottom, 0px));
+  }
+
+  .s-pdp-spec {
+    grid-template-columns: 1fr;
+    gap: 4px;
   }
 
   .product-information .add-to-cart-button,

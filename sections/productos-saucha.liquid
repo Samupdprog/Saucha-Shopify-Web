@@ -1,5 +1,8 @@
 {{ 'saucha-collection.css' | asset_url | stylesheet_tag }}
 <script src="{{ 'saucha-collection.js' | asset_url }}" defer></script>
+{%- if section.settings.desktop_layout == 'carousel' -%}
+  <script src="{{ 'saucha-carousel.js' | asset_url }}" defer></script>
+{%- endif -%}
 
 {% liquid
   # Origen de los productos:
@@ -21,8 +24,8 @@
     assign exclude_id = product.id
   endif
 
-  if source == 'product_collection' and product != blank
-    assign auto_collection = blank
+  assign auto_collection = blank
+  if product != blank
     if collection != blank and collection.handle != 'all' and collection.handle != 'frontpage'
       assign auto_collection = collection
     else
@@ -33,9 +36,9 @@
         endif
       endfor
     endif
-    if auto_collection != blank
-      assign list_collection = auto_collection
-    endif
+  endif
+  if source == 'product_collection' and auto_collection != blank
+    assign list_collection = auto_collection
   endif
 
   assign list_products = blank
@@ -44,6 +47,14 @@
     if recommendations.performed? and recommendations.products_count > 0
       assign list_products = recommendations.products
       assign reco_performed = true
+    elsif product != blank
+      # Respaldo inmediato (y para SEO): productos de la misma categoría o, si no tiene, del catálogo.
+      # Si Shopify devuelve recomendaciones, las sustituyen al cargar; si no, se quedan estas.
+      if auto_collection != blank and auto_collection.products_count > 1
+        assign list_products = auto_collection.products
+      elsif collections.all.products_count > 1
+        assign list_products = collections.all.products
+      endif
     endif
   elsif list_collection != blank and list_collection.products_count > 0
     assign list_products = list_collection.products
@@ -95,7 +106,7 @@
     class="
       s-section s-scheme-{{ section.settings.scheme }}
       s-pt-{{ section.settings.spacing_top }} s-pb-{{ section.settings.spacing_bottom }}
-      saucha-products saucha-products--mobile-{{ section.settings.mobile_layout }}
+      saucha-products saucha-products--mobile-{{ section.settings.mobile_layout }} saucha-products--desktop-{{ section.settings.desktop_layout | default: 'grid' }}
     "
   >
     <div class="s-container">
@@ -114,12 +125,21 @@
         data-card-alignment="{{ section.settings.card_alignment }}"
         data-title-font="heading"
         style="
-          --saucha-image-radius: var(--s-radius-media);
+          --saucha-image-radius: var(--s-radius-product, var(--s-radius-media));
           --saucha-hover-scale: {{ hover_scale }};
           --sp-columns: {{ section.settings.columns_desktop }};
         "
       >
-        <ul class="saucha-products__list" role="list">
+        {%- if section.settings.desktop_layout == 'carousel' -%}
+          <saucha-carousel class="saucha-carousel">
+            <button class="saucha-carousel__arrow saucha-carousel__arrow--prev" type="button" aria-label="Productos anteriores" data-carousel-prev hidden>
+              <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M12 4.5 6.5 10l5.5 5.5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <button class="saucha-carousel__arrow saucha-carousel__arrow--next" type="button" aria-label="Más productos" data-carousel-next hidden>
+              <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M8 4.5 13.5 10 8 15.5" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+        {%- endif -%}
+        <ul class="saucha-products__list" role="list"{% if section.settings.desktop_layout == 'carousel' %} data-carousel-track tabindex="0" aria-label="{{ section_title | strip_newlines | escape }}"{% endif %}>
           {%- if list_products != blank -%}
             {%- assign shown = 0 -%}
             {%- for list_product in list_products -%}
@@ -160,6 +180,10 @@
             {%- endfor -%}
           {%- endif -%}
         </ul>
+        {%- if section.settings.desktop_layout == 'carousel' -%}
+            <div class="saucha-carousel__progress" aria-hidden="true"><span data-carousel-thumb></span></div>
+          </saucha-carousel>
+        {%- endif -%}
       </saucha-collection>
 
       {%- if section.settings.link_position == 'bottom' and section.settings.link_label != blank and link_url != blank -%}
@@ -211,7 +235,13 @@
             const incoming = html.querySelector('saucha-recommendations');
             const hasProducts = incoming?.querySelector('.saucha-products__item:not(.saucha-products__item--skeleton)');
             if (!incoming || !hasProducts) {
-              this.hide();
+              // Sin recomendaciones: se quedan los productos de la categoría (respaldo), si los hay
+              const hasFallback = this.querySelector('.saucha-products__item:not(.saucha-products__item--skeleton)');
+              if (hasFallback) {
+                this.removeAttribute('data-url');
+              } else {
+                this.hide();
+              }
               return;
             }
 
@@ -297,6 +327,155 @@
     min-width: 0;
   }
 
+  /* ---------- Carrusel (disposición «Carrusel» en escritorio, assets/saucha-carousel.js) ---------- */
+
+  .saucha-carousel {
+    position: relative;
+    display: block;
+  }
+
+  .saucha-carousel__arrow {
+    position: absolute;
+    z-index: 4;
+    top: var(--carousel-arrow-top, 38%);
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: rgb(var(--s-color-surface-rgb) / 0.92);
+    color: var(--s-color-ink);
+    box-shadow: 0 6px 24px rgb(var(--s-color-ink-rgb) / 0.1), 0 0 0 1px rgb(var(--s-color-ink-rgb) / 0.06);
+    cursor: pointer;
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    transform: translate3d(0, -50%, 0) scale(0.9);
+    opacity: 0;
+    transition:
+      opacity var(--s-dur-micro) var(--s-ease),
+      transform var(--s-dur-image) var(--s-ease),
+      background-color var(--s-dur-micro) var(--s-ease),
+      color var(--s-dur-micro) var(--s-ease);
+  }
+
+  .saucha-carousel__arrow[hidden] {
+    display: none;
+  }
+
+  .saucha-carousel__arrow svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .saucha-carousel__arrow--prev {
+    left: var(--s-space-4);
+  }
+
+  .saucha-carousel__arrow--next {
+    right: var(--s-space-4);
+  }
+
+  .saucha-carousel:hover .saucha-carousel__arrow,
+  .saucha-carousel:focus-within .saucha-carousel__arrow {
+    opacity: 1;
+    transform: translate3d(0, -50%, 0) scale(1);
+  }
+
+  .saucha-carousel__arrow:hover {
+    background: var(--s-color-ink);
+    color: var(--s-color-surface);
+  }
+
+  .saucha-carousel__arrow:focus-visible {
+    outline: 2px solid var(--s-color-ink);
+    outline-offset: 3px;
+  }
+
+  .saucha-carousel__progress {
+    position: relative;
+    height: 2px;
+    margin-top: var(--s-space-10);
+    border-radius: 2px;
+    background: var(--s-color-line);
+    overflow: hidden;
+    opacity: 0;
+    transition: opacity var(--s-dur-micro) var(--s-ease);
+  }
+
+  .saucha-carousel.is-scrollable .saucha-carousel__progress {
+    opacity: 1;
+  }
+
+  .saucha-carousel__progress span {
+    position: absolute;
+    inset-block: 0;
+    left: 0;
+    width: calc(var(--thumb-size, 1) * 100%);
+    border-radius: inherit;
+    background: var(--s-color-ink);
+    transform: translateX(calc(var(--thumb-position, 0) * (1 / var(--thumb-size, 1) - 1) * 100%));
+    transition: width var(--s-dur-image) var(--s-ease);
+  }
+
+  @media screen and (min-width: 750px) {
+    .saucha-products--desktop-carousel .saucha-products__list {
+      grid-template-columns: none;
+      grid-auto-flow: column;
+      grid-auto-columns: calc((100% - (var(--sp-visible, 3) - 1) * var(--sp-gap)) / var(--sp-visible, 3));
+      --sp-gap: var(--s-space-5);
+      --sp-visible: 3;
+      gap: var(--sp-gap);
+      overflow-x: auto;
+      overscroll-behavior-inline: contain;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+      cursor: grab;
+    }
+
+    .saucha-products--desktop-carousel .saucha-products__list::-webkit-scrollbar {
+      display: none;
+    }
+
+    .saucha-products--desktop-carousel .saucha-products__item {
+      scroll-snap-align: start;
+    }
+
+    .saucha-products--desktop-carousel .saucha-carousel.is-dragging .saucha-products__list {
+      scroll-snap-type: none;
+      cursor: grabbing;
+      user-select: none;
+    }
+
+    .saucha-products--desktop-carousel .saucha-carousel.is-dragging a {
+      pointer-events: none;
+    }
+
+    .saucha-products--desktop-carousel .saucha-products__list:focus-visible {
+      outline: 2px solid var(--s-color-ink);
+      outline-offset: 6px;
+    }
+  }
+
+  @media screen and (min-width: 1200px) {
+    .saucha-products--desktop-carousel .saucha-products__list {
+      --sp-visible: var(--sp-columns, 4);
+      --sp-gap: var(--s-space-6);
+    }
+  }
+
+  @media screen and (max-width: 749px) {
+    .saucha-carousel__arrow {
+      display: none;
+    }
+
+    .saucha-carousel__progress {
+      margin-top: var(--s-space-6);
+    }
+  }
+
   .saucha-products__footer {
     display: flex;
     justify-content: center;
@@ -355,6 +534,11 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
+    .saucha-carousel__arrow,
+    .saucha-carousel__progress span {
+      transition: none;
+    }
+
     .saucha-products__skeleton-media,
     .saucha-products__skeleton-line {
       animation: none;
@@ -470,6 +654,16 @@
     },
     {
       "type": "select",
+      "id": "desktop_layout",
+      "label": "Disposición · escritorio",
+      "options": [
+        { "value": "grid", "label": "Rejilla" },
+        { "value": "carousel", "label": "Carrusel con flechas y arrastre" }
+      ],
+      "default": "grid"
+    },
+    {
+      "type": "select",
       "id": "mobile_layout",
       "label": "Disposición · móvil",
       "options": [
@@ -574,28 +768,10 @@
     },
     {
       "type": "checkbox",
-      "id": "show_new_badge",
-      "label": "Etiqueta «Nuevo»",
-      "info": "Productos con la etiqueta «nuevo» o publicados hace pocos días. No aparece si ya hay etiqueta de rebaja o agotado.",
+      "id": "show_product_labels",
+      "label": "Etiquetas del producto",
+      "info": "Se eligen en cada producto, en el metacampo «Etiquetas de producto» (Nuevo, Edición limitada…). Rebaja y Agotado tienen prioridad.",
       "default": true
-    },
-    {
-      "type": "text",
-      "id": "new_label",
-      "label": "Texto de «Nuevo»",
-      "default": "Nuevo",
-      "visible_if": "{{ section.settings.show_new_badge }}"
-    },
-    {
-      "type": "range",
-      "id": "new_days",
-      "label": "Nuevo durante (días desde su publicación)",
-      "min": 0,
-      "max": 90,
-      "step": 5,
-      "unit": "d",
-      "default": 30,
-      "visible_if": "{{ section.settings.show_new_badge }}"
     },
     {
       "type": "text",

@@ -80,6 +80,12 @@
       {%- endif -%}
     </span>
   </span>
+  {%- comment -%} Saucha · pocas unidades: barra con lo que queda respecto al umbral {%- endcomment -%}
+  {%- if status == 'low' and threshold > 0 -%}
+    {%- comment -%} Lo que queda sobre el doble del umbral: el umbral exacto se ve a media barra, nunca «llena» {%- endcomment -%}
+    {%- assign saucha_stock = inventory_quantity | times: 50 | divided_by: threshold | at_least: 8 | at_most: 50 -%}
+    <span class="s-stock-bar" style="--s-stock: {{ saucha_stock }}%;" aria-hidden="true"><span></span></span>
+  {%- endif -%}
 </product-inventory>
 
 {% stylesheet %}

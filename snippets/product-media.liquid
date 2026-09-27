@@ -35,7 +35,12 @@
     if is_main_product_media
       assign fetch_priority = 'high'
     endif
-    assign focal_point_style = '--focal-point: ' | append: media.presentation.focal_point | append: ';'
+    # Saucha · sin punto focal elegido (Shopify devuelve el centro), la foto de moda se encuadra alta para no cortar cabezas
+    assign saucha_focal = media.presentation.focal_point | default: '50.0% 50.0%'
+    if saucha_focal == '50.0% 50.0%'
+      assign saucha_focal = '50% 22%'
+    endif
+    assign focal_point_style = '--focal-point: ' | append: saucha_focal | append: ';'
   %}
   {{
     media.preview_image

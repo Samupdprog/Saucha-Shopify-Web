@@ -1,0 +1,30 @@
+{%- doc -%}
+  Saucha · etiquetas que el equipo pone a mano en cada producto.
+
+  Fuente única: metacampo de producto «Etiquetas de producto» (custom.etiquetas),
+  una lista con valores cerrados: Nuevo, Edición limitada, Últimas unidades,
+  Exclusivo online, Más vendido. Se edita en Productos › (producto) › Metacampos.
+  Para añadir un valor nuevo: Ajustes › Datos personalizados › Productos › Etiquetas de producto.
+
+  La rebaja y el agotado NO se escriben aquí: salen solos del precio de comparación y del stock.
+
+  Pinta una <span class="s-label s-label--{valor}"> por etiqueta (p. ej. s-label--nuevo),
+  para que cada una pueda tener su propio tono en CSS.
+
+  @param {product} product - Producto
+  @param {string} [class] - Clase extra para cada etiqueta (p. ej. la del badge de las tarjetas)
+  @param {number} [limit] - Máximo de etiquetas. Por defecto, todas
+
+  @example
+  {% render 'saucha-product-labels', product: product, class: 'saucha-product-card__badge', limit: 1 %}
+{%- enddoc -%}
+
+{%- assign saucha_labels = product.metafields.custom.etiquetas.value -%}
+{%- assign saucha_label_limit = limit | default: 10 -%}
+{%- if saucha_labels != blank -%}
+  {%- for saucha_label in saucha_labels limit: saucha_label_limit -%}
+    <span class="s-label s-label--{{ saucha_label | handleize }}{% if class != blank %} {{ class }}{% endif %}">
+      {{- saucha_label | escape -}}
+    </span>
+  {%- endfor -%}
+{%- endif -%}

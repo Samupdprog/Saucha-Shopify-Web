@@ -176,8 +176,19 @@
   {% render 'add-to-cart-button-styles' %}
 {% endif %}
 
+{%- liquid
+  # Saucha · migas de pan sobre la ficha (solo en la plantilla de producto)
+  assign saucha_breadcrumbs = ''
+  if section.settings.saucha_breadcrumbs and request.page_type == 'product'
+    capture saucha_breadcrumbs
+      render 'saucha-breadcrumbs', product: closest.product
+    endcapture
+  endif
+-%}
+
 {% render 'product-information-content',
   product: closest.product,
+  breadcrumbs: saucha_breadcrumbs,
   section_id: section.id,
   settings: section.settings,
   media_gallery: media_gallery,
@@ -389,6 +400,13 @@
     "groups": ["header", "footer"]
   },
   "settings": [
+    {
+      "type": "checkbox",
+      "id": "saucha_breadcrumbs",
+      "label": "Migas de pan (Saucha)",
+      "info": "Inicio / Categoría / Producto sobre la ficha, con datos estructurados para Google.",
+      "default": true
+    },
     {
       "type": "header",
       "content": "t:content.layout"

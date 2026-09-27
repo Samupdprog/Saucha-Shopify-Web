@@ -96,21 +96,13 @@
     assign secondary_image = secondary_media.preview_image
   endif
 
-  # Saucha · «Nuevo»: etiqueta nuevo/new o publicado hace menos de N días
-  assign is_new = false
-  if section.settings.show_new_badge
-    assign product_tags = product.tags | join: ',' | downcase | prepend: ',' | append: ','
-    if product_tags contains ',nuevo,' or product_tags contains ',new,'
-      assign is_new = true
-    elsif section.settings.new_days > 0 and product.published_at != blank
-      assign now_seconds = 'now' | date: '%s' | plus: 0
-      assign published_seconds = product.published_at | date: '%s' | plus: 0
-      assign age_seconds = now_seconds | minus: published_seconds
-      assign max_seconds = section.settings.new_days | times: 86400
-      if age_seconds < max_seconds
-        assign is_new = true
-      endif
-    endif
+  # Saucha · etiquetas puestas a mano en el producto (metacampo «Etiquetas de producto»); se ve la primera
+  assign product_label = ''
+  if section.settings.show_product_labels
+    capture product_label
+      render 'saucha-product-labels', product: product, class: 'saucha-product-card__badge saucha-product-card__badge--label', limit: 1
+    endcapture
+    assign product_label = product_label | strip
   endif
 
   assign is_on_sale = false
@@ -213,11 +205,7 @@
       </span>
     {%- endif -%}
 
-    {%- if is_new -%}
-      <span class="saucha-product-card__badge saucha-product-card__badge--new">
-        {{ section.settings.new_label | default: 'Nuevo' | escape }}
-      </span>
-    {%- endif -%}
+    {{- product_label -}}
   </div>
 
   <div class="saucha-product-card__info">

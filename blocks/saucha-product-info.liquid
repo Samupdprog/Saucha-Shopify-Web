@@ -1,0 +1,394 @@
+{%- doc -%}
+  Saucha · información del producto en paneles laterales (Descripción, Detalles, Talla y ajuste,
+  Envíos, Preguntar) y botones de compartir. Va bajo los botones de compra.
+
+  Todo el contenido es dinámico y cada panel solo aparece si tiene algo que enseñar:
+    Descripción ..... descripción del producto
+    Detalles ........ metacampos custom.composicion, material, acabado, dimensiones, longitud_de_correa,
+                      tipo_cierre, informacion_adicional y los de categoría shopify.fabric / care-instructions
+    Talla y ajuste .. custom.como_talla, altura_de_la_modelo, talla_de_la_modelo y la guía de tallas
+                      (metaobjeto custom.guia_de_tallas: nombre, tabla_de_tallas, notas_adicionales)
+    Envíos .......... texto del bloque + política de devoluciones de la tienda
+    Preguntar ....... formulario de contacto de Shopify con el producto ya indicado
+
+  La tabla de la guía se escribe en el metaobjeto, una fila por línea y columnas separadas por «|»:
+    Talla | Pecho | Cintura | Cadera
+    XS | 80 | 62 | 88
+  (también vale tabulador o «;»). La primera fila es la cabecera.
+
+  Los paneles se abren con [data-saucha-drawer-open="clave"] (assets/saucha-product.js); el enlace
+  «Guía de tallas» del selector de tallas abre el de «talla».
+{%- enddoc -%}
+
+{%- liquid
+  assign p = closest.product
+  assign mf = p.metafields.custom
+
+  # ---------- Detalles ----------
+  assign fabric = p.metafields.shopify.fabric.value | map: 'label' | join: ', '
+  assign care = p.metafields.shopify['care-instructions'].value | map: 'label' | join: ', '
+
+  # Cada fila: «Etiqueta~valor». El valor se escapa aquí; el marcado se pinta después.
+  assign spec_rows = ''
+  if mf.composicion != blank
+    assign v = mf.composicion.value | escape | newline_to_br
+    assign spec_rows = spec_rows | append: 'Composición~' | append: v | append: '§'
+  endif
+  if fabric != blank
+    assign v = fabric | escape
+    assign spec_rows = spec_rows | append: 'Tejido~' | append: v | append: '§'
+  endif
+  if mf.material != blank
+    assign v = mf.material.value | escape
+    assign spec_rows = spec_rows | append: 'Material~' | append: v | append: '§'
+  endif
+  if mf.acabado != blank
+    assign v = mf.acabado.value | escape
+    assign spec_rows = spec_rows | append: 'Acabado~' | append: v | append: '§'
+  endif
+  if mf.dimensiones != blank
+    assign v = mf.dimensiones.value | escape
+    assign spec_rows = spec_rows | append: 'Medidas~' | append: v | append: '§'
+  endif
+  if mf.longitud_de_correa != blank
+    assign v = mf.longitud_de_correa.value | escape
+    assign spec_rows = spec_rows | append: 'Longitud de correa~' | append: v | append: '§'
+  endif
+  if mf.tipo_cierre != blank
+    assign v = mf.tipo_cierre.value | escape
+    assign spec_rows = spec_rows | append: 'Cierre~' | append: v | append: '§'
+  endif
+  if care != blank
+    assign v = care | escape
+    assign spec_rows = spec_rows | append: 'Cuidados~' | append: v | append: '§'
+  endif
+  assign has_details = false
+  if spec_rows != '' or mf.informacion_adicional != blank
+    assign has_details = true
+  endif
+
+  # ---------- Talla y ajuste ----------
+  assign guide = mf.guia_de_tallas.value
+  assign model_line = ''
+  if mf.altura_de_la_modelo != blank and mf.talla_de_la_modelo != blank
+    assign model_line = 'La modelo mide ' | append: mf.altura_de_la_modelo.value | append: ' y lleva la talla ' | append: mf.talla_de_la_modelo.value | append: '.'
+  elsif mf.talla_de_la_modelo != blank
+    assign model_line = 'La modelo lleva la talla ' | append: mf.talla_de_la_modelo.value | append: '.'
+  endif
+  assign has_fit = false
+  if mf.como_talla != blank or model_line != '' or guide != blank
+    assign has_fit = true
+  endif
+
+  assign form_id = 'SauchaAsk-' | append: block.id
+  assign drawer_prefix = 'SauchaDrawer-' | append: block.id | append: '-'
+-%}
+
+{%- capture icon_description -%}<svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4.5 3.5h11v13h-11zM7 7h6M7 10h6M7 13h3.5" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>{%- endcapture -%}
+{%- capture icon_details -%}<svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 3.2c1.6 1.9 1.6 3.8 0 5.6-1.6 1.8-1.6 3.8 0 5.6M6.2 3.6c1.4 1.7 1.4 3.4 0 5.1s-1.4 3.4 0 5.1M13.8 3.6c1.4 1.7 1.4 3.4 0 5.1s-1.4 3.4 0 5.1M4 16.8h12" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>{%- endcapture -%}
+{%- capture icon_fit -%}<svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2.5 7.5h15v5h-15z" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M5.5 7.5v2M8.5 7.5v3M11.5 7.5v2M14.5 7.5v3" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>{%- endcapture -%}
+{%- capture icon_shipping -%}<svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2.5 5.5h9v8h-9zM11.5 8h3.4l2.6 2.8v2.7h-6" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><circle cx="5.5" cy="14.5" r="1.5" fill="var(--s-color-surface)" stroke="currentColor" stroke-width="1.2"/><circle cx="14.5" cy="14.5" r="1.5" fill="var(--s-color-surface)" stroke="currentColor" stroke-width="1.2"/></svg>{%- endcapture -%}
+{%- capture icon_ask -%}<svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M8.1 8.1a1.95 1.95 0 1 1 2.6 1.85c-.45.16-.7.5-.7.95v.6M10 13.6v.1" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>{%- endcapture -%}
+{%- capture icon_close -%}<svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M5 5l10 10M15 5 5 15" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>{%- endcapture -%}
+
+<div class="s-pdp-info" {{ block.shopify_attributes }}>
+  <div class="s-pdp-info__tabs">
+    {%- if block.settings.show_description and p.description != blank -%}
+      <button type="button" class="s-pdp-info__tab" data-saucha-drawer-open="descripcion" aria-haspopup="dialog" aria-controls="{{ drawer_prefix }}descripcion">
+        {{ icon_description }}<span>Descripción</span>
+      </button>
+    {%- endif -%}
+    {%- if block.settings.show_details and has_details -%}
+      <button type="button" class="s-pdp-info__tab" data-saucha-drawer-open="detalles" aria-haspopup="dialog" aria-controls="{{ drawer_prefix }}detalles">
+        {{ icon_details }}<span>Detalles</span>
+      </button>
+    {%- endif -%}
+    {%- if block.settings.show_fit and has_fit -%}
+      <button type="button" class="s-pdp-info__tab" data-saucha-drawer-open="talla" aria-haspopup="dialog" aria-controls="{{ drawer_prefix }}talla">
+        {{ icon_fit }}<span>Talla y ajuste</span>
+      </button>
+    {%- endif -%}
+    {%- if block.settings.shipping_text != blank -%}
+      <button type="button" class="s-pdp-info__tab" data-saucha-drawer-open="envios" aria-haspopup="dialog" aria-controls="{{ drawer_prefix }}envios">
+        {{ icon_shipping }}<span>Envíos</span>
+      </button>
+    {%- endif -%}
+    {%- if block.settings.show_ask -%}
+      <button type="button" class="s-pdp-info__tab" data-saucha-drawer-open="consulta" aria-haspopup="dialog" aria-controls="{{ drawer_prefix }}consulta">
+        {{ icon_ask }}<span>Preguntar</span>
+      </button>
+    {%- endif -%}
+  </div>
+
+  {%- if block.settings.show_share -%}
+    {%- liquid
+      assign share_url = shop.url | append: p.url
+      assign share_title = p.title | url_encode
+      assign share_url_encoded = share_url | url_encode
+      assign share_image = p.featured_image | image_url: width: 1200 | prepend: 'https:' | url_encode
+    -%}
+    <div class="s-pdp-share">
+      <span class="s-pdp-share__label">Compartir</span>
+      <a class="s-pdp-share__button" href="https://wa.me/?text={{ share_title }}%20{{ share_url_encoded }}" target="_blank" rel="noopener" aria-label="Compartir por WhatsApp">
+        <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 2.8a7.2 7.2 0 0 0-6.2 10.9L3 17l3.4-.8A7.2 7.2 0 1 0 10 2.8Z" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M7.6 6.9c.2-.4.4-.4.6-.4h.4c.1 0 .3 0 .4.3l.6 1.4c0 .1.1.3 0 .4l-.4.5c-.1.1-.2.3 0 .5.3.5.7 1 1.1 1.4.5.4 1 .7 1.5.9.2.1.3 0 .4-.1l.6-.7c.1-.2.3-.2.4-.1l1.3.6c.2.1.3.2.3.3 0 .3-.1.9-.5 1.2-.4.3-.9.5-1.5.4-.9-.1-2.1-.6-3.3-1.7-1.1-1-1.8-2.2-2-3-.1-.8.2-1.4.5-1.9Z" fill="currentColor"/></svg>
+      </a>
+      <a class="s-pdp-share__button" href="https://pinterest.com/pin/create/button/?url={{ share_url_encoded }}&media={{ share_image }}&description={{ share_title }}" target="_blank" rel="noopener" aria-label="Guardar en Pinterest">
+        <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M9.9 2.8a7.2 7.2 0 0 0-2.6 13.9c-.1-.6-.1-1.5 0-2.2l.9-3.8s-.2-.5-.2-1.1c0-1.1.6-1.9 1.4-1.9.7 0 1 .5 1 1.1 0 .7-.4 1.7-.6 2.6-.2.8.4 1.4 1.1 1.4 1.4 0 2.4-1.8 2.4-3.9 0-1.6-1.1-2.8-3-2.8-2.2 0-3.6 1.6-3.6 3.5 0 .6.2 1.1.5 1.4.1.1.1.2.1.4l-.2.6c0 .2-.2.3-.4.2-1-.4-1.5-1.5-1.5-2.8 0-2.1 1.7-4.6 5.2-4.6 2.8 0 4.6 2 4.6 4.2 0 2.9-1.6 5.1-4 5.1-.8 0-1.6-.4-1.8-.9l-.5 1.9c-.2.7-.6 1.5-.9 2A7.2 7.2 0 1 0 9.9 2.8Z" fill="currentColor"/></svg>
+      </a>
+      <a class="s-pdp-share__button" href="https://www.facebook.com/sharer/sharer.php?u={{ share_url_encoded }}" target="_blank" rel="noopener" aria-label="Compartir en Facebook">
+        <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M11.2 17v-6.1h2l.3-2.4h-2.3V7c0-.7.2-1.2 1.2-1.2h1.2V3.7c-.2 0-1-.1-1.8-.1-1.8 0-3 1.1-3 3.1v1.8H6.8v2.4h2V17" fill="currentColor"/></svg>
+      </a>
+      <button type="button" class="s-pdp-share__button" data-saucha-copy="{{ share_url }}" aria-label="Copiar enlace">
+        <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M8.6 11.4a3 3 0 0 0 4.2 0l2.4-2.4a3 3 0 0 0-4.2-4.2l-.9.9M11.4 8.6a3 3 0 0 0-4.2 0L4.8 11a3 3 0 0 0 4.2 4.2l.9-.9" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        <span class="s-pdp-share__copied" role="status" aria-live="polite"></span>
+      </button>
+    </div>
+  {%- endif -%}
+
+  {%- comment -%} ---------- Paneles ---------- {%- endcomment -%}
+
+  {%- if block.settings.show_description and p.description != blank -%}
+    <dialog class="s-pdp-drawer" id="{{ drawer_prefix }}descripcion" data-saucha-drawer="descripcion" aria-labelledby="{{ drawer_prefix }}descripcion-title">
+      <div class="s-pdp-drawer__panel">
+        <header class="s-pdp-drawer__header">
+          <p class="s-pdp-drawer__eyebrow">{{ p.title | escape }}</p>
+          <h2 class="s-pdp-drawer__title" tabindex="-1" autofocus id="{{ drawer_prefix }}descripcion-title">Descripción</h2>
+          <button type="button" class="s-pdp-drawer__close" data-saucha-drawer-close aria-label="Cerrar">{{ icon_close }}</button>
+        </header>
+        <div class="s-pdp-drawer__body rte">{{ p.description }}</div>
+      </div>
+    </dialog>
+  {%- endif -%}
+
+  {%- if block.settings.show_details and has_details -%}
+    <dialog class="s-pdp-drawer" id="{{ drawer_prefix }}detalles" data-saucha-drawer="detalles" aria-labelledby="{{ drawer_prefix }}detalles-title">
+      <div class="s-pdp-drawer__panel">
+        <header class="s-pdp-drawer__header">
+          <p class="s-pdp-drawer__eyebrow">{{ p.title | escape }}</p>
+          <h2 class="s-pdp-drawer__title" tabindex="-1" autofocus id="{{ drawer_prefix }}detalles-title">Detalles</h2>
+          <button type="button" class="s-pdp-drawer__close" data-saucha-drawer-close aria-label="Cerrar">{{ icon_close }}</button>
+        </header>
+        <div class="s-pdp-drawer__body">
+          {%- if spec_rows != '' -%}
+            <dl class="s-pdp-specs">
+              {%- assign spec_list = spec_rows | split: '§' -%}
+              {%- for spec in spec_list -%}
+                {%- assign spec_parts = spec | split: '~' -%}
+                <div class="s-pdp-spec"><dt>{{ spec_parts[0] }}</dt><dd>{{ spec_parts[1] }}</dd></div>
+              {%- endfor -%}
+            </dl>
+          {%- endif -%}
+          {%- if mf.informacion_adicional != blank -%}
+            <div class="s-pdp-drawer__note">{{ mf.informacion_adicional.value | escape | newline_to_br }}</div>
+          {%- endif -%}
+        </div>
+      </div>
+    </dialog>
+  {%- endif -%}
+
+  {%- if block.settings.show_fit and has_fit -%}
+    <dialog class="s-pdp-drawer s-pdp-drawer--wide" id="{{ drawer_prefix }}talla" data-saucha-drawer="talla" aria-labelledby="{{ drawer_prefix }}talla-title">
+      <div class="s-pdp-drawer__panel">
+        <header class="s-pdp-drawer__header">
+          <p class="s-pdp-drawer__eyebrow">{{ p.title | escape }}</p>
+          <h2 class="s-pdp-drawer__title" tabindex="-1" autofocus id="{{ drawer_prefix }}talla-title">Talla y ajuste</h2>
+          <button type="button" class="s-pdp-drawer__close" data-saucha-drawer-close aria-label="Cerrar">{{ icon_close }}</button>
+        </header>
+        <div class="s-pdp-drawer__body">
+          {%- if mf.como_talla != blank or model_line != '' -%}
+            <div class="s-pdp-fit">
+              {%- if mf.como_talla != blank -%}
+                <p class="s-pdp-fit__lead">{{ mf.como_talla.value | escape }}</p>
+              {%- endif -%}
+              {%- if model_line != '' -%}
+                <p class="s-pdp-fit__model">{{ model_line | escape }}</p>
+              {%- endif -%}
+            </div>
+          {%- endif -%}
+
+          {%- if guide != blank -%}
+            <section class="s-pdp-guide" aria-label="Guía de tallas">
+              <h3 class="s-pdp-guide__title">{{ guide.nombre | default: 'Guía de tallas' | escape }}</h3>
+              {%- if guide.tabla_de_tallas != blank -%}
+                {%- liquid
+                  assign guide_rows = guide.tabla_de_tallas.value | strip | newline_to_br | split: '<br />'
+                  assign separator = '|'
+                  assign first_row = guide_rows.first
+                  unless first_row contains '|'
+                    if first_row contains '	'
+                      assign separator = '	'
+                    else
+                      assign separator = ';'
+                    endif
+                  endunless
+                -%}
+                <div class="s-pdp-guide__scroll" tabindex="0">
+                  <table class="s-pdp-guide__table">
+                    {%- for guide_row in guide_rows -%}
+                      {%- assign row_text = guide_row | strip -%}
+                      {%- if row_text == blank -%}{%- continue -%}{%- endif -%}
+                      {%- assign cells = row_text | split: separator -%}
+                      {%- if forloop.first -%}<thead>{%- endif -%}
+                      {%- if forloop.index == 2 -%}<tbody>{%- endif -%}
+                      <tr>
+                        {%- for cell in cells -%}
+                          {%- if forloop.parentloop.first -%}
+                            <th scope="col">{{ cell | strip | escape }}</th>
+                          {%- elsif forloop.first -%}
+                            <th scope="row">{{ cell | strip | escape }}</th>
+                          {%- else -%}
+                            <td>{{ cell | strip | escape }}</td>
+                          {%- endif -%}
+                        {%- endfor -%}
+                      </tr>
+                      {%- if forloop.first -%}</thead>{%- endif -%}
+                      {%- if forloop.last and forloop.index > 1 -%}</tbody>{%- endif -%}
+                    {%- endfor -%}
+                  </table>
+                </div>
+              {%- endif -%}
+              {%- if guide.notas_adicionales != blank -%}
+                <p class="s-pdp-drawer__note">{{ guide.notas_adicionales.value | escape | newline_to_br }}</p>
+              {%- endif -%}
+            </section>
+          {%- endif -%}
+        </div>
+      </div>
+    </dialog>
+  {%- endif -%}
+
+  {%- if block.settings.shipping_text != blank -%}
+    <dialog class="s-pdp-drawer" id="{{ drawer_prefix }}envios" data-saucha-drawer="envios" aria-labelledby="{{ drawer_prefix }}envios-title">
+      <div class="s-pdp-drawer__panel">
+        <header class="s-pdp-drawer__header">
+          <p class="s-pdp-drawer__eyebrow">{{ p.title | escape }}</p>
+          <h2 class="s-pdp-drawer__title" tabindex="-1" autofocus id="{{ drawer_prefix }}envios-title">Envíos y devoluciones</h2>
+          <button type="button" class="s-pdp-drawer__close" data-saucha-drawer-close aria-label="Cerrar">{{ icon_close }}</button>
+        </header>
+        <div class="s-pdp-drawer__body rte">
+          {{ block.settings.shipping_text }}
+          {%- if shop.refund_policy != blank or shop.shipping_policy != blank -%}
+            <p class="s-pdp-drawer__links">
+              {%- if shop.shipping_policy != blank -%}
+                <a href="{{ shop.shipping_policy.url }}">{{ shop.shipping_policy.title }}</a>
+              {%- endif -%}
+              {%- if shop.refund_policy != blank -%}
+                <a href="{{ shop.refund_policy.url }}">{{ shop.refund_policy.title }}</a>
+              {%- endif -%}
+            </p>
+          {%- endif -%}
+        </div>
+      </div>
+    </dialog>
+  {%- endif -%}
+
+  {%- if block.settings.show_ask -%}
+    <dialog class="s-pdp-drawer" id="{{ drawer_prefix }}consulta" data-saucha-drawer="consulta" aria-labelledby="{{ drawer_prefix }}consulta-title">
+      <div class="s-pdp-drawer__panel">
+        <header class="s-pdp-drawer__header">
+          <p class="s-pdp-drawer__eyebrow">{{ p.title | escape }}</p>
+          <h2 class="s-pdp-drawer__title" tabindex="-1" autofocus id="{{ drawer_prefix }}consulta-title">Pregúntanos</h2>
+          <button type="button" class="s-pdp-drawer__close" data-saucha-drawer-close aria-label="Cerrar">{{ icon_close }}</button>
+        </header>
+        <div class="s-pdp-drawer__body">
+          {%- form 'contact', id: form_id, class: 's-pdp-ask' -%}
+            {%- if form.posted_successfully? -%}
+              <p class="s-pdp-ask__status s-pdp-ask__status--ok" data-saucha-open-on-load tabindex="-1">
+                Gracias. Te responderemos por correo lo antes posible.
+              </p>
+            {%- else -%}
+              {%- if block.settings.ask_intro != blank -%}
+                <div class="s-pdp-ask__intro rte">{{ block.settings.ask_intro }}</div>
+              {%- endif -%}
+              {%- if form.errors -%}
+                <p class="s-pdp-ask__status s-pdp-ask__status--error" data-saucha-open-on-load role="alert">
+                  Revisa los campos: {{ form.errors | default_errors }}
+                </p>
+              {%- endif -%}
+              <input type="hidden" name="contact[Producto]" value="{{ p.title | escape }} · {{ shop.url }}{{ p.url }}">
+              <div class="s-pdp-ask__field">
+                <label for="{{ form_id }}-name">Nombre</label>
+                <input id="{{ form_id }}-name" type="text" name="contact[name]" autocomplete="name" value="{{ form.name }}" required>
+              </div>
+              <div class="s-pdp-ask__field">
+                <label for="{{ form_id }}-email">Correo electrónico</label>
+                <input id="{{ form_id }}-email" type="email" name="contact[email]" autocomplete="email" spellcheck="false" value="{{ form.email }}" required>
+              </div>
+              <div class="s-pdp-ask__field">
+                <label for="{{ form_id }}-body">Tu pregunta</label>
+                <textarea id="{{ form_id }}-body" name="contact[body]" rows="5" required>{{ form.body }}</textarea>
+              </div>
+              <button type="submit" class="button s-pdp-ask__submit">Enviar pregunta</button>
+            {%- endif -%}
+          {%- endform -%}
+        </div>
+      </div>
+    </dialog>
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "Información Saucha",
+  "tag": null,
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Accesos a paneles laterales. Cada uno aparece solo si el producto tiene contenido para él (descripción y metacampos)."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_description",
+      "label": "Descripción",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_details",
+      "label": "Detalles",
+      "info": "Composición, tejido, material, acabado, medidas, cierre, cuidados e información adicional.",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_fit",
+      "label": "Talla y ajuste",
+      "info": "«Cómo talla», altura y talla de la modelo y la guía de tallas (metaobjeto).",
+      "default": true
+    },
+    {
+      "type": "richtext",
+      "id": "shipping_text",
+      "label": "Envíos y devoluciones",
+      "info": "Vacío = no se muestra. Debajo se enlazan las políticas de envío y devoluciones de la tienda.",
+      "default": "<p>Envío gratis en pedidos a partir de 50 €.</p>"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_ask",
+      "label": "Preguntar",
+      "info": "Formulario de contacto; el mensaje llega con el nombre del producto.",
+      "default": true
+    },
+    {
+      "type": "richtext",
+      "id": "ask_intro",
+      "label": "Texto del formulario",
+      "default": "<p>¿Dudas con la talla o el tejido? Escríbenos y te respondemos en persona.</p>",
+      "visible_if": "{{ block.settings.show_ask }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_share",
+      "label": "Botones de compartir",
+      "default": true
+    }
+  ],
+  "presets": [
+    {
+      "name": "Información Saucha",
+      "category": "t:categories.product"
+    }
+  ]
+}
+{% endschema %}

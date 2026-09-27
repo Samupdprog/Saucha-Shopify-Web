@@ -10,6 +10,7 @@
   @param {string} media_gallery - Captured HTML for the product media gallery block
   @param {string} product_details - Captured HTML for the product details block
   @param {string} additional_blocks - Captured HTML for additional section blocks
+  @param {string} [breadcrumbs] - Saucha: captured HTML for the breadcrumbs shown above the grid
 
   @example
   {% capture media_gallery %}
@@ -94,6 +95,7 @@
     {% assign product_href = '#ProductInformation-' | append: section_id %}
     {% render 'skip-to-content-link', href: product_href, text: 'accessibility.skip_to_product_info' %}
   {% endif %}
+  {{ breadcrumbs }}
   <product-component
     class="{{ product_grid_class }}"
     data-product-grid-content

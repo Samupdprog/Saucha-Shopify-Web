@@ -1200,6 +1200,17 @@
         "default": 2
       },
       {
+        "type": "range",
+        "id": "saucha_product_radius",
+        "label": "Radio de fotos de producto",
+        "info": "Galería de la ficha y tarjetas de producto.",
+        "min": 0,
+        "max": 24,
+        "step": 1,
+        "unit": "px",
+        "default": 12
+      },
+      {
         "type": "header",
         "content": "Movimiento"
       },

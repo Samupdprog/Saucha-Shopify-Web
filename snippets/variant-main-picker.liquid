@@ -112,11 +112,32 @@
             ref="fieldsets[]"
             {{ option_id_attribute }}
           >
+            {%- liquid
+              # Saucha · «Guía de tallas» junto a la opción de talla si el producto tiene información de ajuste
+              assign saucha_size_key = product_option.name | downcase
+              assign saucha_fit_link = ''
+              if saucha_size_key contains 'talla' or saucha_size_key contains 'size' or saucha_size_key contains 'taille'
+                assign saucha_fit = product_resource.metafields.custom
+                if saucha_fit.guia_de_tallas != blank
+                  assign saucha_fit_link = 'Guía de tallas'
+                elsif saucha_fit.como_talla != blank or saucha_fit.talla_de_la_modelo != blank
+                  assign saucha_fit_link = 'Talla y ajuste'
+                endif
+              endif
+            -%}
             <legend>
-              {{ product_option.name | escape -}}
+              <span class="variant-option__name">{{ product_option.name | escape }}</span>
               {%- if variant_style == 'swatch' -%}
                 <span class="variant-option__swatch-value">{{ product_option.selected_value }}</span>
+              {%- else -%}
+                <span class="variant-option__swatch-value variant-option__selected-value">{{ product_option.selected_value }}</span>
               {%- endif %}
+              {%- if saucha_fit_link != '' -%}
+                <button type="button" class="s-size-guide-link" data-saucha-drawer-open="talla" aria-haspopup="dialog">
+                  <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M2.5 7.5h15v5h-15z" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M5.5 7.5v2M8.5 7.5v3M11.5 7.5v2M14.5 7.5v3" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+                  <span>{{ saucha_fit_link }}</span>
+                </button>
+              {%- endif -%}
             </legend>
             {%- for product_option_value in product_option.values -%}
               {% if product_option_value.size > longest_value and option_id_attribute %}
@@ -124,6 +145,7 @@
               {% endif %}
               <label
                 class="variant-option__button-label{% if variant_style == 'swatch' %} variant-option__button-label--has-swatch{% endif %}"
+                {% if variant_style == 'swatch' %}data-tooltip="{{ product_option_value.name | escape }}{% if product_option_value.available == false %} · {{ 'products.product.sold_out' | t }}{% endif %}"{% endif %}
               >
                 <input
                   type="radio"

@@ -17,14 +17,14 @@
           "settings": {
             "media_presentation": "grid",
             "media_columns": "two",
-            "image_gap": 8,
+            "image_gap": 10,
             "large_first_image": false,
             "slideshow_controls_style": "counter",
             "slideshow_mobile_controls_style": "dots",
             "thumbnail_position": "right",
             "thumbnail_width": 44,
             "thumbnail_radius": 0,
-            "aspect_ratio": "adapt",
+            "aspect_ratio": "3/4",
             "constrain_to_viewport": false,
             "media_fit": "cover",
             "media_radius": 0,
@@ -50,7 +50,7 @@
             "custom_width_mobile": 100,
             "height": "fit",
             "details_position": "flex-start",
-            "gap": 32,
+            "gap": 28,
             "sticky_details_desktop": true,
             "background_media": "none",
             "background_color": "",
@@ -62,7 +62,7 @@
             "border_color": "",
             "border_radius": 0,
             "padding-block-start": 0,
-            "padding-block-end": 32,
+            "padding-block-end": 0,
             "padding-inline-start": 0,
             "padding-inline-end": 0
           },
@@ -157,12 +157,10 @@
                 "eyebrow_saucha": {
                   "type": "saucha-product-eyebrow",
                   "settings": {
-                    "show_collection": true,
+                    "show_collection": false,
+                    "show_labels": true,
                     "show_sale": true,
-                    "sale_label": "Rebaja",
-                    "show_new": true,
-                    "new_label": "Nuevo",
-                    "new_days": 30
+                    "sale_label": "Rebaja"
                   },
                   "blocks": {}
                 }
@@ -271,7 +269,7 @@
             "inventory_saucha": {
               "type": "product-inventory",
               "settings": {
-                "inventory_threshold": 3,
+                "inventory_threshold": 5,
                 "show_inventory_quantity": true,
                 "text_color": "",
                 "padding-block-start": 0,
@@ -290,90 +288,18 @@
               },
               "blocks": {}
             },
-            "accordion_saucha": {
-              "type": "accordion",
+            "info_saucha": {
+              "type": "saucha-product-info",
               "settings": {
-                "icon": "plus",
-                "dividers": true,
-                "divider_color": "{{ settings.color_palette.color2 }}",
-                "type_preset": "h6"
+                "show_description": true,
+                "show_details": true,
+                "show_fit": true,
+                "shipping_text": "<p>Envío gratis en pedidos a partir de 50 €. Preparamos cada pedido con cariño y te enviamos el seguimiento por correo.</p>",
+                "show_ask": true,
+                "ask_intro": "<p>¿Dudas con la talla o el tejido? Escríbenos y te respondemos en persona.</p>",
+                "show_share": true
               },
-              "blocks": {
-                "row_desc": {
-                  "type": "_accordion-row",
-                  "settings": {
-                    "heading": "Descripción",
-                    "open_by_default": true,
-                    "icon": "none",
-                    "width": 20
-                  },
-                  "blocks": {
-                    "text": {
-                      "type": "text",
-                      "settings": {
-                        "text": "{{ closest.product.description }}",
-                        "width": "100%",
-                        "type_preset": "rte"
-                      },
-                      "blocks": {}
-                    }
-                  },
-                  "block_order": [
-                    "text"
-                  ]
-                },
-                "row_ship": {
-                  "type": "_accordion-row",
-                  "settings": {
-                    "heading": "Envíos y devoluciones",
-                    "open_by_default": false,
-                    "icon": "none",
-                    "width": 20
-                  },
-                  "blocks": {
-                    "text": {
-                      "type": "text",
-                      "settings": {
-                        "text": "<p>Envío gratis en pedidos a partir de 50 €. Consulta plazos y condiciones de cambio en nuestra <a href=\"/policies/refund-policy\">política de devoluciones</a>.</p>",
-                        "width": "100%",
-                        "type_preset": "rte"
-                      },
-                      "blocks": {}
-                    }
-                  },
-                  "block_order": [
-                    "text"
-                  ]
-                },
-                "row_fit": {
-                  "type": "_accordion-row",
-                  "settings": {
-                    "heading": "Tallaje y ajuste",
-                    "open_by_default": false,
-                    "icon": "none",
-                    "width": 20
-                  },
-                  "blocks": {
-                    "text": {
-                      "type": "text",
-                      "settings": {
-                        "text": "<p>Si dudas entre dos tallas, te recomendamos elegir la mayor para un ajuste más cómodo.</p><p>¿Necesitas ayuda? Escríbenos y te asesoramos en persona.</p>",
-                        "width": "100%",
-                        "type_preset": "rte"
-                      },
-                      "blocks": {}
-                    }
-                  },
-                  "block_order": [
-                    "text"
-                  ]
-                }
-              },
-              "block_order": [
-                "row_desc",
-                "row_fit",
-                "row_ship"
-              ]
+              "blocks": {}
             }
           },
           "block_order": [
@@ -383,7 +309,7 @@
             "inventory_saucha",
             "buy_buttons_eYQEYi",
             "benefits_saucha",
-            "accordion_saucha"
+            "info_saucha"
           ]
         }
       },
@@ -397,163 +323,38 @@
         "enable_sticky_add_to_cart": true,
         "background_color": "{{ settings.color_palette.background }}",
         "padding-block-start": 0,
-        "padding-block-end": 32
+        "padding-block-end": 0,
+        "saucha_breadcrumbs": true
       }
     },
-    "story": {
-      "type": "saucha-pdp-story",
-      "blocks": {
-        "detail_1": {
-          "type": "detalle",
-          "settings": {
-            "title": "Hecho para durar",
-            "text": "Tejidos y acabados elegidos para acompañarte muchas temporadas."
-          }
-        },
-        "detail_2": {
-          "type": "detalle",
-          "settings": {
-            "title": "Un ajuste favorecedor",
-            "text": "Patronaje pensado para sentar bien desde el primer día."
-          }
-        },
-        "detail_3": {
-          "type": "detalle",
-          "settings": {
-            "title": "Cuidado sencillo",
-            "text": "Sigue la etiqueta interior: la mayoría admiten lavado delicado."
-          }
-        }
-      },
-      "block_order": [
-        "detail_1",
-        "detail_2",
-        "detail_3"
-      ],
-      "settings": {
-        "eyebrow": "El detalle",
-        "title": "Pensado para\nacompañarte",
-        "text": "<p>Cada pieza Saucha nace de una idea sencilla: prendas bonitas, cómodas y hechas para durar más de una temporada.</p>",
-        "use_product_images": true,
-        "scheme": "cream",
-        "spacing_top": "md",
-        "spacing_bottom": "md"
-      }
-    },
-    "complete": {
+    "recommendations": {
       "type": "productos-saucha",
       "settings": {
-        "eyebrow": "Te puede gustar",
-        "title": "Completa tu elección",
+        "eyebrow": "",
+        "title": "También te puede gustar",
         "text": "",
         "source": "related",
-        "products_to_show": 4,
+        "products_to_show": 8,
         "link_label": "",
         "link_position": "none",
         "heading_alignment": "left",
         "columns_desktop": "4",
         "mobile_layout": "rail",
         "image_ratio": "editorial",
-        "card_alignment": "left",
+        "card_alignment": "center",
         "enable_second_image": true,
         "smart_color_media": true,
         "show_swatches": true,
         "scheme": "surface",
-        "spacing_top": "md",
-        "spacing_bottom": "sm"
-      }
-    },
-    "explore": {
-      "type": "saucha-pdp-explore",
-      "settings": {
-        "eyebrow": "Sigue explorando",
-        "title": "Más ideas para ti",
-        "heading_alignment": "center",
-        "fill_from_store": true,
-        "max_cards": 3,
-        "scheme": "surface",
-        "spacing_top": "sm",
-        "spacing_bottom": "sm"
-      }
-    },
-    "more": {
-      "type": "productos-saucha",
-      "settings": {
-        "eyebrow": "De la misma colección",
-        "title": "Más de [categoria]",
-        "text": "",
-        "source": "product_collection",
-        "products_to_show": 8,
-        "link_label": "Ver todo",
-        "link_position": "heading",
-        "heading_alignment": "split",
-        "columns_desktop": "4",
-        "mobile_layout": "rail",
-        "image_ratio": "editorial",
-        "card_alignment": "left",
-        "enable_second_image": true,
-        "smart_color_media": true,
-        "show_swatches": true,
-        "scheme": "surface",
-        "spacing_top": "sm",
-        "spacing_bottom": "md"
-      }
-    },
-    "valores": {
-      "type": "valores-saucha",
-      "blocks": {
-        "valor_1": {
-          "type": "valor",
-          "settings": {
-            "icon": "truck",
-            "title": "Envío gratis desde 50 €",
-            "text": "Preparamos cada pedido con cariño."
-          }
-        },
-        "valor_2": {
-          "type": "valor",
-          "settings": {
-            "icon": "return",
-            "title": "Cambios sencillos",
-            "text": "Si no es para ti, lo cambiamos."
-          }
-        },
-        "valor_3": {
-          "type": "valor",
-          "settings": {
-            "icon": "lock",
-            "title": "Pago seguro",
-            "text": "Compra protegida y cifrada."
-          }
-        },
-        "valor_4": {
-          "type": "valor",
-          "settings": {
-            "icon": "chat",
-            "title": "Te asesoramos",
-            "text": "Escríbenos, respondemos en persona."
-          }
-        }
-      },
-      "block_order": [
-        "valor_1",
-        "valor_2",
-        "valor_3",
-        "valor_4"
-      ],
-      "settings": {
-        "scheme": "cream",
-        "spacing_top": "sm",
-        "spacing_bottom": "sm"
+        "spacing_top": "lg",
+        "spacing_bottom": "lg",
+        "desktop_layout": "carousel",
+        "show_product_labels": true
       }
     }
   },
   "order": [
     "main",
-    "story",
-    "complete",
-    "explore",
-    "more",
-    "valores"
+    "recommendations"
   ]
 }

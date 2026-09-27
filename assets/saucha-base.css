@@ -648,3 +648,32 @@ html.s-motion.s-settle [data-s-reveal='media'].is-in .s-media__img {
   white-space: nowrap;
   align-self: center;
 }
+
+/* =========================================================
+   ETIQUETAS DE PRODUCTO · metacampo «Etiquetas de producto» (snippets/saucha-product-labels.liquid)
+   Un tono por valor; un valor nuevo sin regla propia usa el neutro.
+   ========================================================= */
+
+.s-label {
+  display: inline-flex;
+  align-items: center;
+  min-height: 22px;
+  padding: 4px 10px;
+  border-radius: var(--s-radius-pill);
+  background: var(--s-color-cream);
+  color: var(--s-color-ink);
+  font-family: var(--s-font-sans);
+  font-size: 0.625rem;
+  font-weight: 500;
+  letter-spacing: var(--s-tracking-eyebrow);
+  line-height: 1.1;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.s-label--nuevo { background: var(--s-color-blush); }
+.s-label--rebaja { background: var(--s-color-salmon); }
+.s-label--edicion-limitada { background: var(--s-color-cacao); color: var(--s-color-surface); }
+.s-label--ultimas-unidades { background: var(--s-color-surface); box-shadow: inset 0 0 0 1px var(--s-color-cacao); color: var(--s-color-cacao); }
+.s-label--exclusivo-online { background: var(--s-color-sage); }
+.s-label--mas-vendido { background: var(--s-color-gold); }

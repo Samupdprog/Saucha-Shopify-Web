@@ -8,6 +8,8 @@
   1 · Etiqueta de color en la galería ... pulsar «Plateado» elige ese color
   2 · Vista previa de color ............. al pasar por una muestra, la leyenda dice su nombre
   3 · Cambios con intención .............. precio, stock y valor elegido entran con un fundido corto
+  4 · Paneles laterales .................. Descripción, Detalles, Talla y ajuste, Envíos, Preguntar
+  5 · Copiar enlace ...................... botón de compartir
 */
 (() => {
   if (window.SauchaProduct) return;
@@ -134,12 +136,131 @@
     if (event.target instanceof Element && event.animationName === 's-flash') event.target.classList.remove('s-flash');
   });
 
-  window.SauchaProduct = { flash };
+  /* ---------- 4 · Paneles laterales (blocks/saucha-product-info.liquid) ---------- */
+
+  const DRAWER_EXIT_MS = 320;
+
+  /**
+   * @param {Element} origin
+   * @param {string} key
+   * @returns {HTMLDialogElement | null}
+   */
+  const findDrawer = (origin, key) => {
+    const scope = origin.closest('.shopify-section') || document;
+    const drawer = scope.querySelector(`dialog[data-saucha-drawer="${CSS.escape(key)}"]`);
+    return drawer instanceof HTMLDialogElement ? drawer : null;
+  };
+
+  const lockScroll = (locked) => document.documentElement.classList.toggle('s-drawer-lock', locked);
+
+  /** @param {HTMLDialogElement} drawer */
+  const openDrawer = (drawer, opener = null) => {
+    if (drawer.open) return;
+    drawer.sauchaOpener = opener;
+    drawer.classList.remove('is-closing');
+    drawer.showModal();
+    lockScroll(true);
+    requestAnimationFrame(() => drawer.classList.add('is-open'));
+  };
+
+  /** @param {HTMLDialogElement} drawer */
+  const closeDrawer = (drawer) => {
+    if (!drawer.open || drawer.classList.contains('is-closing')) return;
+    drawer.classList.remove('is-open');
+    drawer.classList.add('is-closing');
+    window.setTimeout(
+      () => {
+        drawer.classList.remove('is-closing');
+        drawer.close();
+        lockScroll(false);
+        drawer.sauchaOpener?.focus?.({ preventScroll: true });
+      },
+      REDUCED_MOTION.matches ? 0 : DRAWER_EXIT_MS
+    );
+  };
+
+  document.addEventListener('click', (event) => {
+    const target = event.target instanceof Element ? event.target : null;
+    if (!target) return;
+
+    const opener = target.closest('[data-saucha-drawer-open]');
+    if (opener) {
+      const drawer = findDrawer(opener, opener.getAttribute('data-saucha-drawer-open') || '');
+      if (drawer) {
+        event.preventDefault();
+        openDrawer(drawer, opener);
+      }
+      return;
+    }
+
+    if (target.closest('[data-saucha-drawer-close]')) {
+      const drawer = target.closest('dialog[data-saucha-drawer]');
+      if (drawer instanceof HTMLDialogElement) closeDrawer(drawer);
+      return;
+    }
+
+    // Clic en el fondo: el propio <dialog> ocupa la pantalla y el panel va dentro
+    if (target instanceof HTMLDialogElement && target.matches('[data-saucha-drawer]')) {
+      closeDrawer(target);
+    }
+  });
+
+  // Esc: se anima la salida en lugar del cierre seco del navegador
+  document.addEventListener(
+    'cancel',
+    (event) => {
+      const drawer = event.target;
+      if (drawer instanceof HTMLDialogElement && drawer.matches('[data-saucha-drawer]')) {
+        event.preventDefault();
+        closeDrawer(drawer);
+      }
+    },
+    true
+  );
+
+  // Al volver de enviar la pregunta (o con errores), el panel se abre para enseñar el resultado
+  const openPostedForm = () => {
+    const status = document.querySelector('dialog[data-saucha-drawer] [data-saucha-open-on-load]');
+    const drawer = status?.closest('dialog');
+    if (drawer instanceof HTMLDialogElement) {
+      openDrawer(drawer);
+      if (status instanceof HTMLElement) status.focus({ preventScroll: true });
+    }
+  };
+
+  /* ---------- 5 · Copiar enlace ---------- */
+
+  document.addEventListener('click', async (event) => {
+    const button = event.target instanceof Element ? event.target.closest('[data-saucha-copy]') : null;
+    if (!button) return;
+
+    const url = button.getAttribute('data-saucha-copy') || window.location.href;
+    const feedback = button.querySelector('.s-pdp-share__copied');
+    try {
+      await navigator.clipboard.writeText(url);
+      if (feedback) feedback.textContent = 'Enlace copiado';
+    } catch {
+      window.prompt('Copia el enlace', url);
+      return;
+    }
+    button.classList.add('is-copied');
+    window.setTimeout(() => {
+      button.classList.remove('is-copied');
+      if (feedback) feedback.textContent = '';
+    }, 1800);
+  });
+
+  window.SauchaProduct = { flash, openDrawer, closeDrawer };
+
+  const init = () => {
+    watch();
+    openPostedForm();
+  };
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', watch);
+    document.addEventListener('DOMContentLoaded', init);
   } else {
-    watch();
+    init();
   }
 
   document.addEventListener('shopify:section:load', watch);
