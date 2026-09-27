@@ -1212,6 +1212,23 @@
       },
       {
         "type": "header",
+        "content": "Descuentos automáticos"
+      },
+      {
+        "type": "checkbox",
+        "id": "saucha_live_discounts",
+        "label": "Mostrar descuentos automáticos antes del carrito",
+        "info": "Ficha y tarjetas enseñan el precio que Shopify aplicará en el carrito (lo calcula Shopify, variante a variante).",
+        "default": true
+      },
+      {
+        "type": "text",
+        "id": "saucha_storefront_token",
+        "label": "Token público de Storefront API (opcional)",
+        "info": "Solo hace falta mientras la tienda tenga contraseña. Es el token PÚBLICO del canal Headless (nunca el privado ni uno de Admin)."
+      },
+      {
+        "type": "header",
         "content": "Movimiento"
       },
       {

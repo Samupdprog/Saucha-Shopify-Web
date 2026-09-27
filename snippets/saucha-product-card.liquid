@@ -143,6 +143,8 @@
   class="saucha-product-card{% if is_on_sale %} is-on-sale{% endif %}"
   data-product-card
   data-product-id="{{ product.id }}"
+  data-variant-id="{{ current_variant.id }}"
+  data-compare-at="{{ current_variant.compare_at_price | default: 0 }}"
 >
   <div
     class="saucha-product-card__media{% if section.settings.enable_shine %} saucha-product-card__media--shine{% endif %}"
@@ -314,6 +316,8 @@
               class="saucha-swatch{% if option_is_current %} is-active{% endif %}{% unless swatch_available %} is-unavailable{% endunless %}"
               type="button"
               data-product-swatch
+              data-variant-id="{{ swatch_variant.id }}"
+              data-compare-at="{% if swatch_variant.compare_at_price > swatch_variant.price %}{{ swatch_variant.compare_at_price }}{% else %}0{% endif %}"
               data-color-label="{{ option_value.name | escape }}"
               data-primary-url="{% if swatch_primary_image != blank %}{{ swatch_primary_image | image_url: width: 1200 }}{% endif %}"
               data-primary-srcset="{% if swatch_primary_image != blank %}{{ swatch_primary_image | image_url: width: 360 }} 360w, {{ swatch_primary_image | image_url: width: 600 }} 600w, {{ swatch_primary_image | image_url: width: 900 }} 900w, {{ swatch_primary_image | image_url: width: 1200 }} 1200w{% endif %}"

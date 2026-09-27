@@ -432,6 +432,35 @@ html .product-information media-gallery.is-entering slideshow-component {
   align-self: center;
 }
 
+/* Descuento automático de Shopify (assets/saucha-discounts.js): el precio llega calculado por Shopify */
+.s-price-promo {
+  display: inline-flex;
+  flex-basis: 100%;
+  align-items: center;
+  gap: var(--s-space-2);
+  margin-top: var(--s-space-1);
+  font-family: var(--s-font-sans);
+  font-size: var(--s-type-body-sm);
+  line-height: 1.4;
+  color: var(--s-color-cacao);
+  animation: s-pdp-rise var(--s-dur-enter) var(--s-ease) both;
+}
+
+.s-price-promo svg {
+  flex: none;
+  width: 14px;
+  height: 14px;
+}
+
+.product-information product-price [ref='priceContainer'][data-saucha-promo] > :is(.price, .compare-at-price, .s-price-badge) {
+  animation: s-flash var(--s-dur-image) var(--s-ease) both;
+}
+
+.sticky-add-to-cart__price .s-price-promo,
+.sticky-add-to-cart__price .compare-at-price {
+  display: none;
+}
+
 .s-price-saving {
   flex-basis: 100%;
   font-family: var(--s-font-sans);
@@ -1760,9 +1789,17 @@ html.s-drawer-lock .page-wrapper {
     padding-inline: var(--s-gutter, 16px);
   }
 
+  /* Espacio superior en móvil: Horizon suma a la primera sección la altura del header
+     (--section-top-offset, pensado para headers transparentes). En Saucha el header de la ficha
+     es sólido y el contenido ya empieza debajo, así que ese relleno solo dejaba un hueco vacío.
+     En escritorio ya está anulado en §1. Queda: header · 14 px · migas · 12 px · foto. */
+  .product-information {
+    padding-block-start: 0;
+  }
+
   .s-breadcrumbs {
-    padding-block: var(--s-space-3);
-    margin-block-end: calc(var(--gap, 0px) * -1 + var(--s-space-1));
+    padding-block: 14px 12px;
+    margin-block-end: calc(var(--gap, 0px) * -1);
   }
 
   .s-breadcrumbs [aria-current='page'] span {

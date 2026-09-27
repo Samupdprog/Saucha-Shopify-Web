@@ -61,6 +61,21 @@
 
 {{ 'saucha-base.css' | asset_url | stylesheet_tag }}
 
+{%- if settings.saucha_live_discounts -%}
+  {%- comment -%} Mercado y formato para assets/saucha-discounts.js (precio real de Shopify antes del carrito) {%- endcomment -%}
+  <script>
+    window.SauchaStore = {
+      country: {{ localization.country.iso_code | json }},
+      language: {{ localization.language.iso_code | split: '-' | first | upcase | json }},
+      currency: {{ cart.currency.iso_code | json }},
+      moneyFormat: {{ shop.money_format | strip_html | json }},
+      storefrontToken: {{ settings.saucha_storefront_token | strip | json }},
+      apiVersion: '2025-10'
+    };
+  </script>
+  <script type="module" src="{{ 'saucha-discounts.js' | asset_url }}"></script>
+{%- endif -%}
+
 {%- if settings.saucha_motion -%}
   <script>
     /* Oculta los elementos animables antes del primer pintado solo si hay JS y el visitante
