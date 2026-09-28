@@ -188,17 +188,22 @@
   }
 
   /* Anillo fino que aparece en hover/foco */
+  /* Aro del hover.
+     Nunca con transform: Chrome escala los bordes redondeados como una imagen en nueve trozos y,
+     en un círculo (radio 50 %), los «lados» de longitud cero se estiraban y pintaban una cruz
+     que atravesaba el centro durante un instante (solo en escritorio, donde hay hover).
+     El aro se abre animando su separación (inset), que se redibuja como un borde normal. */
   .colecciones-saucha__circulo::after {
     content: '';
     position: absolute;
-    inset: -5px;
+    inset: -2px;
     border: 1px solid var(--s-fg);
     border-radius: 50%;
     opacity: 0;
-    transform: scale(0.96);
+    pointer-events: none;
     transition:
       opacity var(--s-dur-micro) var(--s-ease),
-      transform var(--s-dur-image) var(--s-ease);
+      inset var(--s-dur-image) var(--s-ease);
   }
 
   .colecciones-saucha__imagen {
@@ -208,9 +213,6 @@
     overflow: hidden;
     border-radius: 50%;
     background: var(--s-color-blush);
-    /* El círculo es su propia capa desde el principio: su máscara redonda ya existe
-       cuando empieza el hover (ver la nota de la foto, abajo) */
-    transform: translateZ(0);
   }
 
   .colecciones-saucha__imagen img,
@@ -222,11 +224,7 @@
     transition: transform calc(var(--s-dur-image) * 2) var(--s-ease);
   }
 
-  /* Destello en cruz («+») al empezar el hover en escritorio:
-     si la foto se sube a una capa de GPU justo cuando empieza a escalarse, Chrome tarda uno o dos
-     fotogramas en generar la máscara redonda del círculo y mientras tanto recorta con dos rectángulos
-     interiores (horizontal + vertical), que en un círculo dibujan una cruz grande.
-     Con la capa preparada desde la carga, la máscara ya está lista y el hover es limpio. */
+  /* La foto se prepara en su capa desde la carga: el zoom del hover arranca sin saltos */
   @media (hover: hover) {
     .colecciones-saucha__imagen img {
       will-change: transform;
@@ -269,7 +267,7 @@
   @media (hover: hover) {
     .colecciones-saucha__item:hover .colecciones-saucha__circulo::after {
       opacity: 1;
-      transform: none;
+      inset: -5px;
     }
 
     .colecciones-saucha__item:hover .colecciones-saucha__imagen img {
@@ -283,7 +281,7 @@
 
   .colecciones-saucha__item:focus-visible .colecciones-saucha__circulo::after {
     opacity: 1;
-    transform: none;
+    inset: -5px;
     border-width: 2px;
   }
 
