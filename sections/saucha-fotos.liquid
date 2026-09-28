@@ -1,11 +1,12 @@
 {%- comment -%}
   Saucha · fotografías en composición (escaparate, interior, detalles, joyería…).
-  Cada foto es un bloque reordenable con imagen escritorio/móvil, encuadre y pie opcional.
+  Cada foto es un bloque reordenable con imagen escritorio/móvil, encuadre, pie opcional
+  y, si se quiere, una frase sobre la imagen con su capa de color.
   Composiciones: asimétrica (una grande y otra menor desplazada) · pareja · trío · panorámica.
 {%- endcomment -%}
 
 <section
-  class="s-section s-scheme-{{ section.settings.scheme }} s-pt-{{ section.settings.spacing_top }} s-pb-{{ section.settings.spacing_bottom }} s-fotos s-fotos--{{ section.settings.layout }}{% if section.settings.flip %} s-fotos--flip{% endif %}"
+  class="s-section s-scheme-{{ section.settings.scheme }} s-pt-{{ section.settings.spacing_top }} s-pb-{{ section.settings.spacing_bottom }} s-fotos s-fotos--{{ section.settings.layout }}{% if section.settings.flip %} s-fotos--flip{% endif %}{% if section.settings.parallax %} s-fotos--parallax{% endif %}"
   style="
     --s-fotos-h: {{ section.settings.height }}px;
     --s-fotos-h-m: {{ section.settings.height_mobile }}px;
@@ -21,6 +22,13 @@
           elsif section.settings.layout == 'trio'
             assign sizes = '(min-width: 990px) 33vw, 100vw'
           endif
+
+          assign alt = block.settings.caption
+          if alt == blank
+            assign alt = block.settings.overlay_text | strip_html
+          endif
+
+          assign position = block.settings.text_position | split: '-'
         -%}
         <figure class="s-fotos__item" {{ block.shopify_attributes }}>
           <div
@@ -30,15 +38,37 @@
               --s-i: {{ forloop.index0 }};
               --s-fx: {{ block.settings.focus_x }}%; --s-fy: {{ block.settings.focus_y }}%;
               --s-fx-m: {{ block.settings.focus_x_mobile }}%; --s-fy-m: {{ block.settings.focus_y_mobile }}%;
+              --s-overlay: {{ block.settings.overlay_opacity | divided_by: 100.0 }};
             "
           >
             {% render 'saucha-media',
               image: block.settings.image_desktop,
               image_mobile: block.settings.image_mobile,
               sizes: sizes,
-              alt: block.settings.caption,
+              alt: alt,
               placeholder: 'lifestyle-1'
             %}
+
+            {%- if block.settings.overlay_opacity > 0 -%}
+              <span class="s-media__overlay" aria-hidden="true"></span>
+            {%- endif -%}
+
+            {%- if block.settings.overlay_text != blank -%}
+              <div
+                class="s-fotos__over s-fotos__over--{{ block.settings.text_tone }} s-fotos__over--x-{{ position[1] }}"
+                style="--sf-y: {{ position[0] }}; --sf-x: {{ position[1] }};"
+              >
+                <div class="s-fotos__over-text" data-s-reveal="up" style="--s-i: {{ forloop.index }};">
+                  {{ block.settings.overlay_text }}
+                </div>
+              </div>
+            {%- endif -%}
+
+            {%- if block.settings.link != blank -%}
+              <a class="s-fotos__link" href="{{ block.settings.link }}">
+                <span class="visually-hidden">{{ alt | default: shop.name | escape }}</span>
+              </a>
+            {%- endif -%}
           </div>
           {%- if block.settings.caption != blank -%}
             <figcaption class="s-fotos__caption" data-s-reveal="fade" style="--s-i: {{ forloop.index0 | plus: 1 }};">{{ block.settings.caption | escape }}</figcaption>
@@ -83,12 +113,59 @@
     color: var(--s-color-muted);
   }
 
+  /* Frase sobre la foto */
+  .s-fotos__over {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: var(--sf-y, end);
+    align-items: var(--sf-x, start);
+    padding: var(--s-space-6);
+    pointer-events: none;
+  }
+
+  .s-fotos__over-text {
+    max-width: 34rem;
+    font-family: var(--s-font-serif);
+    font-weight: var(--s-font-serif-weight);
+    font-size: clamp(1.5rem, 1.2rem + 1.4vw, 2.5rem);
+    line-height: 1.2;
+    letter-spacing: -0.005em;
+    text-wrap: balance;
+  }
+
+  .s-fotos__over--x-center .s-fotos__over-text { text-align: center; }
+  .s-fotos__over--x-end .s-fotos__over-text { text-align: right; }
+
+  .s-fotos__over-text p { margin: 0; }
+  .s-fotos__over-text p + p { margin-top: 0.4em; }
+
+  .s-fotos__over--light { color: var(--s-color-surface); }
+  .s-fotos__over--dark { color: var(--s-color-ink); }
+
+  .s-fotos__link {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+  }
+
+  .s-fotos__link:focus-visible {
+    outline: 1px solid var(--s-color-ink);
+    outline-offset: 3px;
+  }
+
   /* ---------- Escritorio ---------- */
   @media screen and (min-width: 750px) {
     .s-fotos__grid {
       grid-template-columns: repeat(12, minmax(0, 1fr));
       column-gap: var(--s-space-5);
       align-items: start;
+    }
+
+    .s-fotos__over {
+      padding: var(--s-space-12);
     }
 
     /* Asimétrica: una grande (7 col.) y otra menor (4 col.) que baja; el aire entre ambas da ritmo */
@@ -100,6 +177,10 @@
 
     .s-fotos--asimetrica .s-fotos__item:nth-child(even) .s-fotos__media {
       --s-media-h: calc(var(--s-fotos-h) * 0.7);
+    }
+
+    .s-fotos--asimetrica .s-fotos__item:nth-child(even) .s-fotos__over {
+      padding: var(--s-space-8);
     }
 
     .s-fotos--asimetrica.s-fotos--flip .s-fotos__item:nth-child(odd) { grid-column: 6 / span 7; grid-row: 1; }
@@ -140,6 +221,16 @@
       --s-media-h-m: calc(var(--s-fotos-h-m) * 0.72);
     }
 
+    .s-fotos--pareja .s-fotos__over,
+    .s-fotos--asimetrica .s-fotos__item:nth-child(even) .s-fotos__over {
+      padding: var(--s-space-4);
+    }
+
+    .s-fotos--pareja .s-fotos__over-text,
+    .s-fotos--asimetrica .s-fotos__item:nth-child(even) .s-fotos__over-text {
+      font-size: 1.25rem;
+    }
+
     /* Trío en carril deslizable con asomo */
     .s-fotos--trio .s-fotos__grid {
       grid-auto-flow: column;
@@ -153,6 +244,24 @@
 
     .s-fotos--trio .s-fotos__grid::-webkit-scrollbar { display: none; }
     .s-fotos--trio .s-fotos__item { scroll-snap-align: start; }
+  }
+
+  /* Movimiento suave al desplazar: la foto se desliza un poco dentro de su marco.
+     Solo donde el navegador lo sabe hacer con CSS y si no se ha pedido reducir el movimiento. */
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .s-fotos--parallax .s-fotos__media picture {
+        inset: -7% 0;
+        height: auto;
+        animation: s-fotos-drift linear both;
+        animation-timeline: view();
+      }
+
+      @keyframes s-fotos-drift {
+        from { transform: translateY(-5%); }
+        to { transform: translateY(5%); }
+      }
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -178,7 +287,35 @@
         { "type": "range", "id": "focus_y", "label": "Posición vertical · escritorio", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
         { "type": "range", "id": "focus_x_mobile", "label": "Posición horizontal · móvil", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
         { "type": "range", "id": "focus_y_mobile", "label": "Posición vertical · móvil", "min": 0, "max": 100, "step": 1, "unit": "%", "default": 50 },
-        { "type": "text", "id": "caption", "label": "Pie de foto", "info": "Opcional. También se usa como texto alternativo." }
+        { "type": "text", "id": "caption", "label": "Pie de foto", "info": "Opcional. También se usa como texto alternativo." },
+        { "type": "url", "id": "link", "label": "Enlace de la foto", "info": "Opcional." },
+        { "type": "header", "content": "Texto sobre la foto" },
+        { "type": "richtext", "id": "overlay_text", "label": "Frase", "info": "Opcional. Mejor corta." },
+        {
+          "type": "select",
+          "id": "text_position",
+          "label": "Posición de la frase",
+          "options": [
+            { "value": "start-start", "label": "Arriba izquierda" },
+            { "value": "center-start", "label": "Centro izquierda" },
+            { "value": "center-center", "label": "Centro" },
+            { "value": "end-start", "label": "Abajo izquierda" },
+            { "value": "end-center", "label": "Abajo centro" },
+            { "value": "end-end", "label": "Abajo derecha" }
+          ],
+          "default": "end-start"
+        },
+        {
+          "type": "select",
+          "id": "text_tone",
+          "label": "Color de la frase",
+          "options": [
+            { "value": "light", "label": "Claro" },
+            { "value": "dark", "label": "Oscuro" }
+          ],
+          "default": "light"
+        },
+        { "type": "range", "id": "overlay_opacity", "label": "Oscurecer la foto", "min": 0, "max": 70, "step": 5, "unit": "%", "default": 0 }
       ]
     }
   ],
@@ -201,6 +338,13 @@
       "label": "Invertir (la grande a la derecha)",
       "default": false,
       "visible_if": "{{ section.settings.layout == 'asimetrica' }}"
+    },
+    {
+      "type": "checkbox",
+      "id": "parallax",
+      "label": "Movimiento suave al desplazar",
+      "info": "La foto se desliza un poco dentro de su marco. Se desactiva si el visitante pide reducir el movimiento.",
+      "default": false
     },
     {
       "type": "range",

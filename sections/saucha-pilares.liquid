@@ -1,0 +1,198 @@
+{%- comment -%}
+  Saucha · pilares: unas pocas ideas breves (título corto + una o dos frases) separadas por líneas finas.
+  Sin iconos ni números: se lee como una página de revista, no como una fila de tarjetas.
+{%- endcomment -%}
+
+<section
+  class="s-section s-scheme-{{ section.settings.scheme }} s-pt-{{ section.settings.spacing_top }} s-pb-{{ section.settings.spacing_bottom }} s-pilares s-pilares--{{ section.settings.alignment }}"
+>
+  <div class="s-container">
+    {%- if section.settings.title != blank -%}
+      <h2 class="s-pilares__title" data-s-reveal="up">{{ section.settings.title | escape }}</h2>
+    {%- endif -%}
+
+    <ul class="s-pilares__list" role="list" style="--s-pilares-cols: {{ section.blocks.size | at_least: 1 | at_most: 4 }};">
+      {%- for block in section.blocks -%}
+        <li class="s-pilares__item" data-s-reveal="up" style="--s-i: {{ forloop.index0 }};" {{ block.shopify_attributes }}>
+          {%- if block.settings.title != blank -%}
+            <h3 class="s-pilares__name">{{ block.settings.title | escape }}</h3>
+          {%- endif -%}
+          {%- if block.settings.text != blank -%}
+            <div class="s-pilares__text">{{ block.settings.text }}</div>
+          {%- endif -%}
+          {%- if block.settings.link_label != blank and block.settings.link_url != blank -%}
+            <a class="s-link s-pilares__link" href="{{ block.settings.link_url }}">{{ block.settings.link_label | escape }}</a>
+          {%- endif -%}
+        </li>
+      {%- endfor -%}
+    </ul>
+  </div>
+</section>
+
+{% stylesheet %}
+  .s-pilares__title {
+    margin: 0 0 var(--s-space-10);
+    font-family: var(--s-font-serif);
+    font-weight: var(--s-font-serif-weight);
+    font-size: var(--s-type-h2);
+    line-height: var(--s-leading-title);
+    letter-spacing: var(--s-tracking-display);
+    text-wrap: balance;
+  }
+
+  .s-pilares--center .s-pilares__title {
+    text-align: center;
+  }
+
+  .s-pilares__list {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--s-color-line);
+  }
+
+  .s-pilares__item {
+    display: grid;
+    align-content: start;
+    gap: var(--s-space-3);
+    padding-block: var(--s-space-8);
+    border-bottom: 1px solid var(--s-color-line);
+  }
+
+  .s-pilares__name {
+    margin: 0;
+    font-family: var(--s-font-serif);
+    font-weight: var(--s-font-serif-weight);
+    font-size: var(--s-type-h3);
+    line-height: 1.2;
+  }
+
+  .s-pilares__text {
+    max-width: 30rem;
+    font-family: var(--s-font-sans);
+    font-size: var(--s-type-body);
+    line-height: var(--s-leading-body);
+    color: var(--s-color-muted);
+  }
+
+  .s-pilares__text p { margin: 0; }
+  .s-pilares__text p + p { margin-top: 0.8em; }
+
+  .s-pilares__link {
+    justify-self: start;
+    margin-top: var(--s-space-2);
+  }
+
+  @media screen and (min-width: 750px) {
+    .s-pilares__list {
+      grid-template-columns: repeat(var(--s-pilares-cols), minmax(0, 1fr));
+      border-bottom: 1px solid var(--s-color-line);
+    }
+
+    .s-pilares__item {
+      padding: var(--s-space-10) var(--s-space-8);
+      border-bottom: 0;
+    }
+
+    .s-pilares__item + .s-pilares__item {
+      border-inline-start: 1px solid var(--s-color-line);
+    }
+
+    .s-pilares--left .s-pilares__item:first-child {
+      padding-inline-start: 0;
+    }
+
+    .s-pilares--center .s-pilares__item {
+      justify-items: center;
+      text-align: center;
+    }
+
+    .s-pilares--center .s-pilares__link {
+      justify-self: center;
+    }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Pilares Saucha",
+  "tag": "div",
+  "class": "saucha-pilares-section",
+  "disabled_on": { "groups": ["header", "footer"] },
+  "max_blocks": 4,
+  "blocks": [
+    {
+      "type": "pilar",
+      "name": "Pilar",
+      "settings": [
+        { "type": "text", "id": "title", "label": "Título", "default": "Una selección cuidada" },
+        { "type": "richtext", "id": "text", "label": "Texto", "default": "<p>Pocas piezas, elegidas una a una.</p>" },
+        { "type": "text", "id": "link_label", "label": "Texto del enlace" },
+        { "type": "url", "id": "link_url", "label": "Enlace" }
+      ]
+    }
+  ],
+  "settings": [
+    { "type": "text", "id": "title", "label": "Título", "info": "Opcional." },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "Alineación",
+      "options": [
+        { "value": "left", "label": "Izquierda" },
+        { "value": "center", "label": "Centrada" }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "select",
+      "id": "scheme",
+      "label": "Fondo",
+      "options": [
+        { "value": "surface", "label": "Base" },
+        { "value": "cream", "label": "Crema" },
+        { "value": "blush", "label": "Rosa" }
+      ],
+      "default": "surface"
+    },
+    {
+      "type": "select",
+      "id": "spacing_top",
+      "label": "Espacio superior",
+      "options": [
+        { "value": "none", "label": "Ninguno" },
+        { "value": "xs", "label": "Mínimo" },
+        { "value": "sm", "label": "Pequeño" },
+        { "value": "md", "label": "Medio" },
+        { "value": "lg", "label": "Grande" }
+      ],
+      "default": "md"
+    },
+    {
+      "type": "select",
+      "id": "spacing_bottom",
+      "label": "Espacio inferior",
+      "options": [
+        { "value": "none", "label": "Ninguno" },
+        { "value": "xs", "label": "Mínimo" },
+        { "value": "sm", "label": "Pequeño" },
+        { "value": "md", "label": "Medio" },
+        { "value": "lg", "label": "Grande" }
+      ],
+      "default": "md"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Pilares Saucha",
+      "blocks": {
+        "p1": { "type": "pilar" },
+        "p2": { "type": "pilar", "settings": { "title": "Trato cercano" } },
+        "p3": { "type": "pilar", "settings": { "title": "En Las Palmas" } }
+      },
+      "block_order": ["p1", "p2", "p3"]
+    }
+  ]
+}
+{% endschema %}

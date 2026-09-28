@@ -10,6 +10,7 @@
   #   product_collection  (ficha) la categoría del producto: colección desde la que se llegó o su primera colección
   #   related ........... (ficha) relacionados de Shopify
   #   complementary ..... (ficha) complementarios (Search & Discovery)
+  #   article ........... (blog) los productos elegidos en el artículo (metacampo custom.productos_relacionados)
   assign source = section.settings.source | default: 'collection'
   assign list_collection = section.settings.collection
   assign limit = section.settings.products_to_show
@@ -55,6 +56,10 @@
       elsif collections.all.products_count > 1
         assign list_products = collections.all.products
       endif
+    endif
+  elsif source == 'article'
+    if article != blank and article.metafields.custom.productos_relacionados.value != blank
+      assign list_products = article.metafields.custom.productos_relacionados.value
     endif
   elsif list_collection != blank and list_collection.products_count > 0
     assign list_products = list_collection.products
@@ -585,10 +590,11 @@
         { "value": "collection", "label": "Colección elegida" },
         { "value": "product_collection", "label": "Categoría del producto (ficha)" },
         { "value": "related", "label": "Relacionados de Shopify (ficha)" },
-        { "value": "complementary", "label": "Complementarios de Shopify (ficha)" }
+        { "value": "complementary", "label": "Complementarios de Shopify (ficha)" },
+        { "value": "article", "label": "Productos del artículo (blog)" }
       ],
       "default": "collection",
-      "info": "Las opciones «(ficha)» usan el producto que se está viendo y se ocultan si no hay productos. En el título, [categoria] se sustituye por el nombre de la colección."
+      "info": "Las opciones «(ficha)» usan el producto que se está viendo y se ocultan si no hay productos. «Productos del artículo» usa los elegidos en cada artículo (metacampo «Productos relacionados») y se oculta si no hay. En el título, [categoria] se sustituye por el nombre de la colección."
     },
     {
       "type": "collection",

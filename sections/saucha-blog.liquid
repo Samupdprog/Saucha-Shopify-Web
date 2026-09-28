@@ -1,0 +1,277 @@
+{%- comment -%}
+  Saucha · página del blog. Maquetada como una pequeña revista:
+  cabecera con título y temas, un artículo de portada y el resto en rejilla (escalonada si se quiere).
+  La portada solo aparece en la primera página y sin filtro de tema.
+{%- endcomment -%}
+
+{{ 'saucha-blog.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign heading = section.settings.title | default: blog.title
+  assign ratio = section.settings.image_ratio
+-%}
+
+<section
+  class="s-section s-scheme-{{ section.settings.scheme }} s-pt-{{ section.settings.spacing_top }} s-pb-{{ section.settings.spacing_bottom }} s-blog s-blog--{{ section.settings.alignment }}{% if section.settings.stagger %} s-blog--stagger{% endif %}"
+>
+  <div class="s-container">
+    <header class="s-blog__head">
+      <h1 class="s-blog__title" data-s-reveal="headline">
+        <span class="s-mask"><span class="s-mask__line">{{ heading | escape }}</span></span>
+      </h1>
+
+      {%- if section.settings.intro != blank -%}
+        <div class="s-blog__intro" data-s-reveal="fade" style="--s-i: 1;">{{ section.settings.intro }}</div>
+      {%- endif -%}
+
+      {%- if section.settings.show_tags and blog.all_tags.size > 0 -%}
+        <nav aria-label="Temas del blog" data-s-reveal="fade" style="--s-i: 2;">
+          <ul class="s-blog__tags" role="list">
+            <li>
+              <a class="s-blog__tag" href="{{ blog.url }}"{% if current_tags == blank %} aria-current="page"{% endif %}>Todo</a>
+            </li>
+            {%- for tag in blog.all_tags -%}
+              <li>
+                <a
+                  class="s-blog__tag"
+                  href="{{ blog.url }}/tagged/{{ tag | handle }}"
+                  {% if current_tags contains tag %}
+                    aria-current="page"
+                  {% endif %}
+                >
+                  {{- tag -}}
+                </a>
+              </li>
+            {%- endfor -%}
+          </ul>
+        </nav>
+      {%- endif -%}
+    </header>
+
+    {%- paginate blog.articles by section.settings.per_page -%}
+      {%- liquid
+        assign show_feature = false
+        if section.settings.feature_first and paginate.current_page == 1 and current_tags == blank and blog.articles.size > 1
+          assign show_feature = true
+        endif
+      -%}
+
+      {%- if blog.articles.size > 0 -%}
+        {%- if show_feature -%}
+          <div class="s-blog__feature">
+            {% render 'saucha-article-card',
+              article: blog.articles.first,
+              variant: 'feature',
+              ratio: section.settings.feature_ratio,
+              sizes: '(min-width: 990px) 58vw, 100vw',
+              loading: 'eager',
+              show_excerpt: true,
+              show_author: section.settings.show_author,
+              heading_tag: 'h2'
+            %}
+          </div>
+        {%- endif -%}
+
+        <div class="s-blog__grid">
+          {%- for article in blog.articles -%}
+            {%- if show_feature and forloop.first -%}{%- continue -%}{%- endif -%}
+            {%- liquid
+              assign card_loading = 'lazy'
+              if show_feature == false and forloop.index <= 3
+                assign card_loading = 'eager'
+              endif
+            -%}
+            {% render 'saucha-article-card',
+              article: article,
+              ratio: ratio,
+              loading: card_loading,
+              index: forloop.index0,
+              show_excerpt: section.settings.show_excerpt,
+              show_author: section.settings.show_author,
+              heading_tag: 'h2'
+            %}
+          {%- endfor -%}
+        </div>
+
+        {%- if paginate.pages > 1 -%}
+          <nav class="s-pagination" aria-label="Páginas del blog">
+            {%- if paginate.previous -%}
+              <a class="s-pagination__step" href="{{ paginate.previous.url }}">Anteriores</a>
+            {%- else -%}
+              <span class="s-pagination__step" aria-disabled="true">Anteriores</span>
+            {%- endif -%}
+
+            <ul class="s-pagination__pages" role="list">
+              {%- for part in paginate.parts -%}
+                <li>
+                  {%- if part.is_link -%}
+                    <a href="{{ part.url }}">{{ part.title }}</a>
+                  {%- elsif part.title == paginate.current_page -%}
+                    <span aria-current="page">{{ part.title }}</span>
+                  {%- else -%}
+                    <span>{{ part.title }}</span>
+                  {%- endif -%}
+                </li>
+              {%- endfor -%}
+            </ul>
+
+            {%- if paginate.next -%}
+              <a class="s-pagination__step" href="{{ paginate.next.url }}">Siguientes</a>
+            {%- else -%}
+              <span class="s-pagination__step" aria-disabled="true">Siguientes</span>
+            {%- endif -%}
+          </nav>
+        {%- endif -%}
+      {%- else -%}
+        <div class="s-blog__empty">
+          <p>Todavía no hay artículos{% if current_tags != blank %} sobre este tema{% endif %}.</p>
+          {%- if current_tags != blank -%}
+            <a class="s-link" href="{{ blog.url }}">Ver todos los artículos</a>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+    {%- endpaginate -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Blog Saucha",
+  "tag": "div",
+  "class": "saucha-blog-section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Título",
+      "info": "Si se deja vacío, se usa el nombre del blog."
+    },
+    {
+      "type": "richtext",
+      "id": "intro",
+      "label": "Presentación",
+      "info": "Opcional. Una o dos frases."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_tags",
+      "label": "Mostrar temas (etiquetas de los artículos)",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "Alineación de la cabecera",
+      "options": [
+        { "value": "left", "label": "Izquierda" },
+        { "value": "center", "label": "Centrada" }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "header",
+      "content": "Artículos"
+    },
+    {
+      "type": "range",
+      "id": "per_page",
+      "label": "Artículos por página",
+      "min": 4,
+      "max": 25,
+      "step": 1,
+      "default": 10
+    },
+    {
+      "type": "checkbox",
+      "id": "feature_first",
+      "label": "Destacar el último artículo como portada",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "feature_ratio",
+      "label": "Proporción de la portada",
+      "options": [
+        { "value": "4 / 3", "label": "Horizontal (4:3)" },
+        { "value": "3 / 2", "label": "Horizontal (3:2)" },
+        { "value": "1 / 1", "label": "Cuadrada" },
+        { "value": "4 / 5", "label": "Vertical (4:5)" }
+      ],
+      "default": "4 / 3",
+      "visible_if": "{{ section.settings.feature_first }}"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "Proporción de las imágenes",
+      "options": [
+        { "value": "4 / 5", "label": "Vertical (4:5)" },
+        { "value": "3 / 4", "label": "Vertical (3:4)" },
+        { "value": "1 / 1", "label": "Cuadrada" },
+        { "value": "3 / 2", "label": "Horizontal (3:2)" }
+      ],
+      "default": "4 / 5"
+    },
+    {
+      "type": "checkbox",
+      "id": "stagger",
+      "label": "Escalonar la columna central",
+      "info": "Solo en escritorio.",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_excerpt",
+      "label": "Mostrar entradilla",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_author",
+      "label": "Mostrar autor",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Sección"
+    },
+    {
+      "type": "select",
+      "id": "scheme",
+      "label": "Fondo",
+      "options": [
+        { "value": "surface", "label": "Base" },
+        { "value": "cream", "label": "Crema" },
+        { "value": "blush", "label": "Rosa" }
+      ],
+      "default": "surface"
+    },
+    {
+      "type": "select",
+      "id": "spacing_top",
+      "label": "Espacio superior",
+      "options": [
+        { "value": "none", "label": "Ninguno" },
+        { "value": "xs", "label": "Mínimo" },
+        { "value": "sm", "label": "Pequeño" },
+        { "value": "md", "label": "Medio" },
+        { "value": "lg", "label": "Grande" }
+      ],
+      "default": "sm"
+    },
+    {
+      "type": "select",
+      "id": "spacing_bottom",
+      "label": "Espacio inferior",
+      "options": [
+        { "value": "none", "label": "Ninguno" },
+        { "value": "xs", "label": "Mínimo" },
+        { "value": "sm", "label": "Pequeño" },
+        { "value": "md", "label": "Medio" },
+        { "value": "lg", "label": "Grande" }
+      ],
+      "default": "lg"
+    }
+  ]
+}
+{% endschema %}

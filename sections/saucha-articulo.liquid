@@ -1,0 +1,336 @@
+{%- comment -%}
+  Saucha · artículo del blog. Cabecera centrada (o a la izquierda), imagen principal,
+  cuerpo con ancho de lectura, temas y compartir, anterior/siguiente y comentarios nativos.
+  Los productos relacionados y «Seguir leyendo» son secciones aparte, para poder reordenarlas.
+{%- endcomment -%}
+
+{{ 'saucha-blog.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign words = article.content | strip_html | split: ' ' | size
+  assign minutes = words | divided_by: 200 | at_least: 1
+
+  assign prose_width = '42rem'
+  case section.settings.reading_width
+    when 'narrow'
+      assign prose_width = '38rem'
+    when 'wide'
+      assign prose_width = '48rem'
+  endcase
+
+  assign lede = blank
+  if section.settings.show_excerpt and article.excerpt != blank
+    assign lede = article.excerpt | strip_html
+  endif
+
+  if article.image
+    assign focal = article.image.presentation.focal_point | default: '50% 50%' | prepend: 'object-position: '
+  endif
+-%}
+
+<article
+  class="s-section s-scheme-{{ section.settings.scheme }} s-pt-{{ section.settings.spacing_top }} s-pb-{{ section.settings.spacing_bottom }} s-article s-article--{{ section.settings.alignment }}"
+  style="--s-prose-width: {{ prose_width }};"
+>
+  <div class="s-container">
+    <header class="s-article__head">
+      <a class="s-article__back" href="{{ blog.url }}" data-s-reveal="fade">
+        <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M13 8H3.5M7 4.5 3.5 8 7 11.5" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>{{ blog.title | escape }}</span>
+      </a>
+
+      <h1 class="s-article__title" data-s-reveal="up" style="--s-i: 1;">{{ article.title | escape }}</h1>
+
+      <p class="s-post__meta" data-s-reveal="fade" style="--s-i: 2;">
+        {{- article.published_at | time_tag: format: 'date' -}}
+        {%- if section.settings.show_reading_time -%}
+          <span class="s-post__dot" aria-hidden="true"></span>
+          <span>{{ minutes }} min de lectura</span>
+        {%- endif -%}
+        {%- if section.settings.show_author and article.author != blank -%}
+          <span class="s-post__dot" aria-hidden="true"></span>
+          <span>{{ article.author }}</span>
+        {%- endif -%}
+      </p>
+
+      {%- if lede != blank -%}
+        <p class="s-article__lede" data-s-reveal="fade" style="--s-i: 3;">{{ lede }}</p>
+      {%- endif -%}
+    </header>
+
+    {%- if section.settings.show_image and article.image -%}
+      <figure class="s-article__hero s-article__hero--{{ section.settings.image_width }}">
+        <div
+          class="s-media"
+          data-s-reveal="media"
+          style="--s-media-h: {{ section.settings.image_height }}px; --s-media-h-m: {{ section.settings.image_height_mobile }}px;"
+        >
+          {{
+            article.image
+            | image_url: width: 2400
+            | image_tag:
+              class: 's-media__img',
+              widths: '600, 900, 1200, 1600, 2000, 2400',
+              sizes: '(min-width: 1100px) 1100px, 100vw',
+              loading: 'eager',
+              fetchpriority: 'high',
+              alt: article.image.alt,
+              style: focal
+          }}
+        </div>
+      </figure>
+    {%- endif -%}
+
+    <div class="s-prose" data-s-reveal="fade">
+      {{ article.content }}
+    </div>
+
+    {%- liquid
+      assign show_foot_tags = false
+      if section.settings.show_tags and article.tags.size > 0
+        assign show_foot_tags = true
+      endif
+    -%}
+    {%- if show_foot_tags or section.settings.show_share -%}
+      <footer class="s-article__foot">
+        {%- if show_foot_tags -%}
+          <div class="s-article__foot-group">
+            <span>Temas</span>
+            {%- for tag in article.tags -%}
+              <a href="{{ blog.url }}/tagged/{{ tag | handle }}">{{ tag }}</a>
+            {%- endfor -%}
+          </div>
+        {%- endif -%}
+
+        {%- if section.settings.show_share -%}
+          {%- liquid
+            assign share_url = shop.url | append: article.url
+            assign share_text = article.title | url_encode
+            assign share_url_encoded = share_url | url_encode
+          -%}
+          <div class="s-article__foot-group">
+            <span>Compartir</span>
+            <a href="https://wa.me/?text={{ share_text }}%20{{ share_url_encoded }}" target="_blank" rel="noopener">WhatsApp</a>
+            <a href="https://www.facebook.com/sharer/sharer.php?u={{ share_url_encoded }}" target="_blank" rel="noopener">Facebook</a>
+            <a href="https://pinterest.com/pin/create/button/?url={{ share_url_encoded }}&description={{ share_text }}" target="_blank" rel="noopener">Pinterest</a>
+            <button type="button" data-s-copy="{{ share_url }}">Copiar enlace</button>
+          </div>
+        {%- endif -%}
+      </footer>
+    {%- endif -%}
+
+    {%- if section.settings.show_nav -%}
+      {%- if blog.previous_article or blog.next_article -%}
+        <nav class="s-article__nav" aria-label="Más artículos">
+          {%- if blog.next_article -%}
+            <a class="s-article__nav-prev" href="{{ blog.next_article.url }}">
+              <span class="s-article__nav-label">Anterior</span>
+              <span class="s-article__nav-title">{{ blog.next_article.title | escape }}</span>
+            </a>
+          {%- endif -%}
+          {%- if blog.previous_article -%}
+            <a class="s-article__nav-next" href="{{ blog.previous_article.url }}">
+              <span class="s-article__nav-label">Siguiente</span>
+              <span class="s-article__nav-title">{{ blog.previous_article.title | escape }}</span>
+            </a>
+          {%- endif -%}
+        </nav>
+      {%- endif -%}
+    {%- endif -%}
+
+    {%- if blog.comments_enabled? -%}
+      <div class="s-article__comments" id="comentarios">
+        {%- if article.comments_count > 0 -%}
+          <h2>{{ 'blogs.article.comments_heading' | t: count: article.comments_count }}</h2>
+          {%- paginate article.comments by 10 -%}
+            {%- for comment in article.comments -%}
+              <div class="s-article__comment">
+                {{ comment.content }}
+                <p class="s-article__comment-meta">{{ comment.author }} · {{ comment.created_at | time_tag: format: 'date' }}</p>
+              </div>
+            {%- endfor -%}
+            {%- if paginate.pages > 1 -%}
+              <div class="s-pagination">{{ paginate | default_pagination }}</div>
+            {%- endif -%}
+          {%- endpaginate -%}
+        {%- endif -%}
+
+        {% render 'blog-comment-form', article: article, section_id: section.id %}
+      </div>
+    {%- endif -%}
+  </div>
+</article>
+
+<script>
+  document.querySelectorAll('[data-s-copy]').forEach((button) => {
+    if (button.dataset.sBound) return;
+    button.dataset.sBound = '1';
+    button.addEventListener('click', async () => {
+      const label = button.textContent;
+      try {
+        await navigator.clipboard.writeText(button.dataset.sCopy);
+        button.textContent = 'Enlace copiado';
+      } catch (error) {
+        button.textContent = 'No se pudo copiar';
+      }
+      setTimeout(() => (button.textContent = label), 2000);
+    });
+  });
+</script>
+
+<script type="application/ld+json">
+  {{ article | structured_data }}
+</script>
+
+{% schema %}
+{
+  "name": "Artículo Saucha",
+  "tag": "div",
+  "class": "saucha-articulo-section",
+  "settings": [
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "Alineación de la cabecera",
+      "options": [
+        { "value": "center", "label": "Centrada" },
+        { "value": "left", "label": "Izquierda" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_excerpt",
+      "label": "Mostrar el extracto bajo el título",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_reading_time",
+      "label": "Mostrar tiempo de lectura",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_author",
+      "label": "Mostrar autor",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Imagen principal"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_image",
+      "label": "Mostrar imagen",
+      "info": "El encuadre sigue el punto focal que se marca en la imagen del artículo.",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "image_width",
+      "label": "Ancho",
+      "options": [
+        { "value": "page", "label": "Ancho de página" },
+        { "value": "narrow", "label": "Estrecho" }
+      ],
+      "default": "page"
+    },
+    {
+      "type": "range",
+      "id": "image_height",
+      "label": "Altura · escritorio",
+      "min": 320,
+      "max": 900,
+      "step": 20,
+      "unit": "px",
+      "default": 620
+    },
+    {
+      "type": "range",
+      "id": "image_height_mobile",
+      "label": "Altura · móvil",
+      "min": 220,
+      "max": 640,
+      "step": 20,
+      "unit": "px",
+      "default": 420
+    },
+    {
+      "type": "header",
+      "content": "Lectura"
+    },
+    {
+      "type": "select",
+      "id": "reading_width",
+      "label": "Ancho del texto",
+      "options": [
+        { "value": "narrow", "label": "Estrecho" },
+        { "value": "medium", "label": "Medio" },
+        { "value": "wide", "label": "Ancho" }
+      ],
+      "default": "medium"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_tags",
+      "label": "Mostrar temas",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_share",
+      "label": "Mostrar compartir",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_nav",
+      "label": "Mostrar artículo anterior y siguiente",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Sección"
+    },
+    {
+      "type": "select",
+      "id": "scheme",
+      "label": "Fondo",
+      "options": [
+        { "value": "surface", "label": "Base" },
+        { "value": "cream", "label": "Crema" },
+        { "value": "blush", "label": "Rosa" }
+      ],
+      "default": "surface"
+    },
+    {
+      "type": "select",
+      "id": "spacing_top",
+      "label": "Espacio superior",
+      "options": [
+        { "value": "none", "label": "Ninguno" },
+        { "value": "xs", "label": "Mínimo" },
+        { "value": "sm", "label": "Pequeño" },
+        { "value": "md", "label": "Medio" },
+        { "value": "lg", "label": "Grande" }
+      ],
+      "default": "sm"
+    },
+    {
+      "type": "select",
+      "id": "spacing_bottom",
+      "label": "Espacio inferior",
+      "options": [
+        { "value": "none", "label": "Ninguno" },
+        { "value": "xs", "label": "Mínimo" },
+        { "value": "sm", "label": "Pequeño" },
+        { "value": "md", "label": "Medio" },
+        { "value": "lg", "label": "Grande" }
+      ],
+      "default": "md"
+    }
+  ]
+}
+{% endschema %}

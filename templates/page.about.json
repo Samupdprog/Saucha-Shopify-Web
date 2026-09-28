@@ -21,37 +21,151 @@
         "link_label": "",
         "link_url": "",
         "image_link": "",
-        "image_desktop": "shopify://shop_images/saucha-moda-mujer-bisuteria-tenerife-hero.png",
+        "image_desktop": "shopify://shop_images/saucha-moda-mujer-bisuteria-tenerife-hero2.png",
+        "image_mobile": "shopify://shop_images/ChatGPT_Image_7_sept_2026_15_16_35.png",
         "focus_x": 50,
         "focus_y": 45,
-        "focus_x_mobile": 26,
-        "focus_y_mobile": 40,
-        "text_tone": "light",
-        "overlay_opacity": 22,
+        "focus_x_mobile": 50,
+        "focus_y_mobile": 45,
+        "text_tone": "dark",
+        "overlay_opacity": 0,
         "overlay_style": "solid",
-        "height": "90svh",
-        "content_position": "end-end",
-        "width": "full",
-        "height_mobile": "85svh",
-        "content_position_mobile": "end-start",
+        "height": "78svh",
+        "content_position": "center-end",
+        "width": "page",
+        "height_mobile": "78svh",
+        "content_position_mobile": "end-center",
         "scheme": "surface",
-        "spacing_top": "none",
+        "spacing_top": "xs",
         "spacing_bottom": "none"
       }
     },
     "intro": {
       "type": "saucha-texto",
       "settings": {
+        "title": "Una boutique pequeña, con nombre propio",
+        "statement": "",
+        "statement_size": "medium",
+        "text": "<p>Saucha es una tienda de moda, accesorios y joyería. La abrimos con una idea sencilla: que encontrar algo bonito para ponerse sea fácil y agradable, tanto en la boutique como aquí.</p>",
+        "link_label": "",
+        "link_url": "",
+        "alignment": "center",
+        "width": "narrow",
+        "scheme": "surface",
+        "spacing_top": "lg",
+        "spacing_bottom": "md"
+      }
+    },
+    "fotos": {
+      "type": "saucha-fotos",
+      "blocks": {
+        "f1": {
+          "type": "foto",
+          "settings": {
+            "image_desktop": "shopify://shop_images/vestido-siena-f.webp",
+            "image_mobile": "",
+            "focus_x": 50,
+            "focus_y": 35,
+            "focus_x_mobile": 50,
+            "focus_y_mobile": 50,
+            "caption": "",
+            "link": "",
+            "overlay_text": "",
+            "text_position": "end-start",
+            "text_tone": "light",
+            "overlay_opacity": 0
+          }
+        },
+        "f2": {
+          "type": "foto",
+          "settings": {
+            "image_desktop": "shopify://shop_images/negro-1.png",
+            "image_mobile": "",
+            "focus_x": 50,
+            "focus_y": 30,
+            "focus_x_mobile": 50,
+            "focus_y_mobile": 50,
+            "caption": "",
+            "link": "",
+            "overlay_text": "",
+            "text_position": "end-start",
+            "text_tone": "light",
+            "overlay_opacity": 0
+          }
+        }
+      },
+      "block_order": [
+        "f1",
+        "f2"
+      ],
+      "settings": {
+        "layout": "pareja",
+        "flip": false,
+        "parallax": false,
+        "height": 640,
+        "height_mobile": 340,
+        "scheme": "surface",
+        "spacing_top": "sm",
+        "spacing_bottom": "md"
+      }
+    },
+    "proposito": {
+      "type": "saucha-texto",
+      "settings": {
         "title": "",
-        "statement": "<p>Saucha es una boutique pequeña de moda, accesorios y joyería. La abrimos con una idea sencilla: que encontrar algo bonito para ponerse sea <em>fácil y agradable</em>.</p>",
+        "statement": "<p>Elegimos cada pieza pensando en cómo la vas a llevar: al trabajo, a una boda o un sábado por la mañana en <em>Triana</em>.</p>",
         "statement_size": "large",
         "text": "",
         "link_label": "",
         "link_url": "",
-        "alignment": "left",
+        "alignment": "center",
         "width": "medium",
         "scheme": "surface",
-        "spacing_top": "lg",
+        "spacing_top": "md",
+        "spacing_bottom": "md"
+      }
+    },
+    "pilares": {
+      "type": "saucha-pilares",
+      "blocks": {
+        "p1": {
+          "type": "pilar",
+          "settings": {
+            "title": "Una selección cuidada",
+            "text": "<p>Trabajamos con pocas piezas. Si algo no nos convence, no llega a la tienda.</p>",
+            "link_label": "",
+            "link_url": ""
+          }
+        },
+        "p2": {
+          "type": "pilar",
+          "settings": {
+            "title": "Trato cercano",
+            "text": "<p>Te ayudamos con la talla, el conjunto o el regalo, en la tienda o por mensaje.</p>",
+            "link_label": "",
+            "link_url": ""
+          }
+        },
+        "p3": {
+          "type": "pilar",
+          "settings": {
+            "title": "En el centro de Las Palmas",
+            "text": "<p>Calle Escritor Benito Pérez Galdós, 32. Puedes venir a probarte lo que ves online.</p>",
+            "link_label": "",
+            "link_url": ""
+          }
+        }
+      },
+      "block_order": [
+        "p1",
+        "p2",
+        "p3"
+      ],
+      "settings": {
+        "title": "",
+        "alignment": "left",
+        "scheme": "surface",
+        "spacing_top": "sm",
         "spacing_bottom": "md"
       }
     },
@@ -61,7 +175,7 @@
         "eyebrow": "",
         "title": "Una selección hecha con calma",
         "title_size": "h2",
-        "text": "<p>No trabajamos con grandes cantidades. Elegimos pocas piezas y pensamos en cómo se van a llevar: al trabajo, a una boda o a pasear por Triana un sábado por la mañana.</p><p>Si algo no nos convence, no llega a la tienda.</p>",
+        "text": "<p>No trabajamos con grandes cantidades. Buscamos prendas que sienten bien y que se puedan combinar entre sí, para que lo que compres te acompañe muchas temporadas.</p>",
         "show_divider": false,
         "button_label": "",
         "button_link": "",
@@ -80,33 +194,40 @@
         "mobile_order": "image_first",
         "scheme": "surface",
         "spacing_top": "md",
-        "spacing_bottom": "md"
+        "spacing_bottom": "md",
+        "image_desktop": "shopify://shop_images/vestido-siena-d.webp"
       }
     },
-    "fotos": {
+    "panoramica": {
       "type": "saucha-fotos",
+      "disabled": true,
       "blocks": {
         "f1": {
           "type": "foto",
           "settings": {
-            "caption": ""
-          }
-        },
-        "f2": {
-          "type": "foto",
-          "settings": {
-            "caption": ""
+            "image_desktop": "",
+            "image_mobile": "",
+            "focus_x": 50,
+            "focus_y": 50,
+            "focus_x_mobile": 50,
+            "focus_y_mobile": 50,
+            "caption": "",
+            "link": "",
+            "overlay_text": "<p>Sin prisas, con tiempo para probar.</p>",
+            "text_position": "end-start",
+            "text_tone": "light",
+            "overlay_opacity": 20
           }
         }
       },
       "block_order": [
-        "f1",
-        "f2"
+        "f1"
       ],
       "settings": {
-        "layout": "asimetrica",
+        "layout": "panoramica",
         "flip": false,
-        "height": 680,
+        "parallax": true,
+        "height": 620,
         "height_mobile": 460,
         "scheme": "surface",
         "spacing_top": "md",
@@ -121,8 +242,8 @@
         "title_size": "h2",
         "text": "<p>Pendientes, collares y pulseras que acompañan a la ropa sin quitarle protagonismo. Un buen accesorio transforma un vestido sencillo, y nos gusta ayudarte a encontrar el tuyo.</p>",
         "show_divider": false,
-        "button_label": "",
-        "button_link": "",
+        "button_label": "Ver joyería",
+        "button_link": "/collections/all",
         "button_style": "link",
         "image_ratio": "3 / 4",
         "image_ratio_mobile": "4 / 5",
@@ -138,7 +259,9 @@
         "mobile_order": "image_first",
         "scheme": "surface",
         "spacing_top": "md",
-        "spacing_bottom": "md"
+        "spacing_bottom": "md",
+        "image_desktop": "shopify://shop_images/ChatGPT_Image_7_sept_2026_15_16_35.png",
+        "image_mobile": "shopify://shop_images/negro-3.png"
       }
     },
     "trato": {
@@ -152,7 +275,7 @@
         "link_url": "/pages/contact",
         "alignment": "center",
         "width": "narrow",
-        "scheme": "surface",
+        "scheme": "cream",
         "spacing_top": "lg",
         "spacing_bottom": "lg"
       }
@@ -181,8 +304,9 @@
         "text_alignment_mobile": "left",
         "mobile_order": "image_first",
         "scheme": "surface",
-        "spacing_top": "md",
-        "spacing_bottom": "md"
+        "spacing_top": "lg",
+        "spacing_bottom": "md",
+        "image_desktop": "shopify://shop_images/vestido-siena-c.webp"
       }
     },
     "cierre": {
@@ -229,9 +353,12 @@
   "order": [
     "hero",
     "intro",
-    "seleccion",
     "fotos",
+    "proposito",
+    "pilares",
+    "seleccion",
     "joyeria",
+    "panoramica",
     "trato",
     "tienda",
     "cierre"

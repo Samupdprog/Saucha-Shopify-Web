@@ -1,0 +1,217 @@
+{%- comment -%}
+  Saucha · artículos del blog.
+  En un artículo: «Seguir leyendo», primero los que comparten tema con el actual y luego los más recientes.
+  En cualquier otra página (p. ej. la home): los últimos artículos del blog elegido.
+  Se oculta si no hay artículos que mostrar.
+{%- endcomment -%}
+
+{%- liquid
+  assign source_blog = blog
+  if article == blank
+    assign source_blog = section.settings.blog
+  endif
+  assign limit = section.settings.count
+
+  assign current_id = 0
+  assign current_tag = blank
+  if article != blank
+    assign current_id = article.id
+    assign current_tag = article.tags.first
+  endif
+
+  # Primero los del mismo tema, después el resto; sin repetir y sin el artículo actual
+  assign picked_ids = ','
+  assign picked = 0
+  if source_blog != blank
+    if current_tag != blank
+      for candidate in source_blog.articles
+        if picked >= limit
+          break
+        endif
+        if candidate.id != current_id and candidate.tags contains current_tag
+          assign picked_ids = picked_ids | append: candidate.id | append: ','
+          assign picked = picked | plus: 1
+        endif
+      endfor
+    endif
+    for candidate in source_blog.articles
+      if picked >= limit
+        break
+      endif
+      assign needle = ',' | append: candidate.id | append: ','
+      if candidate.id != current_id and picked_ids contains needle
+        continue
+      endif
+      if candidate.id != current_id
+        assign picked_ids = picked_ids | append: candidate.id | append: ','
+        assign picked = picked | plus: 1
+      endif
+    endfor
+  endif
+
+  assign link_url = section.settings.link_url
+  if link_url == blank and source_blog != blank
+    assign link_url = source_blog.url
+  endif
+-%}
+
+{%- if picked > 0 or request.design_mode -%}
+  {{ 'saucha-blog.css' | asset_url | stylesheet_tag }}
+
+  <section
+    class="s-section s-scheme-{{ section.settings.scheme }} s-pt-{{ section.settings.spacing_top }} s-pb-{{ section.settings.spacing_bottom }} s-related"
+  >
+    <div class="s-container">
+      <div class="s-related__head">
+        {%- if section.settings.title != blank -%}
+          <h2 class="s-related__title" data-s-reveal="up">{{ section.settings.title | escape }}</h2>
+        {%- endif -%}
+        {%- if section.settings.link_label != blank and link_url != blank -%}
+          <a class="s-link" href="{{ link_url }}" data-s-reveal="fade">{{ section.settings.link_label | escape }}</a>
+        {%- endif -%}
+      </div>
+
+      {%- if picked > 0 -%}
+        <div
+          class="s-related__grid{% if section.settings.mobile_rail %} s-related__grid--rail{% endif %}"
+          style="--s-related-cols: {{ limit }};"
+        >
+          {%- assign shown = 0 -%}
+          {%- comment -%} Se pintan en el orden en que se eligieron: primero mismo tema, después el resto {%- endcomment -%}
+          {%- assign order = picked_ids | split: ',' -%}
+          {%- for id in order -%}
+            {%- if id == blank -%}{%- continue -%}{%- endif -%}
+            {%- for candidate in source_blog.articles -%}
+              {%- assign candidate_id = candidate.id | append: '' -%}
+              {%- if candidate_id == id -%}
+                {% render 'saucha-article-card',
+                  article: candidate,
+                  ratio: section.settings.image_ratio,
+                  index: shown,
+                  show_excerpt: section.settings.show_excerpt,
+                  sizes: '(min-width: 990px) 33vw, (min-width: 750px) 50vw, 80vw'
+                %}
+                {%- assign shown = shown | plus: 1 -%}
+                {%- break -%}
+              {%- endif -%}
+            {%- endfor -%}
+          {%- endfor -%}
+        </div>
+      {%- else -%}
+        <p class="s-post__excerpt">Aquí aparecerán los artículos del blog en cuanto haya publicados.</p>
+      {%- endif -%}
+    </div>
+  </section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Artículos Saucha",
+  "tag": "div",
+  "class": "saucha-articulos-section",
+  "disabled_on": { "groups": ["header", "footer"] },
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "En un artículo muestra otros del mismo blog, primero los que comparten tema. En otras páginas, los últimos del blog elegido."
+    },
+    {
+      "type": "blog",
+      "id": "blog",
+      "label": "Blog",
+      "info": "Solo se usa fuera de los artículos (por ejemplo, en la página de inicio)."
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Título",
+      "default": "Seguir leyendo"
+    },
+    {
+      "type": "text",
+      "id": "link_label",
+      "label": "Texto del enlace",
+      "default": "Ver todo el blog"
+    },
+    {
+      "type": "url",
+      "id": "link_url",
+      "label": "Enlace",
+      "info": "Si se deja vacío, lleva al blog."
+    },
+    {
+      "type": "range",
+      "id": "count",
+      "label": "Número de artículos",
+      "min": 2,
+      "max": 4,
+      "step": 1,
+      "default": 3
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "Proporción de las imágenes",
+      "options": [
+        { "value": "4 / 5", "label": "Vertical (4:5)" },
+        { "value": "3 / 4", "label": "Vertical (3:4)" },
+        { "value": "1 / 1", "label": "Cuadrada" },
+        { "value": "3 / 2", "label": "Horizontal (3:2)" }
+      ],
+      "default": "3 / 2"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_excerpt",
+      "label": "Mostrar entradilla",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "mobile_rail",
+      "label": "En móvil, deslizar en horizontal",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "scheme",
+      "label": "Fondo",
+      "options": [
+        { "value": "surface", "label": "Base" },
+        { "value": "cream", "label": "Crema" },
+        { "value": "blush", "label": "Rosa" }
+      ],
+      "default": "cream"
+    },
+    {
+      "type": "select",
+      "id": "spacing_top",
+      "label": "Espacio superior",
+      "options": [
+        { "value": "none", "label": "Ninguno" },
+        { "value": "xs", "label": "Mínimo" },
+        { "value": "sm", "label": "Pequeño" },
+        { "value": "md", "label": "Medio" },
+        { "value": "lg", "label": "Grande" }
+      ],
+      "default": "md"
+    },
+    {
+      "type": "select",
+      "id": "spacing_bottom",
+      "label": "Espacio inferior",
+      "options": [
+        { "value": "none", "label": "Ninguno" },
+        { "value": "xs", "label": "Mínimo" },
+        { "value": "sm", "label": "Pequeño" },
+        { "value": "md", "label": "Medio" },
+        { "value": "lg", "label": "Grande" }
+      ],
+      "default": "md"
+    }
+  ],
+  "presets": [
+    { "name": "Artículos Saucha" }
+  ]
+}
+{% endschema %}
