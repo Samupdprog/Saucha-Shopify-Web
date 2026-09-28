@@ -13,7 +13,6 @@
     saucha-bento saucha-bento--{{ section.settings.layout }} saucha-bento--count-{{ card_count }}
     saucha-bento--mobile-{{ section.settings.mobile_layout }}
   "
-  style="--sb-overlay: {{ section.settings.overlay_opacity | divided_by: 100.0 }};"
 >
   <div class="s-container">
     {% render 'saucha-heading',
@@ -54,6 +53,13 @@
             endif
           endif
 
+          # Colores y velo propios de cada tarjeta (según lo clara u oscura que sea su foto)
+          assign overlay_alpha = 0
+          if block.settings.overlay
+            assign overlay_alpha = block.settings.overlay_opacity | divided_by: 100.0
+          endif
+          assign overlay_rgb = block.settings.overlay_color.red | append: ' ' | append: block.settings.overlay_color.green | append: ' ' | append: block.settings.overlay_color.blue
+
           if forloop.first and section.settings.layout == 'bento'
             assign card_sizes = '(min-width: 750px) 50vw, 100vw'
           else
@@ -71,6 +77,10 @@
             class="saucha-bento__card s-on-media"
             {% if url != blank %}href="{{ url }}"{% endif %}
             aria-label="{{ title | escape }}"
+            style="
+              {%- if block.settings.title_color != blank -%}--sb-title: {{ block.settings.title_color }};{%- endif -%}
+              {%- if block.settings.text_color != blank -%}--sb-text: {{ block.settings.text_color }};{%- endif -%}
+            "
           >
             <div
               class="s-media s-media--hover saucha-bento__media"
@@ -80,7 +90,8 @@
                 --s-fy: {{ block.settings.focus_y }}%;
                 --s-fx-m: {{ block.settings.focus_x_mobile }}%;
                 --s-fy-m: {{ block.settings.focus_y_mobile }}%;
-                --s-overlay: var(--sb-overlay);
+                --s-overlay: {{ overlay_alpha }};
+                --s-color-overlay-rgb: {{ overlay_rgb }};
               "
             >
               {% render 'saucha-media',
@@ -91,7 +102,9 @@
                 alt: title,
                 placeholder: 'collection-apparel-1'
               %}
-              <span class="s-media__overlay s-media__overlay--gradient" aria-hidden="true"></span>
+              {%- if block.settings.overlay and block.settings.overlay_opacity > 0 -%}
+                <span class="s-media__overlay{% if block.settings.overlay_style == 'gradient' %} s-media__overlay--gradient{% endif %}" aria-hidden="true"></span>
+              {%- endif -%}
             </div>
 
             <span class="saucha-bento__content">
@@ -153,6 +166,13 @@
   .saucha-bento__title {
     font-size: 1.375rem;
     line-height: 1.1;
+    color: var(--sb-title, var(--s-fg));
+  }
+
+  /* Textos secundarios (antetítulo y enlace): color propio de la tarjeta si lo tiene */
+  .saucha-bento__content .s-eyebrow,
+  .saucha-bento__link {
+    color: var(--sb-text, var(--s-fg));
   }
 
   .saucha-bento__link {
@@ -279,7 +299,10 @@
   "class": "saucha-bento-section",
   "max_blocks": 4,
   "disabled_on": {
-    "groups": ["header", "footer"]
+    "groups": [
+      "header",
+      "footer"
+    ]
   },
   "settings": [
     {
@@ -317,8 +340,14 @@
       "id": "heading_alignment",
       "label": "Alineación del título",
       "options": [
-        { "value": "center", "label": "Centrado" },
-        { "value": "left", "label": "Izquierda" }
+        {
+          "value": "center",
+          "label": "Centrado"
+        },
+        {
+          "value": "left",
+          "label": "Izquierda"
+        }
       ],
       "default": "center"
     },
@@ -327,8 +356,14 @@
       "id": "layout",
       "label": "Disposición · escritorio",
       "options": [
-        { "value": "bento", "label": "Bento: una protagonista y el resto al lado" },
-        { "value": "row", "label": "En fila, mismo tamaño" }
+        {
+          "value": "bento",
+          "label": "Bento: una protagonista y el resto al lado"
+        },
+        {
+          "value": "row",
+          "label": "En fila, mismo tamaño"
+        }
       ],
       "default": "bento",
       "info": "El bento se aplica con 3 o 4 tarjetas."
@@ -338,21 +373,16 @@
       "id": "mobile_layout",
       "label": "Disposición · móvil",
       "options": [
-        { "value": "stack", "label": "Primera grande, resto en dos columnas" },
-        { "value": "rail", "label": "Carril deslizable" }
+        {
+          "value": "stack",
+          "label": "Primera grande, resto en dos columnas"
+        },
+        {
+          "value": "rail",
+          "label": "Carril deslizable"
+        }
       ],
       "default": "stack"
-    },
-    {
-      "type": "range",
-      "id": "overlay_opacity",
-      "label": "Velo oscuro bajo el texto",
-      "min": 0,
-      "max": 60,
-      "step": 2,
-      "unit": "%",
-      "default": 26,
-      "info": "Degradado desde abajo para leer el título sin apagar la foto."
     },
     {
       "type": "header",
@@ -363,9 +393,18 @@
       "id": "scheme",
       "label": "Fondo",
       "options": [
-        { "value": "surface", "label": "Marfil (principal)" },
-        { "value": "cream", "label": "Crema (alterno)" },
-        { "value": "blush", "label": "Blush nude" }
+        {
+          "value": "surface",
+          "label": "Marfil (principal)"
+        },
+        {
+          "value": "cream",
+          "label": "Crema (alterno)"
+        },
+        {
+          "value": "blush",
+          "label": "Blush nude"
+        }
       ],
       "default": "surface"
     },
@@ -374,11 +413,26 @@
       "id": "spacing_top",
       "label": "Espacio superior",
       "options": [
-        { "value": "none", "label": "Ninguno" },
-        { "value": "xs", "label": "Mínimo" },
-        { "value": "sm", "label": "Pequeño" },
-        { "value": "md", "label": "Medio" },
-        { "value": "lg", "label": "Grande" }
+        {
+          "value": "none",
+          "label": "Ninguno"
+        },
+        {
+          "value": "xs",
+          "label": "Mínimo"
+        },
+        {
+          "value": "sm",
+          "label": "Pequeño"
+        },
+        {
+          "value": "md",
+          "label": "Medio"
+        },
+        {
+          "value": "lg",
+          "label": "Grande"
+        }
       ],
       "default": "md"
     },
@@ -387,11 +441,26 @@
       "id": "spacing_bottom",
       "label": "Espacio inferior",
       "options": [
-        { "value": "none", "label": "Ninguno" },
-        { "value": "xs", "label": "Mínimo" },
-        { "value": "sm", "label": "Pequeño" },
-        { "value": "md", "label": "Medio" },
-        { "value": "lg", "label": "Grande" }
+        {
+          "value": "none",
+          "label": "Ninguno"
+        },
+        {
+          "value": "xs",
+          "label": "Mínimo"
+        },
+        {
+          "value": "sm",
+          "label": "Pequeño"
+        },
+        {
+          "value": "md",
+          "label": "Medio"
+        },
+        {
+          "value": "lg",
+          "label": "Grande"
+        }
       ],
       "default": "md"
     }
@@ -477,6 +546,66 @@
           "step": 1,
           "unit": "%",
           "default": 50
+        },
+        {
+          "type": "header",
+          "content": "Texto sobre la foto",
+          "info": "Vacío = el claro del sistema. Con fotos muy claras, elige un tono oscuro o añade velo."
+        },
+        {
+          "type": "color",
+          "id": "title_color",
+          "label": "Color del título"
+        },
+        {
+          "type": "color",
+          "id": "text_color",
+          "label": "Color del antetítulo y del enlace"
+        },
+        {
+          "type": "header",
+          "content": "Velo"
+        },
+        {
+          "type": "checkbox",
+          "id": "overlay",
+          "label": "Mostrar velo",
+          "default": true
+        },
+        {
+          "type": "color",
+          "id": "overlay_color",
+          "label": "Color del velo",
+          "default": "#211b18",
+          "visible_if": "{{ block.settings.overlay }}"
+        },
+        {
+          "type": "range",
+          "id": "overlay_opacity",
+          "label": "Opacidad del velo",
+          "min": 0,
+          "max": 80,
+          "step": 2,
+          "unit": "%",
+          "default": 26,
+          "visible_if": "{{ block.settings.overlay }}"
+        },
+        {
+          "type": "select",
+          "id": "overlay_style",
+          "label": "Tipo de velo",
+          "options": [
+            {
+              "value": "gradient",
+              "label": "Desde abajo (detrás del texto)"
+            },
+            {
+              "value": "solid",
+              "label": "Uniforme"
+            }
+          ],
+          "default": "gradient",
+          "visible_if": "{{ block.settings.overlay }}"
         }
       ]
     }
@@ -486,10 +615,18 @@
       "name": "Bento Saucha",
       "category": "t:categories.collection_list",
       "blocks": [
-        { "type": "tarjeta" },
-        { "type": "tarjeta" },
-        { "type": "tarjeta" },
-        { "type": "tarjeta" }
+        {
+          "type": "tarjeta"
+        },
+        {
+          "type": "tarjeta"
+        },
+        {
+          "type": "tarjeta"
+        },
+        {
+          "type": "tarjeta"
+        }
       ]
     }
   ]

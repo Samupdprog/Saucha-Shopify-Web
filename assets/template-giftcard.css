@@ -324,7 +324,6 @@
   font-size: var(--s-type-button);
   font-weight: 500;
   letter-spacing: var(--s-tracking-button);
-  text-transform: uppercase;
 }
 
 .gift-card__wallet img {

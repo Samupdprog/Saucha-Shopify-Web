@@ -895,7 +895,6 @@ html .product-information media-gallery.is-entering slideshow-component {
   font-size: var(--s-type-button);
   font-weight: 500;
   letter-spacing: var(--s-tracking-button);
-  text-transform: uppercase;
 }
 
 .product-information .add-to-cart-button .svg-wrapper.add-to-cart-icon {
@@ -953,7 +952,6 @@ html .product-information media-gallery.is-entering slideshow-component {
   font-size: var(--s-type-button);
   font-weight: 500;
   letter-spacing: var(--s-tracking-button);
-  text-transform: uppercase;
   transition: background-color var(--s-dur-micro) var(--s-ease), color var(--s-dur-micro) var(--s-ease);
 }
 
@@ -1186,7 +1184,6 @@ html.s-motion .product-information .product-details > .group-block > .group-bloc
   font-size: var(--s-type-button);
   font-weight: 500;
   letter-spacing: var(--s-tracking-button);
-  text-transform: uppercase;
 }
 
 /* =========================================================

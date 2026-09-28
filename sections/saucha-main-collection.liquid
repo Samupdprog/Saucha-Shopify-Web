@@ -28,7 +28,7 @@
     --saucha-sidebar-width: {{ section.settings.sidebar_width }}px;
     --saucha-grid-gap: {{ section.settings.grid_gap }}px;
     --saucha-row-gap: {{ section.settings.row_gap }}px;
-    --saucha-image-radius: {{ section.settings.image_radius }}px;
+    --saucha-image-radius: var(--s-radius-product, 12px);
     --saucha-hover-scale: {{ hover_scale }};
     --saucha-sticky-top: {{ section.settings.sticky_top }}px;
     --saucha-padding-top: {{ section.settings.padding_top }}px;
@@ -517,17 +517,6 @@
           "label": "Adaptar a la imagen"
         }
       ]
-    },
-    {
-      "type": "range",
-      "id": "image_radius",
-      "min": 0,
-      "max": 8,
-      "step": 2,
-      "unit": "px",
-      "label": "Redondeo de imagen",
-      "default": 2,
-      "info": "El sistema Saucha usa 2 px para fotografía."
     },
     {
       "type": "checkbox",

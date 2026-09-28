@@ -228,6 +228,17 @@
       {%- endif -%}
     </div>
 
+    {%- comment -%} Saucha · stock limitado real: solo si Shopify controla el inventario y quedan 3 o menos {%- endcomment -%}
+    {%- liquid
+      assign card_low_stock = false
+      if current_variant.available and current_variant.inventory_management == 'shopify' and current_variant.inventory_policy != 'continue'
+        if current_variant.inventory_quantity > 0 and current_variant.inventory_quantity <= 3
+          assign card_low_stock = true
+        endif
+      endif
+    -%}
+    <p class="saucha-product-card__stock{% unless card_low_stock %} is-hidden{% endunless %}" data-card-stock>Últimas unidades</p>
+
     {%- if section.settings.show_swatches and color_option != blank -%}
       <div class="saucha-product-card__swatches-wrap">
         <div class="saucha-product-card__swatches" aria-label="{{ color_option.name | escape }}">
@@ -331,6 +342,7 @@
               data-is-sale="{% if swatch_is_sale %}true{% else %}false{% endif %}"
               data-sale-label="{{ section.settings.sale_label | escape }}"
               data-available="{% if swatch_available %}true{% else %}false{% endif %}"
+              data-low-stock="{% if swatch_available and swatch_variant.inventory_management == 'shopify' and swatch_variant.inventory_policy != 'continue' and swatch_variant.inventory_quantity > 0 and swatch_variant.inventory_quantity <= 3 %}true{% else %}false{% endif %}"
               data-sold-out-label="{{ section.settings.sold_out_label | escape }}"
               aria-label="{{ color_option.name | escape }}: {{ option_value.name | escape }}{% unless swatch_available %} — {{ section.settings.sold_out_label | escape }}{% endunless %}"
               aria-pressed="{% if option_is_current %}true{% else %}false{% endif %}"

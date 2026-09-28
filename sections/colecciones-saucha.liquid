@@ -54,6 +54,14 @@
               endif
             endif
 
+            # Sin imagen de colección: la foto de su primer producto (antes que la ilustración genérica)
+            if imagen == blank
+              assign coleccion_imagen = coleccion | default: coleccion_guess
+              if coleccion_imagen != blank and coleccion_imagen.products.first.featured_image != blank
+                assign imagen = coleccion_imagen.products.first.featured_image
+              endif
+            endif
+
             assign is_empty = false
             if coleccion == blank and block.settings.imagen_personalizada == blank and block.settings.titulo_personalizado == blank
               assign is_empty = true
@@ -200,10 +208,9 @@
     overflow: hidden;
     border-radius: 50%;
     background: var(--s-color-blush);
-    /* Recorte real del círculo: con solo overflow + radius, al escalar la foto en hover
-       el navegador puede enseñar un instante las esquinas cuadradas (destello en cruz) */
-    clip-path: circle(50% at 50% 50%);
-    isolation: isolate;
+    /* El círculo es su propia capa desde el principio: su máscara redonda ya existe
+       cuando empieza el hover (ver la nota de la foto, abajo) */
+    transform: translateZ(0);
   }
 
   .colecciones-saucha__imagen img,
@@ -212,8 +219,18 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
-    backface-visibility: hidden;
     transition: transform calc(var(--s-dur-image) * 2) var(--s-ease);
+  }
+
+  /* Destello en cruz («+») al empezar el hover en escritorio:
+     si la foto se sube a una capa de GPU justo cuando empieza a escalarse, Chrome tarda uno o dos
+     fotogramas en generar la máscara redonda del círculo y mientras tanto recorta con dos rectángulos
+     interiores (horizontal + vertical), que en un círculo dibujan una cruz grande.
+     Con la capa preparada desde la carga, la máscara ya está lista y el hover es limpio. */
+  @media (hover: hover) {
+    .colecciones-saucha__imagen img {
+      will-change: transform;
+    }
   }
 
   .colecciones-saucha__imagen svg {

@@ -265,7 +265,7 @@
         "hover_zoom": 102,
         "smart_color_media": true,
         "show_swatches": true,
-        "max_swatches": 5,
+        "max_swatches": 4,
         "show_vendor": false,
         "show_compare_at": true,
         "show_sale_badge": true,
@@ -292,7 +292,11 @@
             "focus_y": 50,
             "focus_x_mobile": 50,
             "focus_y_mobile": 50,
-            "image_desktop": "shopify://shop_images/saucha-moda-mujer-bisuteria-tenerife-hero2.png"
+            "image_desktop": "shopify://shop_images/saucha-moda-mujer-bisuteria-tenerife-hero2.png",
+            "overlay": true,
+            "overlay_color": "#211b18",
+            "overlay_opacity": 26,
+            "overlay_style": "gradient"
           }
         },
         "t_ultimas_unidades": {
@@ -306,7 +310,11 @@
             "focus_y": 50,
             "focus_x_mobile": 50,
             "focus_y_mobile": 50,
-            "image_desktop": "shopify://shop_images/agile-slider2.webp"
+            "image_desktop": "shopify://shop_images/agile-slider2.webp",
+            "overlay": true,
+            "overlay_color": "#211b18",
+            "overlay_opacity": 26,
+            "overlay_style": "gradient"
           }
         },
         "t_rebajas": {
@@ -321,7 +329,11 @@
             "focus_x_mobile": 50,
             "focus_y_mobile": 50,
             "image_desktop": "shopify://shop_images/agile-slider3.webp",
-            "image_mobile": "shopify://shop_images/ChatGPT_Image_7_sept_2026_15_16_35.png"
+            "image_mobile": "shopify://shop_images/ChatGPT_Image_7_sept_2026_15_16_35.png",
+            "overlay": true,
+            "overlay_color": "#211b18",
+            "overlay_opacity": 26,
+            "overlay_style": "gradient"
           }
         },
         "t_novedades": {
@@ -335,7 +347,11 @@
             "focus_y": 50,
             "focus_x_mobile": 50,
             "focus_y_mobile": 50,
-            "image_desktop": "shopify://shop_images/agile-slider2.webp"
+            "image_desktop": "shopify://shop_images/agile-slider2.webp",
+            "overlay": true,
+            "overlay_color": "#211b18",
+            "overlay_opacity": 26,
+            "overlay_style": "gradient"
           }
         }
       },
@@ -353,7 +369,6 @@
         "heading_alignment": "center",
         "layout": "bento",
         "mobile_layout": "stack",
-        "overlay_opacity": 26,
         "scheme": "surface",
         "spacing_top": "md",
         "spacing_bottom": "md"

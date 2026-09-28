@@ -519,7 +519,6 @@ body:has(#cart-drawer[open]) .page-wrapper--drawer-open {
   padding-inline: var(--s-space-5);
   font-size: var(--s-type-button);
   letter-spacing: var(--s-tracking-button);
-  text-transform: uppercase;
 }
 
 :is(#cart-drawer, .cart-page) .cart-discount__pill {
@@ -540,7 +539,6 @@ body:has(#cart-drawer[open]) .page-wrapper--drawer-open {
   font-size: var(--s-type-button);
   font-weight: 500;
   letter-spacing: var(--s-tracking-button);
-  text-transform: uppercase;
 }
 
 /* =========================================================
@@ -590,7 +588,6 @@ body:has(#cart-drawer[open]) .page-wrapper--drawer-open {
   padding-inline: var(--s-space-10);
   font-size: var(--s-type-button);
   letter-spacing: var(--s-tracking-button);
-  text-transform: uppercase;
 }
 
 /* =========================================================

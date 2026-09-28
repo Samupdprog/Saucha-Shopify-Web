@@ -569,6 +569,7 @@
       }
 
       soldOutBadge?.classList.toggle('is-hidden', available);
+      card.querySelector('[data-card-stock]')?.classList.toggle('is-hidden', button.dataset.lowStock !== 'true');
 
       if (liveStatus && colorLabel) {
         liveStatus.textContent = `${colorLabel}${available ? '' : ` — ${soldOutLabel}`}`;
